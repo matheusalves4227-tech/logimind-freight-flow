@@ -72,7 +72,7 @@ const Hero = () => {
                 className="sm:self-center"
                 onClick={handleQuickQuote}
               >
-                Cotar Agora
+                Ver Opções de Frete
               </Button>
             </div>
 

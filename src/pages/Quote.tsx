@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -20,8 +20,11 @@ interface QuoteResult {
   route_adjustment_factor: number;
 }
 
+type SortOption = "price" | "delivery" | "quality";
+
 const Quote = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     origin_cep: "",
@@ -33,6 +36,21 @@ const Quote = () => {
   });
   const [quotes, setQuotes] = useState<QuoteResult[]>([]);
   const [routeType, setRouteType] = useState<string>("");
+  const [sortBy, setSortBy] = useState<SortOption>("price");
+
+  // Preencher CEPs da URL
+  useEffect(() => {
+    const origin = searchParams.get("origin");
+    const dest = searchParams.get("dest");
+    
+    if (origin || dest) {
+      setFormData(prev => ({
+        ...prev,
+        origin_cep: origin || prev.origin_cep,
+        destination_cep: dest || prev.destination_cep,
+      }));
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,6 +89,20 @@ const Quote = () => {
       toast.error(error.message || "Erro ao gerar cotação");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const getSortedQuotes = () => {
+    const sorted = [...quotes];
+    switch (sortBy) {
+      case "price":
+        return sorted.sort((a, b) => a.final_price - b.final_price);
+      case "delivery":
+        return sorted.sort((a, b) => a.delivery_days - b.delivery_days);
+      case "quality":
+        return sorted.sort((a, b) => b.quality_index - a.quality_index);
+      default:
+        return sorted;
     }
   };
 
@@ -236,14 +268,41 @@ const Quote = () => {
 
           {quotes.length > 0 && (
             <div className="space-y-6">
-              <div className="flex justify-center">
-                {getRouteTypeBadge()}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
+                <div className="flex justify-center">
+                  {getRouteTypeBadge()}
+                </div>
+                
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-muted-foreground font-medium">Ordenar por:</span>
+                  <div className="flex gap-2">
+                    <Button
+                      variant={sortBy === "price" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setSortBy("price")}
+                    >
+                      Menor Preço
+                    </Button>
+                    <Button
+                      variant={sortBy === "delivery" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setSortBy("delivery")}
+                    >
+                      Menor Prazo
+                    </Button>
+                    <Button
+                      variant={sortBy === "quality" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setSortBy("quality")}
+                    >
+                      Qualidade
+                    </Button>
+                  </div>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {quotes
-                  .sort((a, b) => a.final_price - b.final_price)
-                  .map((quote, index) => (
+                {getSortedQuotes().map((quote, index) => (
                     <Card 
                       key={quote.carrier_id}
                       className="p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col"
@@ -258,8 +317,8 @@ const Quote = () => {
                         )}
                       </div>
                       
-                      {/* Índice de Qualidade */}
-                      <div className="flex items-center gap-2 mb-4 pb-4 border-b border-border">
+                      {/* Índice de Qualidade - Verde */}
+                      <div className="flex items-center gap-2 mb-4 pb-4 border-b border-border bg-secondary/5 -mx-6 px-6 py-3">
                         <div className="flex gap-0.5">
                           {[...Array(5)].map((_, i) => (
                             <div
@@ -272,11 +331,11 @@ const Quote = () => {
                             />
                           ))}
                         </div>
-                        <span className="text-sm font-medium text-secondary">
+                        <span className="text-base font-bold text-secondary">
                           {quote.quality_index.toFixed(1)}
                         </span>
-                        <span className="text-xs text-muted-foreground">
-                          qualidade
+                        <span className="text-sm font-medium text-secondary">
+                          Qualidade
                         </span>
                       </div>
 
@@ -305,12 +364,17 @@ const Quote = () => {
                         </div>
                       </div>
 
-                      {/* Prazo de Entrega */}
-                      <div className="flex items-center justify-center gap-2 mb-6 text-accent">
-                        <span className="text-2xl">🕒</span>
-                        <span className="text-lg font-semibold">
-                          {quote.delivery_days} dias úteis
-                        </span>
+                      {/* Prazo de Entrega - Laranja */}
+                      <div className="flex items-center justify-center gap-3 mb-6 bg-accent/10 py-4 rounded-lg -mx-6 px-6">
+                        <span className="text-3xl">🕒</span>
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-accent">
+                            {quote.delivery_days} dias
+                          </div>
+                          <div className="text-xs text-accent/80 font-medium">
+                            úteis
+                          </div>
+                        </div>
                       </div>
 
                       {/* Botão Contratar - No final */}
