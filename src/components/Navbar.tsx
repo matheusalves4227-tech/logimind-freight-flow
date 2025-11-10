@@ -1,8 +1,31 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Package, Menu } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Package, Menu, User } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 const Navbar = () => {
+  const navigate = useNavigate();
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    navigate("/");
+  };
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -29,12 +52,32 @@ const Navbar = () => {
           </div>
 
           <div className="flex items-center gap-4">
-            <Button variant="ghost" className="hidden md:inline-flex">
-              Entrar
-            </Button>
-            <Button variant="hero" size="lg">
-              Começar Grátis
-            </Button>
+            {user ? (
+              <>
+                <Link to="/quote">
+                  <Button variant="hero" size="lg">
+                    Nova Cotação
+                  </Button>
+                </Link>
+                <Button variant="ghost" onClick={handleSignOut} className="hidden md:inline-flex">
+                  <User className="h-4 w-4 mr-2" />
+                  Sair
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link to="/auth">
+                  <Button variant="ghost" className="hidden md:inline-flex">
+                    Entrar
+                  </Button>
+                </Link>
+                <Link to="/auth">
+                  <Button variant="hero" size="lg">
+                    Começar Grátis
+                  </Button>
+                </Link>
+              </>
+            )}
             <Button variant="ghost" size="icon" className="md:hidden">
               <Menu className="h-5 w-5" />
             </Button>

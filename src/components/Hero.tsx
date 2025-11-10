@@ -1,8 +1,22 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MapPin, Package, TrendingUp } from "lucide-react";
 
 const Hero = () => {
+  const navigate = useNavigate();
+  const [originCep, setOriginCep] = useState("");
+  const [destCep, setDestCep] = useState("");
+
+  const handleQuickQuote = () => {
+    if (originCep && destCep) {
+      navigate(`/quote?origin=${originCep}&dest=${destCep}`);
+    } else {
+      navigate("/quote");
+    }
+  };
+
   return (
     <section className="relative pt-32 pb-20 overflow-hidden">
       {/* Background gradient */}
@@ -35,14 +49,29 @@ const Hero = () => {
               <div className="flex-1 space-y-3">
                 <div className="flex items-center gap-2">
                   <MapPin className="h-5 w-5 text-primary" />
-                  <Input placeholder="CEP Origem" className="flex-1" />
+                  <Input 
+                    placeholder="CEP Origem" 
+                    className="flex-1"
+                    value={originCep}
+                    onChange={(e) => setOriginCep(e.target.value)}
+                  />
                 </div>
                 <div className="flex items-center gap-2">
                   <Package className="h-5 w-5 text-secondary" />
-                  <Input placeholder="CEP Destino" className="flex-1" />
+                  <Input 
+                    placeholder="CEP Destino" 
+                    className="flex-1"
+                    value={destCep}
+                    onChange={(e) => setDestCep(e.target.value)}
+                  />
                 </div>
               </div>
-              <Button variant="hero" size="xl" className="sm:self-center">
+              <Button 
+                variant="hero" 
+                size="xl" 
+                className="sm:self-center"
+                onClick={handleQuickQuote}
+              >
                 Cotar Agora
               </Button>
             </div>
