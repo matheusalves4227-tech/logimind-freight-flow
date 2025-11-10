@@ -17,6 +17,7 @@ export type Database = {
       carriers: {
         Row: {
           avg_quality_rating: number | null
+          carrier_size: string | null
           coverage_area: string | null
           created_at: string | null
           damage_rate: number | null
@@ -25,10 +26,12 @@ export type Database = {
           logo_url: string | null
           name: string
           on_time_delivery_rate: number | null
+          specialties: string[] | null
           updated_at: string | null
         }
         Insert: {
           avg_quality_rating?: number | null
+          carrier_size?: string | null
           coverage_area?: string | null
           created_at?: string | null
           damage_rate?: number | null
@@ -37,10 +40,12 @@ export type Database = {
           logo_url?: string | null
           name: string
           on_time_delivery_rate?: number | null
+          specialties?: string[] | null
           updated_at?: string | null
         }
         Update: {
           avg_quality_rating?: number | null
+          carrier_size?: string | null
           coverage_area?: string | null
           created_at?: string | null
           damage_rate?: number | null
@@ -49,6 +54,7 @@ export type Database = {
           logo_url?: string | null
           name?: string
           on_time_delivery_rate?: number | null
+          specialties?: string[] | null
           updated_at?: string | null
         }
         Relationships: []

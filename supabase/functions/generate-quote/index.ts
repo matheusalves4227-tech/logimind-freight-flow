@@ -23,6 +23,8 @@ interface QuoteRequest {
 interface CarrierQuote {
   carrier_id: string;
   carrier_name: string;
+  carrier_size?: string;
+  specialties?: string[];
   base_price: number;
   delivery_days: number;
   quality_index: number;
@@ -59,6 +61,8 @@ function aplicarLogiMind(
     return {
       carrier_id: cota.carrier_id,
       carrier_name: cota.carrier_name,
+      carrier_size: cota.carrier_size,
+      specialties: cota.specialties,
       base_price: precoBaseFrete,
       commission_applied: comissaoFinal,
       final_price: precoFinal,
@@ -88,6 +92,8 @@ function gerarCotacoesMockadas(carriers: any[], weight_kg: number): CarrierQuote
     return {
       carrier_id: carrier.id,
       carrier_name: carrier.name,
+      carrier_size: carrier.carrier_size,
+      specialties: carrier.specialties,
       base_price: Math.round(basePrice * 100) / 100,
       delivery_days: Math.max(2, deliveryDays),
       quality_index: carrier.avg_quality_rating,

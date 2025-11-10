@@ -12,6 +12,8 @@ import Navbar from "@/components/Navbar";
 interface QuoteResult {
   carrier_id: string;
   carrier_name: string;
+  carrier_size?: string;
+  specialties?: string[];
   base_price: number;
   commission_applied: number;
   final_price: number;
@@ -308,13 +310,33 @@ const Quote = () => {
                       className="p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col"
                     >
                       {/* Header com nome e tag */}
-                      <div className="flex items-start justify-between mb-4">
-                        <h3 className="text-xl font-bold">{quote.carrier_name}</h3>
-                        {index === 0 && (
-                          <span className="px-3 py-1 bg-secondary text-secondary-foreground text-xs rounded-full font-bold whitespace-nowrap ml-2">
-                            Melhor Preço
-                          </span>
-                        )}
+                      <div className="mb-4">
+                        <div className="flex items-start justify-between mb-2">
+                          <h3 className="text-xl font-bold">{quote.carrier_name}</h3>
+                          {index === 0 && (
+                            <span className="px-3 py-1 bg-secondary text-secondary-foreground text-xs rounded-full font-bold whitespace-nowrap ml-2">
+                              Melhor Preço
+                            </span>
+                          )}
+                        </div>
+                        
+                        {/* Porte e Especialidades */}
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {quote.carrier_size && (
+                            <span className="px-2 py-1 bg-muted text-muted-foreground text-xs rounded-md font-medium">
+                              {quote.carrier_size === 'large' && '🏢 Grande Porte'}
+                              {quote.carrier_size === 'medium' && '🏪 Médio Porte'}
+                              {quote.carrier_size === 'small' && '🏠 Pequeno Porte'}
+                            </span>
+                          )}
+                          {quote.specialties && quote.specialties.length > 0 && (
+                            quote.specialties.slice(0, 2).map((spec, i) => (
+                              <span key={i} className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-md font-medium">
+                                {spec}
+                              </span>
+                            ))
+                          )}
+                        </div>
                       </div>
                       
                       {/* Índice de Qualidade - Verde */}
