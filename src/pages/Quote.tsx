@@ -240,66 +240,83 @@ const Quote = () => {
                 {getRouteTypeBadge()}
               </div>
 
-              <div className="grid gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {quotes
                   .sort((a, b) => a.final_price - b.final_price)
                   .map((quote, index) => (
                     <Card 
                       key={quote.carrier_id}
-                      className="p-6 hover:shadow-lg transition-all"
+                      className="p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col"
                     >
-                      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <h3 className="text-xl font-semibold">{quote.carrier_name}</h3>
-                            {index === 0 && (
-                              <span className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full font-medium">
-                                Melhor Preço
-                              </span>
-                            )}
-                          </div>
-                          
-                          <div className="flex items-center gap-2 mb-3">
-                            <div className="flex gap-0.5">
-                              {[...Array(5)].map((_, i) => (
-                                <div
-                                  key={i}
-                                  className={`w-2 h-2 rounded-full ${
-                                    i < Math.round(quote.quality_index)
-                                      ? "bg-secondary"
-                                      : "bg-muted"
-                                  }`}
-                                />
-                              ))}
-                            </div>
-                            <span className="text-xs text-muted-foreground">
-                              {quote.quality_index.toFixed(1)} qualidade
-                            </span>
-                          </div>
-
-                          <div className="text-sm text-muted-foreground space-y-1">
-                            <div>Preço base: R$ {quote.base_price.toFixed(2)}</div>
-                            <div>Comissão aplicada: {(quote.commission_applied * 100).toFixed(1)}%</div>
-                            {quote.route_adjustment_factor > 0 && (
-                              <div className="text-secondary font-medium">
-                                Ajuste LogiMind: +{(quote.route_adjustment_factor * 100).toFixed(0)}%
-                              </div>
-                            )}
-                          </div>
+                      {/* Header com nome e tag */}
+                      <div className="flex items-start justify-between mb-4">
+                        <h3 className="text-xl font-bold">{quote.carrier_name}</h3>
+                        {index === 0 && (
+                          <span className="px-3 py-1 bg-secondary text-secondary-foreground text-xs rounded-full font-bold whitespace-nowrap ml-2">
+                            Melhor Preço
+                          </span>
+                        )}
+                      </div>
+                      
+                      {/* Índice de Qualidade */}
+                      <div className="flex items-center gap-2 mb-4 pb-4 border-b border-border">
+                        <div className="flex gap-0.5">
+                          {[...Array(5)].map((_, i) => (
+                            <div
+                              key={i}
+                              className={`w-3 h-3 rounded-full ${
+                                i < Math.round(quote.quality_index)
+                                  ? "bg-secondary"
+                                  : "bg-muted"
+                              }`}
+                            />
+                          ))}
                         </div>
+                        <span className="text-sm font-medium text-secondary">
+                          {quote.quality_index.toFixed(1)}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          qualidade
+                        </span>
+                      </div>
 
-                        <div className="text-right">
-                          <div className="text-3xl font-bold text-primary mb-1">
-                            R$ {quote.final_price.toFixed(2)}
+                      {/* Detalhes de Precificação */}
+                      <div className="text-sm text-muted-foreground space-y-2 mb-4">
+                        <div className="flex justify-between">
+                          <span>Preço base:</span>
+                          <span className="font-medium">R$ {quote.base_price.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Comissão:</span>
+                          <span className="font-medium">{(quote.commission_applied * 100).toFixed(1)}%</span>
+                        </div>
+                        {quote.route_adjustment_factor > 0 && (
+                          <div className="flex justify-between text-secondary">
+                            <span className="font-medium">Ajuste LogiMind:</span>
+                            <span className="font-bold">+{(quote.route_adjustment_factor * 100).toFixed(0)}%</span>
                           </div>
-                          <div className="text-sm text-muted-foreground">
-                            {quote.delivery_days} dias úteis
-                          </div>
-                          <Button variant="hero" className="mt-3">
-                            Contratar
-                          </Button>
+                        )}
+                      </div>
+
+                      {/* Preço Final - Destaque */}
+                      <div className="text-center py-4 bg-primary/5 rounded-lg mb-4">
+                        <div className="text-4xl font-bold text-primary mb-1">
+                          R$ {quote.final_price.toFixed(2)}
                         </div>
                       </div>
+
+                      {/* Prazo de Entrega */}
+                      <div className="flex items-center justify-center gap-2 mb-6 text-accent">
+                        <span className="text-2xl">🕒</span>
+                        <span className="text-lg font-semibold">
+                          {quote.delivery_days} dias úteis
+                        </span>
+                      </div>
+
+                      {/* Botão Contratar - No final */}
+                      <Button variant="hero" size="lg" className="w-full mt-auto">
+                        Contratar
+                      </Button>
                     </Card>
                   ))}
               </div>
