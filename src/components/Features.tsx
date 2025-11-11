@@ -1,4 +1,4 @@
-import { TrendingUp, Search, Shield, Clock } from "lucide-react";
+import { TrendingUp, Search, Shield, RotateCcw } from "lucide-react";
 
 const features = [
   {
@@ -9,20 +9,20 @@ const features = [
   },
   {
     icon: TrendingUp,
-    title: "Precificação Inteligente",
-    description: "LogiMind otimiza preços dinamicamente baseado em rotas, demanda e qualidade de serviço.",
+    title: "LogiMind: Agente de Precificação Dinâmica",
+    description: "IA que otimiza preços em tempo real baseado em rotas, demanda e qualidade de serviço. Transparência total na comissão.",
     color: "secondary",
   },
   {
-    icon: Shield,
-    title: "Transparência Total",
-    description: "Veja preço, prazo e índice de qualidade lado a lado. Decisões informadas e seguras.",
+    icon: RotateCcw,
+    title: "Otimização de Rotas de Retorno",
+    description: "Sistema inteligente que equilibra oferta e demanda, garantindo preços justos e eficiência máxima da frota.",
     color: "accent",
   },
   {
-    icon: Clock,
-    title: "Rastreamento Unificado",
-    description: "Acompanhe todas as suas cargas em um único painel. Sem precisar acessar múltiplos sites.",
+    icon: Shield,
+    title: "Transparência e Controle Total",
+    description: "Veja preço base, comissão aplicada e qualidade lado a lado. Você decide baseado em dados reais e confiáveis.",
     color: "primary",
   },
 ];

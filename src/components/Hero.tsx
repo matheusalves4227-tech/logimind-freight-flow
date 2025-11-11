@@ -26,22 +26,24 @@ const Hero = () => {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left content */}
           <div className="space-y-8">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full text-primary text-sm font-medium">
-              <TrendingUp className="h-4 w-4" />
-              Precificação Inteligente com LogiMind
+            <div className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-secondary/20 to-primary/20 rounded-full border border-secondary/30 shadow-sm">
+              <TrendingUp className="h-5 w-5 text-secondary" />
+              <span className="text-base font-bold text-foreground">
+                Economize até 42% Comparando Fretes Agora!
+              </span>
             </div>
             
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight">
-              Simplifique sua{" "}
+              Cotação Inteligente:{" "}
               <span className="bg-gradient-hero bg-clip-text text-transparent">
-                Logística
+                Fretes mais Baratos
               </span>
-              {" "}com Transparência Total
+              , Rotas Otimizadas
             </h1>
             
             <p className="text-lg text-muted-foreground max-w-xl">
-              Compare preços, prazos e qualidade de múltiplas transportadoras em segundos. 
-              Tome decisões inteligentes baseadas em dados reais.
+              Economize tempo e dinheiro comparando preços, prazos e qualidade de múltiplas transportadoras em segundos. 
+              Decisões baseadas em dados reais com LogiMind AI.
             </p>
 
             {/* Quick quote CTA */}
@@ -72,108 +74,88 @@ const Hero = () => {
                 className="sm:self-center"
                 onClick={handleQuickQuote}
               >
-                Ver Opções de Frete
+                Ver Opções em 3 Segundos
               </Button>
             </div>
 
             {/* Stats */}
-            <div className="flex gap-8 pt-4">
-              <div>
-                <div className="text-3xl font-bold text-primary">500+</div>
-                <div className="text-sm text-muted-foreground">Transportadoras</div>
+            <div className="space-y-3 pt-4">
+              <div className="flex gap-8">
+                <div>
+                  <div className="text-3xl font-bold text-primary">500+</div>
+                  <div className="text-sm text-muted-foreground">Transportadoras</div>
+                </div>
+                <div>
+                  <div className="text-3xl font-bold text-secondary">99.9%</div>
+                  <div className="text-sm text-muted-foreground">Uptime</div>
+                </div>
+                <div>
+                  <div className="text-3xl font-bold text-accent">24h</div>
+                  <div className="text-sm text-muted-foreground">Suporte</div>
+                </div>
               </div>
-              <div>
-                <div className="text-3xl font-bold text-secondary">99.9%</div>
-                <div className="text-sm text-muted-foreground">Uptime</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-accent">24h</div>
-                <div className="text-sm text-muted-foreground">Suporte</div>
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-muted/50 rounded-full border border-border">
+                <TrendingUp className="h-3.5 w-3.5 text-primary" />
+                <span className="text-xs font-medium text-muted-foreground">
+                  Powered by <span className="text-primary font-bold">LogiMind AI</span>
+                </span>
               </div>
             </div>
           </div>
 
-          {/* Right visual */}
+          {/* Right visual - Simplified Single Card */}
           <div className="relative lg:h-[600px] hidden lg:block">
             <div className="absolute inset-0 bg-gradient-hero opacity-20 rounded-3xl blur-3xl" />
             <div className="relative h-full flex items-center justify-center">
-              <div className="space-y-4 w-full max-w-md">
-                {/* Mock comparison cards */}
-                <div className="bg-card rounded-xl p-6 shadow-lg border border-border hover:shadow-xl transition-all">
-                  <div className="flex justify-between items-start mb-4">
+              <div className="w-full max-w-md">
+                {/* Single Unified Value Proposition Card */}
+                <div className="bg-card rounded-2xl p-8 shadow-2xl border-2 border-primary/20 hover:border-primary/40 transition-all">
+                  <div className="text-center space-y-6">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-secondary/10 rounded-full">
+                      <TrendingUp className="h-4 w-4 text-secondary" />
+                      <span className="text-sm font-bold text-secondary">LogiMind AI</span>
+                    </div>
+                    
                     <div>
-                      <div className="font-semibold text-lg">Express Log</div>
-                      <div className="flex items-center gap-2 mt-1">
-                        <div className="flex gap-0.5">
-                          {[1, 2, 3, 4, 5].map((i) => (
-                            <div key={i} className="w-2 h-2 rounded-full bg-secondary" />
-                          ))}
-                        </div>
-                        <span className="text-xs text-muted-foreground">5.0</span>
+                      <div className="text-5xl font-bold bg-gradient-hero bg-clip-text text-transparent mb-2">
+                        42%
+                      </div>
+                      <div className="text-lg font-semibold text-foreground mb-1">
+                        Economia Média
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        comparando fretes automaticamente
                       </div>
                     </div>
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-primary">R$ 285</div>
-                      <div className="text-xs text-muted-foreground">3-5 dias</div>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <div className="flex-1 text-center py-2 bg-secondary/10 rounded text-xs font-medium text-secondary">
-                      Melhor Qualidade
-                    </div>
-                  </div>
-                </div>
 
-                <div className="bg-card rounded-xl p-6 shadow-lg border border-border hover:shadow-xl transition-all">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <div className="font-semibold text-lg">Rápido Trans</div>
-                      <div className="flex items-center gap-2 mt-1">
-                        <div className="flex gap-0.5">
-                          {[1, 2, 3, 4].map((i) => (
-                            <div key={i} className="w-2 h-2 rounded-full bg-secondary" />
-                          ))}
-                          <div className="w-2 h-2 rounded-full bg-muted" />
-                        </div>
-                        <span className="text-xs text-muted-foreground">4.2</span>
+                    <div className="grid grid-cols-3 gap-4 pt-4 border-t border-border">
+                      <div>
+                        <div className="text-2xl font-bold text-primary">3s</div>
+                        <div className="text-xs text-muted-foreground">Cotação</div>
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold text-secondary">500+</div>
+                        <div className="text-xs text-muted-foreground">Opções</div>
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold text-accent">100%</div>
+                        <div className="text-xs text-muted-foreground">Transparente</div>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-primary">R$ 195</div>
-                      <div className="text-xs text-muted-foreground">2-3 dias</div>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <div className="flex-1 text-center py-2 bg-accent/10 rounded text-xs font-medium text-accent">
-                      Mais Rápido
-                    </div>
-                  </div>
-                </div>
 
-                <div className="bg-card rounded-xl p-6 shadow-lg border border-border hover:shadow-xl transition-all">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <div className="font-semibold text-lg">EconoFrete</div>
-                      <div className="flex items-center gap-2 mt-1">
-                        <div className="flex gap-0.5">
-                          {[1, 2, 3].map((i) => (
-                            <div key={i} className="w-2 h-2 rounded-full bg-secondary" />
-                          ))}
-                          {[4, 5].map((i) => (
-                            <div key={i} className="w-2 h-2 rounded-full bg-muted" />
-                          ))}
-                        </div>
-                        <span className="text-xs text-muted-foreground">3.8</span>
+                    <div className="pt-4 space-y-2">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <div className="w-2 h-2 rounded-full bg-secondary" />
+                        <span>Preços otimizados em tempo real</span>
                       </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-primary">R$ 165</div>
-                      <div className="text-xs text-muted-foreground">5-7 dias</div>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <div className="flex-1 text-center py-2 bg-primary/10 rounded text-xs font-medium text-primary">
-                      Melhor Preço
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <div className="w-2 h-2 rounded-full bg-primary" />
+                        <span>Comparação instantânea</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <div className="w-2 h-2 rounded-full bg-accent" />
+                        <span>Decisões baseadas em dados</span>
+                      </div>
                     </div>
                   </div>
                 </div>
