@@ -1,65 +1,118 @@
-import { TrendingUp, Search, Shield, RotateCcw } from "lucide-react";
-
-const features = [
-  {
-    icon: Search,
-    title: "Cotação Instantânea",
-    description: "Compare múltiplas transportadoras em segundos. Interface simples e intuitiva para cotações rápidas.",
-    color: "primary",
-  },
-  {
-    icon: TrendingUp,
-    title: "LogiMind: Agente de Precificação Dinâmica",
-    description: "IA que otimiza preços em tempo real baseado em rotas, demanda e qualidade de serviço. Transparência total na comissão.",
-    color: "secondary",
-  },
-  {
-    icon: RotateCcw,
-    title: "Otimização de Rotas de Retorno",
-    description: "Sistema inteligente que equilibra oferta e demanda, garantindo preços justos e eficiência máxima da frota.",
-    color: "accent",
-  },
-  {
-    icon: Shield,
-    title: "Transparência e Controle Total",
-    description: "Veja preço base, comissão aplicada e qualidade lado a lado. Você decide baseado em dados reais e confiáveis.",
-    color: "primary",
-  },
-];
+import { TrendingUp, Package, Users, Brain } from "lucide-react";
 
 const Features = () => {
   return (
     <section id="features" className="py-20 bg-muted/30">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-            Por que escolher o{" "}
+        {/* Bloco de Dados Chave (Prova de Escala) */}
+        <div className="text-center max-w-4xl mx-auto mb-16">
+          <h2 className="text-3xl sm:text-4xl font-bold mb-8">
+            A Plataforma que{" "}
             <span className="bg-gradient-hero bg-clip-text text-transparent">
-              LogiMarket
+              Conecta Todo o Mercado
             </span>
-            ?
           </h2>
-          <p className="text-lg text-muted-foreground">
-            Tecnologia de ponta para simplificar suas operações logísticas e maximizar resultados
-          </p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+            {/* Métrica 1: Volume */}
+            <div className="bg-card rounded-2xl p-8 shadow-lg border-2 border-secondary/20 hover:border-secondary/40 transition-all">
+              <div className="inline-flex p-3 rounded-xl bg-secondary/10 mb-4">
+                <Package className="h-8 w-8 text-secondary" />
+              </div>
+              <div className="text-4xl font-bold text-secondary mb-2">2.5M+</div>
+              <div className="text-lg font-semibold text-foreground mb-1">
+                Toneladas/Mês
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Volume transportado mensalmente
+              </div>
+            </div>
+
+            {/* Métrica 2: Parceiros */}
+            <div className="bg-card rounded-2xl p-8 shadow-lg border-2 border-primary/20 hover:border-primary/40 transition-all">
+              <div className="inline-flex p-3 rounded-xl bg-primary/10 mb-4">
+                <Users className="h-8 w-8 text-primary" />
+              </div>
+              <div className="text-4xl font-bold text-primary mb-2">1.200+</div>
+              <div className="text-lg font-semibold text-foreground mb-1">
+                Parceiros Logísticos
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Transportadoras e autônomos ativos
+              </div>
+            </div>
+
+            {/* Métrica 3: Economia */}
+            <div className="bg-card rounded-2xl p-8 shadow-lg border-2 border-accent/20 hover:border-accent/40 transition-all">
+              <div className="inline-flex p-3 rounded-xl bg-accent/10 mb-4">
+                <TrendingUp className="h-8 w-8 text-accent" />
+              </div>
+              <div className="text-4xl font-bold text-accent mb-2">42%</div>
+              <div className="text-lg font-semibold text-foreground mb-1">
+                Redução de Custo
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Economia média em logística
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {features.map((feature, index) => {
-            const Icon = feature.icon;
-            return (
-              <div
-                key={index}
-                className="group bg-card rounded-2xl p-6 shadow-sm border border-border hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
-              >
-                <div className={`inline-flex p-3 rounded-xl bg-${feature.color}/10 mb-4 group-hover:scale-110 transition-transform`}>
-                  <Icon className={`h-6 w-6 text-${feature.color}`} />
+        {/* Banner LogiMind (Integração Visual) */}
+        <div className="max-w-5xl mx-auto">
+          <div className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 rounded-3xl p-10 shadow-2xl border-2 border-primary/20">
+            {/* Background decorativo */}
+            <div className="absolute inset-0 bg-gradient-hero opacity-5 -z-10" />
+            <div className="absolute top-0 right-0 w-64 h-64 bg-secondary/20 rounded-full blur-3xl -z-10" />
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary/20 rounded-full blur-3xl -z-10" />
+            
+            <div className="relative flex flex-col md:flex-row items-center gap-8">
+              {/* Ícone LogiMind */}
+              <div className="flex-shrink-0">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-hero opacity-30 rounded-2xl blur-xl animate-pulse" />
+                  <div className="relative p-8 bg-gradient-to-br from-primary to-secondary rounded-2xl shadow-2xl">
+                    <Brain className="h-16 w-16 text-primary-foreground" />
+                  </div>
                 </div>
-                <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                <p className="text-muted-foreground">{feature.description}</p>
               </div>
-            );
-          })}
+
+              {/* Conteúdo */}
+              <div className="flex-1 text-center md:text-left space-y-4">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-full border border-primary/30">
+                  <Brain className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-bold text-primary">Powered by AI</span>
+                </div>
+                
+                <h3 className="text-3xl font-bold text-foreground">
+                  LogiMind: A IA que Garante o{" "}
+                  <span className="bg-gradient-hero bg-clip-text text-transparent">
+                    Custo Total Otimizado
+                  </span>
+                </h3>
+                
+                <p className="text-lg text-muted-foreground max-w-2xl">
+                  Análise preditiva de risco e preço em tempo real. Transparência total na comissão, 
+                  otimização de rotas de retorno e precificação dinâmica baseada em demanda.
+                </p>
+
+                <div className="flex flex-wrap gap-4 pt-2">
+                  <div className="flex items-center gap-2 px-4 py-2 bg-card/80 rounded-lg border border-border">
+                    <div className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
+                    <span className="text-sm font-medium text-foreground">Preço + Performance</span>
+                  </div>
+                  <div className="flex items-center gap-2 px-4 py-2 bg-card/80 rounded-lg border border-border">
+                    <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                    <span className="text-sm font-medium text-foreground">Análise de Risco OTIF</span>
+                  </div>
+                  <div className="flex items-center gap-2 px-4 py-2 bg-card/80 rounded-lg border border-border">
+                    <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+                    <span className="text-sm font-medium text-foreground">Otimização Contínua</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
