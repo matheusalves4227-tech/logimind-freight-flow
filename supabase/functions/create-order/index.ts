@@ -1,9 +1,34 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Zod Schema for Create Order Request Validation
+const CreateOrderSchema = z.object({
+  quote_id: z.string().uuid().optional(),
+  carrier_id: z.string().uuid().optional(),
+  carrier_name: z.string().min(1).max(200),
+  service_type: z.enum(['ltl', 'ftl']),
+  vehicle_type: z.string().max(50).optional(),
+  origin_cep: z.string().regex(/^\d{5}-?\d{3}$/, 'CEP inválido'),
+  origin_address: z.string().max(500).optional(),
+  destination_cep: z.string().regex(/^\d{5}-?\d{3}$/, 'CEP inválido'),
+  destination_address: z.string().max(500).optional(),
+  weight_kg: z.number().positive().max(50000).optional(),
+  height_cm: z.number().positive().max(1000).optional(),
+  width_cm: z.number().positive().max(1000).optional(),
+  length_cm: z.number().positive().max(2000).optional(),
+  base_price: z.number().nonnegative().max(1000000),
+  commission_applied: z.number().nonnegative().max(1),
+  final_price: z.number().positive().max(1000000),
+  delivery_days: z.number().int().positive().max(365).optional(),
+  external_tracking_code: z.string().max(100).optional(),
+  driver_name: z.string().max(200).optional(),
+  driver_phone: z.string().max(20).optional(),
+});
 
 // Função para gerar tracking code único
 function generateTrackingCode(): string {
@@ -43,9 +68,23 @@ Deno.serve(async (req) => {
       );
     }
 
-    const requestData = await req.json();
-    console.log('[Create Order] Request data:', requestData);
+    const requestBody = await req.json();
+    console.log('[Create Order] Request received:', requestBody);
 
+    // Validate input with Zod
+    const validation = CreateOrderSchema.safeParse(requestBody);
+    if (!validation.success) {
+      console.error('[Create Order] Validation failed:', validation.error.flatten());
+      return new Response(
+        JSON.stringify({ 
+          error: 'Validation failed', 
+          details: validation.error.flatten().fieldErrors 
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const requestData = validation.data;
     const {
       quote_id,
       carrier_id,
@@ -68,14 +107,6 @@ Deno.serve(async (req) => {
       driver_name,
       driver_phone
     } = requestData;
-
-    // Validar campos obrigatórios
-    if (!carrier_name || !service_type || !origin_cep || !destination_cep || !final_price) {
-      return new Response(
-        JSON.stringify({ error: 'Missing required fields' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
 
     // Gerar tracking code único
     const trackingCode = generateTrackingCode();

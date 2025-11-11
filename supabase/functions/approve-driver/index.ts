@@ -1,9 +1,23 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.81.0';
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Zod Schema for Approve Driver Request Validation
+const ApproveDriverSchema = z.object({
+  driver_profile_id: z.string().uuid('ID do motorista inválido'),
+  action: z.enum(['approve', 'reject'], { 
+    errorMap: () => ({ message: 'Ação deve ser "approve" ou "reject"' }) 
+  }),
+  notes: z.string().max(1000).optional(),
+  rejection_reason: z.string().min(10, 'Motivo da rejeição deve ter pelo menos 10 caracteres').max(1000).optional(),
+}).refine(
+  (data) => data.action !== 'reject' || data.rejection_reason,
+  { message: 'Motivo da rejeição é obrigatório quando action é "reject"', path: ['rejection_reason'] }
+);
 
 interface ApproveDriverRequest {
   driver_profile_id: string;
@@ -67,17 +81,25 @@ Deno.serve(async (req) => {
 
     console.log(`[APPROVE-DRIVER] Admin ${user.email} (${user.id}) iniciando processo de aprovação`);
 
-    const { driver_profile_id, action, notes, rejection_reason }: ApproveDriverRequest = await req.json();
-
-    if (!driver_profile_id || !action) {
+    const requestBody = await req.json();
+    
+    // Validate input with Zod
+    const validation = ApproveDriverSchema.safeParse(requestBody);
+    if (!validation.success) {
+      console.error('[APPROVE-DRIVER] Validation failed:', validation.error.flatten());
       return new Response(
-        JSON.stringify({ error: 'driver_profile_id e action são obrigatórios' }),
+        JSON.stringify({ 
+          error: 'Validation failed', 
+          details: validation.error.flatten().fieldErrors 
+        }),
         {
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         }
       );
     }
+
+    const { driver_profile_id, action, notes, rejection_reason }: ApproveDriverRequest = validation.data;
 
     // 3. Buscar o perfil do motorista
     const { data: driverProfile, error: profileError } = await supabaseClient

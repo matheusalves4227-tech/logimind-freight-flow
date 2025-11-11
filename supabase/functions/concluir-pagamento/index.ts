@@ -1,9 +1,15 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.81.0';
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Zod Schema for Concluir Pagamento Request Validation
+const ConcluirPagamentoSchema = z.object({
+  order_id: z.string().uuid('ID do pedido inválido'),
+});
 
 interface ConcluirPagamentoRequest {
   order_id: string;
@@ -57,17 +63,25 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { order_id }: ConcluirPagamentoRequest = await req.json();
-
-    if (!order_id) {
+    const requestBody = await req.json();
+    
+    // Validate input with Zod
+    const validation = ConcluirPagamentoSchema.safeParse(requestBody);
+    if (!validation.success) {
+      console.error('[REPASSE] Validation failed:', validation.error.flatten());
       return new Response(
-        JSON.stringify({ error: 'order_id é obrigatório' }),
+        JSON.stringify({ 
+          error: 'Validation failed', 
+          details: validation.error.flatten().fieldErrors 
+        }),
         {
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         }
       );
     }
+
+    const { order_id }: ConcluirPagamentoRequest = validation.data;
 
     console.log(`[REPASSE] Iniciando processo para pedido: ${order_id}`);
 

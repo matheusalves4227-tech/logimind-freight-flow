@@ -1,10 +1,28 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Zod Schema for Quote Request Validation
+const QuoteRequestSchema = z.object({
+  service_type: z.enum(['ltl', 'ftl']),
+  vehicle_type: z.enum(['moto', 'carro', 'picape', 'caminhao_toco', 'caminhao_truck', 'carreta']).optional(),
+  origin_cep: z.string().regex(/^\d{5}-?\d{3}$/, 'CEP deve ter 8 dígitos'),
+  origin_number: z.string().min(1).max(20),
+  origin_type: z.enum(['commercial', 'residential']),
+  destination_cep: z.string().regex(/^\d{5}-?\d{3}$/, 'CEP deve ter 8 dígitos'),
+  destination_number: z.string().min(1).max(20),
+  destination_type: z.enum(['commercial', 'residential']),
+  weight_kg: z.number().positive().max(50000, 'Peso máximo: 50.000 kg'),
+  height_cm: z.number().positive().max(1000).optional(),
+  width_cm: z.number().positive().max(1000).optional(),
+  length_cm: z.number().positive().max(2000).optional(),
+  cargo_value: z.number().nonnegative().max(10000000).optional(),
+});
 
 // LogiMind Constants
 const COMISSAO_PADRAO = 0.10; // 10% - Comissão Padrão da Plataforma
@@ -393,16 +411,23 @@ serve(async (req) => {
       );
     }
 
-    const quoteRequest: QuoteRequest = await req.json();
-    console.log('Quote request:', quoteRequest);
+    const requestBody = await req.json();
+    console.log('Quote request received:', requestBody);
 
-    // Validate input
-    if (!quoteRequest.origin_cep || !quoteRequest.destination_cep || !quoteRequest.weight_kg) {
+    // Validate input with Zod
+    const validation = QuoteRequestSchema.safeParse(requestBody);
+    if (!validation.success) {
+      console.error('[Validation Error]', validation.error.flatten());
       return new Response(
-        JSON.stringify({ error: 'Missing required fields' }),
+        JSON.stringify({ 
+          error: 'Validation failed', 
+          details: validation.error.flatten().fieldErrors 
+        }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    const quoteRequest: QuoteRequest = validation.data;
 
     // Log do tipo de serviço e veículo (se FTL)
     console.log(`Service type: ${quoteRequest.service_type || 'ltl'} (LTL=Transportadoras, FTL=Autônomos)`);

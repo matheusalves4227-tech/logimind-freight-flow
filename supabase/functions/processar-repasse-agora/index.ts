@@ -1,9 +1,15 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.81.0';
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Zod Schema for Processar Repasse Request Validation
+const ProcessarRepasseSchema = z.object({
+  order_id: z.string().uuid('ID do pedido inválido'),
+});
 
 interface ProcessarRepasseRequest {
   order_id: string;
@@ -66,17 +72,25 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { order_id }: ProcessarRepasseRequest = await req.json();
-
-    if (!order_id) {
+    const requestBody = await req.json();
+    
+    // Validate input with Zod
+    const validation = ProcessarRepasseSchema.safeParse(requestBody);
+    if (!validation.success) {
+      console.error('[PROCESSAR-REPASSE] Validation failed:', validation.error.flatten());
       return new Response(
-        JSON.stringify({ error: 'order_id é obrigatório' }),
+        JSON.stringify({ 
+          error: 'Validation failed', 
+          details: validation.error.flatten().fieldErrors 
+        }),
         {
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         }
       );
     }
+
+    const { order_id }: ProcessarRepasseRequest = validation.data;
 
     console.log(`[PROCESSAR-REPASSE] Admin ${user.email} processando repasse do pedido: ${order_id}`);
 
