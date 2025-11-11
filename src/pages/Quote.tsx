@@ -823,7 +823,10 @@ const Quote = () => {
                               <p className="text-[10px] md:text-xs text-muted-foreground font-medium">Comissão LogiMind</p>
                               <div className="flex items-center gap-1.5 md:gap-2 flex-wrap">
                                 <p className="text-sm md:text-base font-bold text-primary">
-                                  {(quote.commission_applied * 100).toFixed(1)}%
+                                  {((quote.commission_applied * 100).toLocaleString('pt-BR', {
+                                    minimumFractionDigits: 1,
+                                    maximumFractionDigits: 1
+                                  }))}%
                                 </p>
                                 {quote.adjustment_reason === 'ROUTE_OPTIMIZED' && quote.commission_applied >= 0.15 && (
                                   <TooltipProvider>

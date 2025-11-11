@@ -140,7 +140,12 @@ export const ActiveOrdersTable = ({ orders, onViewDetails }: ActiveOrdersTablePr
                     </div>
                   </TableCell>
                   <TableCell className="font-semibold text-primary">
-                    R$ {order.final_price.toFixed(2)}
+                    {order.final_price.toLocaleString('pt-BR', {
+                      style: 'currency',
+                      currency: 'BRL',
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2
+                    })}
                   </TableCell>
                   <TableCell>
                     <span className={isNearDeadline(order.estimated_delivery) ? "text-accent font-medium" : ""}>

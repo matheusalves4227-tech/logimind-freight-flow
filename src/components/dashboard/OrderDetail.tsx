@@ -112,7 +112,14 @@ export const OrderDetail = ({ order, onBack }: OrderDetailProps) => {
           <div className="space-y-3">
             <div className="flex justify-between items-center">
               <p className="text-sm text-muted-foreground">Preço Base</p>
-              <p className="font-medium">R$ {order.base_price.toFixed(2)}</p>
+              <p className="font-medium">
+                {order.base_price.toLocaleString('pt-BR', {
+                  style: 'currency',
+                  currency: 'BRL',
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                })}
+              </p>
             </div>
 
             <div className="flex justify-between items-center">
@@ -137,7 +144,10 @@ export const OrderDetail = ({ order, onBack }: OrderDetailProps) => {
                 </TooltipProvider>
               </div>
               <p className="font-medium text-primary">
-                {(order.commission_applied * 100).toFixed(1)}%
+                {((order.commission_applied * 100).toLocaleString('pt-BR', {
+                  minimumFractionDigits: 1,
+                  maximumFractionDigits: 1
+                }))}%
               </p>
             </div>
 
@@ -157,7 +167,12 @@ export const OrderDetail = ({ order, onBack }: OrderDetailProps) => {
             <div className="flex justify-between items-center pt-2">
               <p className="font-semibold">Preço Final</p>
               <p className="text-2xl font-bold text-primary">
-                R$ {order.final_price.toFixed(2)}
+                {order.final_price.toLocaleString('pt-BR', {
+                  style: 'currency',
+                  currency: 'BRL',
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                })}
               </p>
             </div>
           </div>
