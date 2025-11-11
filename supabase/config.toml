@@ -2,3 +2,6 @@ project_id = "xrerhrqxfvvwiefzlkux"
 
 [functions.generate-quote]
 verify_jwt = true
+
+[functions.tracking]
+verify_jwt = true

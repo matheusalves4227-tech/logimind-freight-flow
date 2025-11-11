@@ -59,6 +59,120 @@ export type Database = {
         }
         Relationships: []
       }
+      orders: {
+        Row: {
+          actual_delivery: string | null
+          base_price: number
+          carrier_id: string | null
+          carrier_name: string
+          commission_applied: number
+          created_at: string
+          current_latitude: number | null
+          current_longitude: number | null
+          destination_address: string
+          destination_cep: string
+          driver_name: string | null
+          driver_phone: string | null
+          estimated_delivery: string | null
+          external_tracking_code: string | null
+          final_price: number
+          height_cm: number | null
+          id: string
+          last_location_update: string | null
+          length_cm: number | null
+          origin_address: string
+          origin_cep: string
+          quote_id: string | null
+          service_type: string
+          status: string
+          tracking_code: string
+          updated_at: string
+          user_id: string
+          vehicle_type: string | null
+          weight_kg: number
+          width_cm: number | null
+        }
+        Insert: {
+          actual_delivery?: string | null
+          base_price: number
+          carrier_id?: string | null
+          carrier_name: string
+          commission_applied: number
+          created_at?: string
+          current_latitude?: number | null
+          current_longitude?: number | null
+          destination_address: string
+          destination_cep: string
+          driver_name?: string | null
+          driver_phone?: string | null
+          estimated_delivery?: string | null
+          external_tracking_code?: string | null
+          final_price: number
+          height_cm?: number | null
+          id?: string
+          last_location_update?: string | null
+          length_cm?: number | null
+          origin_address: string
+          origin_cep: string
+          quote_id?: string | null
+          service_type: string
+          status?: string
+          tracking_code: string
+          updated_at?: string
+          user_id: string
+          vehicle_type?: string | null
+          weight_kg: number
+          width_cm?: number | null
+        }
+        Update: {
+          actual_delivery?: string | null
+          base_price?: number
+          carrier_id?: string | null
+          carrier_name?: string
+          commission_applied?: number
+          created_at?: string
+          current_latitude?: number | null
+          current_longitude?: number | null
+          destination_address?: string
+          destination_cep?: string
+          driver_name?: string | null
+          driver_phone?: string | null
+          estimated_delivery?: string | null
+          external_tracking_code?: string | null
+          final_price?: number
+          height_cm?: number | null
+          id?: string
+          last_location_update?: string | null
+          length_cm?: number | null
+          origin_address?: string
+          origin_cep?: string
+          quote_id?: string | null
+          service_type?: string
+          status?: string
+          tracking_code?: string
+          updated_at?: string
+          user_id?: string
+          vehicle_type?: string | null
+          weight_kg?: number
+          width_cm?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_carrier_id_fkey"
+            columns: ["carrier_id"]
+            isOneToOne: false
+            referencedRelation: "carriers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       quote_items: {
         Row: {
           base_price: number
@@ -190,6 +304,53 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      tracking_events: {
+        Row: {
+          city: string | null
+          created_at: string
+          event_code: string
+          event_description: string
+          event_timestamp: string
+          id: string
+          is_critical: boolean | null
+          order_id: string
+          raw_data: Json | null
+          state: string | null
+        }
+        Insert: {
+          city?: string | null
+          created_at?: string
+          event_code: string
+          event_description: string
+          event_timestamp: string
+          id?: string
+          is_critical?: boolean | null
+          order_id: string
+          raw_data?: Json | null
+          state?: string | null
+        }
+        Update: {
+          city?: string | null
+          created_at?: string
+          event_code?: string
+          event_description?: string
+          event_timestamp?: string
+          id?: string
+          is_critical?: boolean | null
+          order_id?: string
+          raw_data?: Json | null
+          state?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tracking_events_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
