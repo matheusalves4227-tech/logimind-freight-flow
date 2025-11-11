@@ -10,6 +10,7 @@ import { ArrowLeft, Package, MapPin, Loader2, TrendingUp, Info, Lightbulb, Truck
 import Navbar from "@/components/Navbar";
 import { Stepper } from "@/components/ui/stepper";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { formatarMoeda, formatarPorcentagemSimples } from "@/lib/formatters";
 
 interface QuoteResult {
   carrier_id: string;
@@ -787,12 +788,7 @@ const Quote = () => {
                             Preço Final LogiMarket
                           </p>
                           <div className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-primary leading-none break-words">
-                            {quote.final_price.toLocaleString('pt-BR', { 
-                              style: 'currency', 
-                              currency: 'BRL',
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2
-                            })}
+                            {formatarMoeda(quote.final_price)}
                           </div>
                         </div>
 
@@ -814,25 +810,39 @@ const Quote = () => {
                             <Zap className="h-5 w-5 text-accent flex-shrink-0" />
                           </div>
 
-                          {/* Comissão LogiMind */}
-                          <div className="flex items-center gap-2 md:gap-3 p-3 bg-primary/5 rounded-lg border border-primary/10">
-                            <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                              <span className="text-base md:text-xl">💰</span>
+                          {/* Detalhes LogiMind - Discreto e Secundário */}
+                          <div className="bg-muted/30 rounded-lg p-3 space-y-2 text-left">
+                            <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold mb-2 flex items-center gap-1">
+                              <Info className="h-3 w-3" />
+                              Detalhes LogiMind
+                            </p>
+                            
+                            {/* Preço Base */}
+                            <div className="flex justify-between items-center text-xs">
+                              <span className="text-muted-foreground flex items-center gap-1">
+                                <Package className="h-3 w-3" />
+                                Preço base:
+                              </span>
+                              <span className="font-medium text-foreground">
+                                {formatarMoeda(quote.base_price)}
+                              </span>
                             </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-[10px] md:text-xs text-muted-foreground font-medium">Comissão LogiMind</p>
-                              <div className="flex items-center gap-1.5 md:gap-2 flex-wrap">
-                                <p className="text-sm md:text-base font-bold text-primary">
-                                  {((quote.commission_applied * 100).toLocaleString('pt-BR', {
-                                    minimumFractionDigits: 1,
-                                    maximumFractionDigits: 1
-                                  }))}%
-                                </p>
+
+                            {/* Comissão */}
+                            <div className="flex justify-between items-center text-xs">
+                              <span className="text-muted-foreground flex items-center gap-1">
+                                <DollarSign className="h-3 w-3" />
+                                Comissão aplicada:
+                              </span>
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-medium text-primary">
+                                  {formatarPorcentagemSimples(quote.commission_applied)}
+                                </span>
                                 {quote.adjustment_reason === 'ROUTE_OPTIMIZED' && quote.commission_applied >= 0.15 && (
                                   <TooltipProvider>
                                     <Tooltip>
                                       <TooltipTrigger>
-                                        <Info className="h-3 w-3 md:h-3.5 md:w-3.5 text-primary flex-shrink-0" />
+                                        <Info className="h-3 w-3 text-primary flex-shrink-0" />
                                       </TooltipTrigger>
                                       <TooltipContent className="max-w-xs">
                                         <p className="text-sm">
@@ -847,7 +857,7 @@ const Quote = () => {
                                   <TooltipProvider>
                                     <Tooltip>
                                       <TooltipTrigger>
-                                        <Info className="h-3 w-3 md:h-3.5 md:w-3.5 text-secondary flex-shrink-0" />
+                                        <Info className="h-3 w-3 text-secondary flex-shrink-0" />
                                       </TooltipTrigger>
                                       <TooltipContent className="max-w-xs">
                                         <p className="text-sm">
@@ -859,33 +869,19 @@ const Quote = () => {
                                   </TooltipProvider>
                                 )}
                               </div>
-                              {quote.adjustment_reason && (
-                                <div className="flex items-center gap-1 mt-0.5">
-                                  <MapPin className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                                  <p className="text-[9px] md:text-[10px] text-muted-foreground leading-tight">
-                                    {quote.adjustment_reason === 'COMPETITION' && "Preço otimizado por competição"}
-                                    {quote.adjustment_reason === 'ROUTE_OPTIMIZED' && "Rota com menor ocupação"}
-                                    {quote.adjustment_reason === 'STANDARD' && "Comissão padrão aplicada"}
-                                  </p>
-                                </div>
-                              )}
                             </div>
-                          </div>
 
-                          {/* Preço Base - Discreto */}
-                          <div className="flex justify-between items-center text-xs text-muted-foreground px-1">
-                            <span className="flex items-center gap-1">
-                              <Package className="h-3 w-3" />
-                              Preço base:
-                            </span>
-                            <span className="font-medium">
-                              {quote.base_price.toLocaleString('pt-BR', { 
-                                style: 'currency', 
-                                currency: 'BRL',
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2
-                              })}
-                            </span>
+                            {/* Motivo do Ajuste */}
+                            {quote.adjustment_reason && (
+                              <div className="flex items-start gap-1.5 pt-1">
+                                <MapPin className="h-3 w-3 text-muted-foreground flex-shrink-0 mt-0.5" />
+                                <p className="text-[10px] text-muted-foreground leading-tight">
+                                  {quote.adjustment_reason === 'COMPETITION' && "Preço otimizado por competição de mercado"}
+                                  {quote.adjustment_reason === 'ROUTE_OPTIMIZED' && "Rota com menor ocupação - Otimização LogiMind"}
+                                  {quote.adjustment_reason === 'STANDARD' && "Comissão padrão aplicada"}
+                                </p>
+                              </div>
+                            )}
                           </div>
                         </div>
 
