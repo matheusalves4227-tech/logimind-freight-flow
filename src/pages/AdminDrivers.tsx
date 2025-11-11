@@ -222,8 +222,8 @@ const AdminDrivers = () => {
       <main className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
                 <Shield className="h-8 w-8 text-primary" />
                 <h1 className="text-3xl font-bold text-foreground">Gestão de Motoristas</h1>
@@ -232,14 +232,16 @@ const AdminDrivers = () => {
                 Painel administrativo para análise e aprovação de cadastros de motoristas
               </p>
             </div>
-            <Button
-              onClick={() => navigate('/admin/pedidos')}
-              variant="outline"
-              className="gap-2"
-            >
-              <Package className="h-4 w-4" />
-              Ver Pedidos e Cotações
-            </Button>
+            <div className="flex-shrink-0">
+              <Button
+                onClick={() => navigate('/admin/pedidos')}
+                variant="outline"
+                className="gap-2 w-full md:w-auto"
+              >
+                <Package className="h-4 w-4" />
+                Ver Pedidos e Cotações
+              </Button>
+            </div>
           </div>
         </div>
 
