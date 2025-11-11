@@ -41,58 +41,41 @@ const Dashboard = () => {
     try {
       setLoading(true);
       
-      // Buscar cotações do usuário
-      const { data: quotes, error: quotesError } = await supabase
-        .from('quotes')
-        .select(`
-          id,
-          origin_cep,
-          destination_cep,
-          created_at,
-          quote_items (
-            carrier_id,
-            final_price,
-            delivery_days,
-            base_price,
-            commission_applied,
-            selected,
-            carriers (
-              name,
-              carrier_size
-            )
-          )
-        `)
+      // Buscar pedidos reais da tabela orders
+      const { data: realOrders, error: ordersError } = await supabase
+        .from('orders')
+        .select('*')
         .order('created_at', { ascending: false })
         .limit(20);
 
-      if (quotesError) throw quotesError;
+      if (ordersError) throw ordersError;
 
-      // Transformar dados em formato de pedidos
-      // Em produção, haveria uma tabela de "orders" com status real
-      const mockOrders: Order[] = quotes?.map((quote, index) => {
-        const selectedItem = quote.quote_items?.find(item => item.selected) || quote.quote_items?.[0];
-        const carrier = selectedItem?.carriers;
-        
-        // Status aleatório para demonstração
-        const statuses: Order["status"][] = ["in_transit", "scheduled", "delivered", "incident"];
-        const randomStatus = statuses[index % statuses.length];
-        
-        return {
-          id: quote.id,
-          quote_id: quote.id,
-          status: randomStatus,
-          carrier_name: carrier?.name || "Transportadora Mock",
-          carrier_type: Math.random() > 0.7 ? "autonomous" : "carrier",
-          vehicle_type: Math.random() > 0.7 ? "Caminhão Toco" : undefined,
-          origin_city: `CEP ${quote.origin_cep}`,
-          destination_city: `CEP ${quote.destination_cep}`,
-          final_price: selectedItem?.final_price || 0,
-          estimated_delivery: new Date(Date.now() + (selectedItem?.delivery_days || 5) * 24 * 60 * 60 * 1000).toISOString(),
-          created_at: quote.created_at,
-        };
-      }) || [];
+      // Mapear status da ordem para o formato esperado
+      const statusMapping: Record<string, Order["status"]> = {
+        'pending': 'scheduled',
+        'confirmed': 'scheduled',
+        'in_transit': 'in_transit',
+        'delivered': 'delivered',
+        'cancelled': 'incident',
+        'failed': 'incident'
+      };
 
-      setOrders(mockOrders);
+      const mappedOrders: Order[] = realOrders?.map((order) => ({
+        id: order.id,
+        tracking_code: order.tracking_code,
+        quote_id: order.quote_id || order.id,
+        status: statusMapping[order.status] || 'in_transit',
+        carrier_name: order.carrier_name,
+        carrier_type: order.service_type === 'ftl' ? 'autonomous' : 'carrier',
+        vehicle_type: order.vehicle_type || undefined,
+        origin_city: order.origin_address,
+        destination_city: order.destination_address,
+        final_price: parseFloat(order.final_price.toString()),
+        estimated_delivery: order.estimated_delivery,
+        created_at: order.created_at,
+      })) || [];
+
+      setOrders(mappedOrders);
     } catch (error: any) {
       console.error("Error loading orders:", error);
       toast.error("Erro ao carregar pedidos");

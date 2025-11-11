@@ -15,6 +15,7 @@ import {
 
 export interface Order {
   id: string;
+  tracking_code?: string;
   quote_id: string;
   status: "in_transit" | "scheduled" | "delivered" | "incident";
   carrier_name: string;
@@ -153,14 +154,25 @@ export const ActiveOrdersTable = ({ orders, onViewDetails }: ActiveOrdersTablePr
                     </span>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onViewDetails(order.id)}
-                    >
-                      <Eye className="h-4 w-4 mr-2" />
-                      Ver Detalhes
-                    </Button>
+                    {order.tracking_code ? (
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => window.location.href = `/tracking/${order.tracking_code}`}
+                      >
+                        <Eye className="h-4 w-4 mr-2" />
+                        Rastrear
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onViewDetails(order.id)}
+                      >
+                        <Eye className="h-4 w-4 mr-2" />
+                        Ver Detalhes
+                      </Button>
+                    )}
                   </TableCell>
                 </TableRow>
               ))
