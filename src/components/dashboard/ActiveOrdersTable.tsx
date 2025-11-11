@@ -1,9 +1,10 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Eye } from "lucide-react";
+import { Search, Eye, MapPin } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -41,6 +42,7 @@ const statusConfig = {
 };
 
 export const ActiveOrdersTable = ({ orders, onViewDetails }: ActiveOrdersTableProps) => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
@@ -158,9 +160,10 @@ export const ActiveOrdersTable = ({ orders, onViewDetails }: ActiveOrdersTablePr
                       <Button
                         variant="default"
                         size="sm"
-                        onClick={() => window.location.href = `/tracking/${order.tracking_code}`}
+                        onClick={() => navigate(`/tracking/${order.tracking_code}`)}
+                        className="gap-2"
                       >
-                        <Eye className="h-4 w-4 mr-2" />
+                        <MapPin className="h-4 w-4" />
                         Rastrear
                       </Button>
                     ) : (
