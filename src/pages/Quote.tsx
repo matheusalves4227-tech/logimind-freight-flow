@@ -730,162 +730,167 @@ const Quote = () => {
                   return (
                     <Card 
                       key={quote.carrier_id}
-                      className="relative p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col"
+                      className="relative overflow-hidden hover:shadow-xl transition-all duration-300 border border-border/50"
                     >
                       {/* Ribbon lateral de destaque */}
                       {(isBestPrice || isFastest) && (
-                        <div className={`absolute left-0 top-0 bottom-0 w-1.5 rounded-l-lg ${
+                        <div className={`absolute left-0 top-0 bottom-0 w-2 ${
                           isBestPrice ? "bg-secondary" : "bg-accent"
                         }`} />
                       )}
 
-                      {/* Header com nome e tag */}
-                      <div className="mb-4">
-                        <div className="flex items-start justify-between mb-2">
-                          <h3 className="text-xl font-bold">{quote.carrier_name}</h3>
-                          {isBestPrice && (
-                            <span className="px-3 py-1 bg-secondary text-secondary-foreground text-xs rounded-full font-bold whitespace-nowrap ml-2">
-                              💰 Melhor Preço
-                            </span>
-                          )}
-                          {isFastest && (
-                            <span className="px-3 py-1 bg-accent text-accent-foreground text-xs rounded-full font-bold whitespace-nowrap ml-2">
-                              ⚡ Mais Rápido
-                            </span>
-                          )}
-                        </div>
-                        
-                        {/* Porte e Especialidades */}
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          {quote.carrier_size && (
-                            <span className="px-2 py-1 bg-muted text-muted-foreground text-xs rounded-md font-medium">
-                              {quote.carrier_size === 'large' && '🏢 Grande Porte'}
-                              {quote.carrier_size === 'medium' && '🏪 Médio Porte'}
-                              {quote.carrier_size === 'small' && '🏠 Pequeno Porte'}
-                            </span>
-                          )}
-                          {quote.specialties && quote.specialties.length > 0 && (
-                            quote.specialties.slice(0, 2).map((spec, i) => (
-                              <span key={i} className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-md font-medium">
-                                {spec}
+                      <div className="p-6 flex flex-col h-full">
+                        {/* Header com nome, rating e badge */}
+                        <div className="flex items-start justify-between pb-4 border-b border-dashed border-border mb-5">
+                          <div className="flex-1">
+                            <h3 className="text-lg font-bold mb-1 flex items-center gap-2">
+                              {quote.carrier_name}
+                              <span className="px-2 py-0.5 bg-muted text-muted-foreground text-xs rounded font-medium">
+                                {formData.service_type === "ltl" ? "LTL" : "FTL"}
                               </span>
-                            ))
-                          )}
-                        </div>
-                      </div>
-                      
-                      {/* Índice de Qualidade - Verde */}
-                      <div className="flex items-center gap-2 mb-4 pb-4 border-b border-border bg-secondary/5 -mx-6 px-6 py-3">
-                        <div className="flex gap-0.5">
-                          {[...Array(5)].map((_, i) => (
-                            <div
-                              key={i}
-                              className={`w-3 h-3 rounded-full ${
-                                i < Math.round(quote.quality_index)
-                                  ? "bg-secondary"
-                                  : "bg-muted"
-                              }`}
-                            />
-                          ))}
-                        </div>
-                        <span className="text-base font-bold text-secondary">
-                          {quote.quality_index.toFixed(1)}
-                        </span>
-                        <span className="text-sm font-medium text-secondary">
-                          Qualidade
-                        </span>
-                      </div>
-
-                      {/* Detalhes de Precificação */}
-                      <div className="text-sm text-muted-foreground space-y-2 mb-4">
-                        <div className="flex justify-between">
-                          <span>Preço base:</span>
-                          <span className="font-medium">R$ {quote.base_price.toFixed(2)}</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span>Comissão:</span>
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium">{(quote.commission_applied * 100).toFixed(1)}%</span>
-                            {quote.adjustment_reason === 'ROUTE_OPTIMIZED' && quote.commission_applied >= 0.15 && (
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger>
-                                    <Info className="h-4 w-4 text-primary" />
-                                  </TooltipTrigger>
-                                  <TooltipContent className="max-w-xs">
-                                    <p className="text-sm">
-                                      Comissão ajustada para otimizar rota de retorno. 
-                                      Você está ajudando a transportadora a ser mais eficiente!
-                                    </p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                            )}
-                            {quote.adjustment_reason === 'COMPETITION' && (
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger>
-                                    <Info className="h-4 w-4 text-secondary" />
-                                  </TooltipTrigger>
-                                  <TooltipContent className="max-w-xs">
-                                    <p className="text-sm">
-                                      💡 <strong>LogiMind 2.0:</strong> Comissão reduzida automaticamente para garantir 
-                                      o melhor preço do mercado! Você economiza e a plataforma permanece competitiva.
-                                    </p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
+                            </h3>
+                            {quote.carrier_size && (
+                              <p className="text-xs text-muted-foreground">
+                                {quote.carrier_size === 'large' && 'Grande Porte'}
+                                {quote.carrier_size === 'medium' && 'Médio Porte'}
+                                {quote.carrier_size === 'small' && 'Pequeno Porte'}
+                              </p>
                             )}
                           </div>
+                          <div className="flex items-center gap-1.5 bg-secondary/10 px-2.5 py-1 rounded-full">
+                            <div className="w-4 h-4 rounded-full bg-secondary flex items-center justify-center">
+                              <span className="text-[10px] text-secondary-foreground">★</span>
+                            </div>
+                            <span className="text-sm font-bold text-secondary">
+                              {quote.quality_index.toFixed(1)}
+                            </span>
+                          </div>
                         </div>
-                        {quote.route_adjustment_factor > 0 && (
-                          <div className="flex justify-between text-secondary">
-                            <span className="font-medium">Ajuste LogiMind:</span>
-                            <span className="font-bold">+{(quote.route_adjustment_factor * 100).toFixed(0)}%</span>
+
+                        {/* Badge de Destaque */}
+                        {(isBestPrice || isFastest) && (
+                          <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg mb-4 text-xs font-semibold ${
+                            isBestPrice 
+                              ? "bg-secondary/10 text-secondary border border-secondary/20" 
+                              : "bg-accent/10 text-accent border border-accent/20"
+                          }`}>
+                            <span className="text-base">{isBestPrice ? "💰" : "⚡"}</span>
+                            {isBestPrice ? "Melhor Preço" : "Mais Rápido"}
                           </div>
                         )}
-                      </div>
 
-                      {/* Preço Final - Destaque */}
-                      <div className="text-center py-4 bg-primary/5 rounded-lg mb-4">
-                        <div className="text-4xl font-bold text-primary mb-1">
-                          R$ {quote.final_price.toFixed(2)}
-                        </div>
-                      </div>
-
-                      {/* Prazo de Entrega - Laranja */}
-                      <div className="flex items-center justify-center gap-3 mb-6 bg-accent/10 py-4 rounded-lg -mx-6 px-6">
-                        <span className="text-3xl">🕒</span>
-                        <div className="text-center">
-                          <div className="text-2xl font-bold text-accent">
-                            {quote.delivery_days} dias
-                          </div>
-                          <div className="text-xs text-accent/80 font-medium">
-                            úteis
+                        {/* Seção de Preço - DESTAQUE CENTRAL */}
+                        <div className="text-center py-6 mb-4">
+                          <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wide">
+                            Preço Final LogiMarket
+                          </p>
+                          <div className="text-5xl font-extrabold text-primary leading-none">
+                            {quote.final_price.toLocaleString('pt-BR', { 
+                              style: 'currency', 
+                              currency: 'BRL' 
+                            })}
                           </div>
                         </div>
-                      </div>
 
-                      {/* Alerta de Restrição - se aplicável */}
-                      {(restrictedAreas.origin || restrictedAreas.destination) && (
-                        <div className="flex items-start gap-2 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg mb-4 -mx-6 px-6">
-                          <span className="text-xl">⚠️</span>
-                          <div className="text-sm text-amber-700 dark:text-amber-300">
-                            <p className="font-semibold">Atenção: Área com Restrição</p>
-                            <p className="text-xs mt-1">
-                              {restrictedAreas.origin && `A coleta no CEP ${formData.origin_cep} `}
-                              {restrictedAreas.origin && restrictedAreas.destination && "e "}
-                              {restrictedAreas.destination && `a entrega no CEP ${formData.destination_cep} `}
-                              pode sofrer acréscimo ou ter horário restrito devido a regulamentações municipais.
-                            </p>
+                        {/* Métricas em Cards Internos */}
+                        <div className="space-y-3 mb-6">
+                          {/* Prazo de Entrega */}
+                          <div className="flex items-center gap-3 p-3 bg-accent/5 rounded-lg border border-accent/10">
+                            <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
+                              <span className="text-xl">🕒</span>
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-xs text-muted-foreground font-medium">Prazo de Entrega</p>
+                              <p className="text-base font-bold text-accent">
+                                {quote.delivery_days} Dias Úteis
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Comissão LogiMind */}
+                          <div className="flex items-center gap-3 p-3 bg-primary/5 rounded-lg border border-primary/10">
+                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                              <span className="text-xl">💰</span>
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-xs text-muted-foreground font-medium">Comissão LogiMind</p>
+                              <div className="flex items-center gap-2">
+                                <p className="text-base font-bold text-primary">
+                                  {(quote.commission_applied * 100).toFixed(1)}%
+                                </p>
+                                {quote.adjustment_reason === 'ROUTE_OPTIMIZED' && quote.commission_applied >= 0.15 && (
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger>
+                                        <Info className="h-3.5 w-3.5 text-primary" />
+                                      </TooltipTrigger>
+                                      <TooltipContent className="max-w-xs">
+                                        <p className="text-sm">
+                                          Rota de Retorno: Comissão otimizada para maximizar eficiência
+                                        </p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                )}
+                                {quote.adjustment_reason === 'COMPETITION' && (
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger>
+                                        <Info className="h-3.5 w-3.5 text-secondary" />
+                                      </TooltipTrigger>
+                                      <TooltipContent className="max-w-xs">
+                                        <p className="text-sm">
+                                          💡 <strong>LogiMind 2.0:</strong> Comissão reduzida para garantir competitividade
+                                        </p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                )}
+                              </div>
+                              {quote.adjustment_reason && (
+                                <p className="text-[10px] text-muted-foreground mt-0.5">
+                                  {quote.adjustment_reason === 'COMPETITION' && "Otimização por Competição"}
+                                  {quote.adjustment_reason === 'ROUTE_OPTIMIZED' && "Rota Otimizada"}
+                                  {quote.adjustment_reason === 'STANDARD' && "Comissão Padrão"}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Preço Base - Discreto */}
+                          <div className="flex justify-between text-xs text-muted-foreground px-1">
+                            <span>Preço base:</span>
+                            <span className="font-medium">
+                              {quote.base_price.toLocaleString('pt-BR', { 
+                                style: 'currency', 
+                                currency: 'BRL' 
+                              })}
+                            </span>
                           </div>
                         </div>
-                      )}
 
-                      {/* Botão Contratar - No final */}
-                      <Button variant="hero" size="lg" className="w-full mt-auto">
-                        Contratar
-                      </Button>
+                        {/* Alerta de Restrição */}
+                        {(restrictedAreas.origin || restrictedAreas.destination) && (
+                          <div className="flex items-start gap-2 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg mb-4">
+                            <span className="text-base">⚠️</span>
+                            <div className="text-xs text-amber-700 dark:text-amber-300">
+                              <p className="font-semibold">Área com Restrição</p>
+                              <p className="text-[10px] mt-0.5 leading-tight">
+                                Possível acréscimo ou restrição de horário
+                              </p>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Botão Contratar */}
+                        <Button 
+                          variant="hero" 
+                          size="lg" 
+                          className="w-full mt-auto shadow-md hover:shadow-lg transition-shadow"
+                        >
+                          Contratar Este Frete
+                        </Button>
+                      </div>
                     </Card>
                   );
                 })}

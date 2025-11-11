@@ -88,8 +88,8 @@ function aplicarLogiMind(
     let comissaoFinal = Math.min(novaComissao, LIMITE_MAXIMO_COMISSAO);
     comissaoFinal = parseFloat(comissaoFinal.toFixed(4));
     
-    // 4. Calcular o Preço Final para o Embarcador
-    const precoFinal = Math.round((precoBaseFrete * (1 + comissaoFinal)) * 100) / 100;
+    // 4. Calcular o Preço Final para o Embarcador (Garantindo 2 casas decimais)
+    const precoFinal = parseFloat((precoBaseFrete * (1 + comissaoFinal)).toFixed(2));
     
     console.log(`[LogiMind 1.0] ${cota.carrier_name}: Base=${precoBaseFrete}, Commission=${comissaoFinal}, Final=${precoFinal}`);
     
@@ -137,8 +137,8 @@ function aplicarRegraCompeticao(
       const novaComissao = Math.max(comissaoNecessaria, COMISSAO_MINIMA);
       const novaComissaoFormatada = parseFloat(novaComissao.toFixed(4));
       
-      // C. Recalcular o preço final
-      const novoPrecoFinal = Math.round((precoBase * (1 + novaComissaoFormatada)) * 100) / 100;
+      // C. Recalcular o preço final (Garantindo 2 casas decimais)
+      const novoPrecoFinal = parseFloat((precoBase * (1 + novaComissaoFormatada)).toFixed(2));
       
       console.log(
         `[LogiMind 2.0] ${cota.carrier_name}: ` +
@@ -200,7 +200,7 @@ function gerarCotacoesMockadas(carriers: any[], weight_kg: number): CarrierQuote
       carrier_name: carrier.name,
       carrier_size: carrier.carrier_size,
       specialties: carrier.specialties,
-      base_price: Math.round(basePrice * 100) / 100,
+      base_price: parseFloat(basePrice.toFixed(2)),
       delivery_days: Math.max(2, deliveryDays),
       quality_index: carrier.avg_quality_rating,
     };
