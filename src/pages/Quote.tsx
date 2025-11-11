@@ -937,13 +937,13 @@ const Quote = () => {
                           </div>
                         )}
 
-                        {/* Seção de Preço - DESTAQUE CENTRAL com Hierarquia 3.2em */}
-                        <div className="text-center py-4 md:py-6 mb-3 md:mb-4">
-                          <p className="text-[10px] md:text-xs text-muted-foreground mb-2 uppercase tracking-wide flex items-center justify-center gap-1">
+                        {/* Seção de Preço - DESTAQUE CENTRAL */}
+                        <div className="text-center py-3 mb-3">
+                          <p className="text-[10px] md:text-xs text-muted-foreground mb-1.5 uppercase tracking-wide flex items-center justify-center gap-1">
                             <DollarSign className="h-3 w-3" />
                             Preço Final LogiMarket
                           </p>
-                          <div className="text-[2rem] sm:text-[2.2rem] md:text-[2.5rem] font-extrabold text-primary leading-none whitespace-nowrap animate-fade-in">
+                          <div className="text-[1.75rem] md:text-[2rem] font-extrabold text-primary leading-tight animate-fade-in">
                             {formatarMoeda(quote.final_price)}
                           </div>
                         </div>
