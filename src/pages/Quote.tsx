@@ -6,8 +6,10 @@ import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Package, MapPin, Loader2, TrendingUp } from "lucide-react";
+import { ArrowLeft, Package, MapPin, Loader2, TrendingUp, Info } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import { Stepper } from "@/components/ui/stepper";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface QuoteResult {
   carrier_id: string;
@@ -28,6 +30,7 @@ const Quote = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     origin_cep: "",
     destination_cep: "",
@@ -39,6 +42,12 @@ const Quote = () => {
   const [quotes, setQuotes] = useState<QuoteResult[]>([]);
   const [routeType, setRouteType] = useState<string>("");
   const [sortBy, setSortBy] = useState<SortOption>("price");
+
+  const steps = [
+    { label: "Localidades", description: "Origem e destino" },
+    { label: "Carga", description: "Peso e dimensões" },
+    { label: "Revisar", description: "Confirmar dados" },
+  ];
 
   // Preencher CEPs da URL
   useEffect(() => {
@@ -53,6 +62,28 @@ const Quote = () => {
       }));
     }
   }, [searchParams]);
+
+  const handleNext = () => {
+    if (currentStep === 1) {
+      if (!formData.origin_cep || !formData.destination_cep) {
+        toast.error("Por favor, preencha origem e destino");
+        return;
+      }
+      setCurrentStep(2);
+    } else if (currentStep === 2) {
+      if (!formData.weight_kg) {
+        toast.error("Por favor, preencha o peso da carga");
+        return;
+      }
+      setCurrentStep(3);
+    }
+  };
+
+  const handleBack = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -162,8 +193,12 @@ const Quote = () => {
           </div>
 
           <Card className="p-6 mb-8 shadow-md">
+            <Stepper steps={steps} currentStep={currentStep} className="mb-8" />
+            
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
+              {currentStep === 1 && (
+                <div className="space-y-6">
+                  <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="origin_cep">
                     <MapPin className="h-4 w-4 inline mr-2" />
@@ -190,10 +225,19 @@ const Quote = () => {
                     onChange={(e) => setFormData({ ...formData, destination_cep: e.target.value })}
                     required
                   />
+                  </div>
+                </div>
+                <div className="flex justify-end">
+                  <Button type="button" onClick={handleNext}>
+                    Próximo
+                  </Button>
                 </div>
               </div>
+              )}
 
-              <div className="grid md:grid-cols-2 gap-6">
+              {currentStep === 2 && (
+                <div className="space-y-6">
+                  <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="weight_kg">
                     <Package className="h-4 w-4 inline mr-2" />
@@ -246,25 +290,80 @@ const Quote = () => {
                     value={formData.length_cm}
                     onChange={(e) => setFormData({ ...formData, length_cm: e.target.value })}
                   />
+                  </div>
+                </div>
+                <div className="flex justify-between">
+                  <Button type="button" variant="outline" onClick={handleBack}>
+                    Voltar
+                  </Button>
+                  <Button type="button" onClick={handleNext}>
+                    Próximo
+                  </Button>
                 </div>
               </div>
+              )}
 
-              <Button 
-                type="submit" 
-                variant="hero" 
-                size="lg" 
-                className="w-full"
-                disabled={loading}
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                    Processando com LogiMind...
-                  </>
-                ) : (
-                  "Gerar Cotação"
-                )}
-              </Button>
+              {currentStep === 3 && (
+                <div className="space-y-6">
+                  <div className="bg-muted/50 p-6 rounded-lg space-y-4">
+                    <h3 className="font-semibold text-lg mb-4">Confirme os dados da cotação</h3>
+                    
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm text-muted-foreground">CEP Origem</p>
+                        <p className="font-medium">{formData.origin_cep}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">CEP Destino</p>
+                        <p className="font-medium">{formData.destination_cep}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Peso</p>
+                        <p className="font-medium">{formData.weight_kg} kg</p>
+                      </div>
+                      {formData.height_cm && (
+                        <div>
+                          <p className="text-sm text-muted-foreground">Altura</p>
+                          <p className="font-medium">{formData.height_cm} cm</p>
+                        </div>
+                      )}
+                      {formData.width_cm && (
+                        <div>
+                          <p className="text-sm text-muted-foreground">Largura</p>
+                          <p className="font-medium">{formData.width_cm} cm</p>
+                        </div>
+                      )}
+                      {formData.length_cm && (
+                        <div>
+                          <p className="text-sm text-muted-foreground">Comprimento</p>
+                          <p className="font-medium">{formData.length_cm} cm</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <Button type="button" variant="outline" onClick={handleBack}>
+                      Voltar
+                    </Button>
+                    <Button
+                      type="submit" 
+                      variant="hero" 
+                      size="lg" 
+                      disabled={loading}
+                    >
+                      {loading ? (
+                        <>
+                          <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                          Processando com LogiMind...
+                        </>
+                      ) : (
+                        "Gerar Cotação"
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              )}
             </form>
           </Card>
 
@@ -367,9 +466,26 @@ const Quote = () => {
                           <span>Preço base:</span>
                           <span className="font-medium">R$ {quote.base_price.toFixed(2)}</span>
                         </div>
-                        <div className="flex justify-between">
+                        <div className="flex justify-between items-center">
                           <span>Comissão:</span>
-                          <span className="font-medium">{(quote.commission_applied * 100).toFixed(1)}%</span>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{(quote.commission_applied * 100).toFixed(1)}%</span>
+                            {quote.commission_applied >= 0.15 && (
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger>
+                                    <Info className="h-4 w-4 text-primary" />
+                                  </TooltipTrigger>
+                                  <TooltipContent className="max-w-xs">
+                                    <p className="text-sm">
+                                      Comissão ajustada para otimizar rota de retorno. 
+                                      Você está ajudando a transportadora a ser mais eficiente!
+                                    </p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            )}
+                          </div>
                         </div>
                         {quote.route_adjustment_factor > 0 && (
                           <div className="flex justify-between text-secondary">
