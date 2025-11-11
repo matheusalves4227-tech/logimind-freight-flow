@@ -6,13 +6,19 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// LogiMind Constants - Subsídio de Rotas de Retorno
+// LogiMind Constants
 const COMISSAO_PADRAO = 0.10; // 10% - Comissão Padrão da Plataforma
+const COMISSAO_MINIMA = 0.05; // 5% - Comissão mínima da plataforma (take-rate mínimo operacional)
+
+// LogiMind 1.0 - Subsídio de Rotas de Retorno (Baixa Demanda)
 const SUBSIDIO_MAXIMO_PERMITIDO = 0.50; // 50% - Máximo de subsídio sobre a comissão padrão
-const COMISSAO_MINIMA = 0.05; // 5% - Comissão mínima da plataforma
 
 // LogiMind 2.0 - Regra de Competição (mantida)
 const TOLERANCIA_PRECO = 1.03; // 3% acima do preço de mercado
+
+// LogiMind 3.0 - Otimização de Rotas de Alta Demanda
+// Em rotas de alta liquidez/competição, reduz comissão para garantir melhor preço final
+const INTERVALO_AJUSTE_DEMANDA = COMISSAO_PADRAO - COMISSAO_MINIMA; // 0.05 (5%)
 
 interface QuoteRequest {
   service_type: string;
@@ -66,11 +72,69 @@ function buscarPrecoMercadoReferencia(cotacoesBrutas: CarrierQuote[]): number {
 }
 
 /**
+ * LogiMind 3.0 - Otimização para Rotas de Alta Demanda
+ * Reduz a comissão da plataforma em rotas de alta liquidez/competição
+ * para garantir o melhor preço final ao embarcador e dominar volume de mercado.
+ * 
+ * @param cotacoesBrutas - Cotações base das transportadoras
+ * @param fatorAjusteDemanda - Fator D (0.0 a 1.0) onde 1.0 é altíssima demanda
+ * @returns Cotações com comissão reduzida para competitividade
+ */
+function aplicarRegraAltaDemanda(
+  cotacoesBrutas: CarrierQuote[],
+  fatorAjusteDemanda: number
+): ProcessedQuote[] {
+  console.log(`[LogiMind 3.0 - Alta Demanda] Fator de Ajuste: ${fatorAjusteDemanda.toFixed(2)}`);
+  
+  return cotacoesBrutas.map(cota => {
+    const precoBaseFrete = cota.base_price;
+    
+    // 1. Calcular o Desconto Proporcional
+    // Quanto maior o Fator D, maior a redução da comissão
+    const descontoComissao = fatorAjusteDemanda * INTERVALO_AJUSTE_DEMANDA;
+    
+    // 2. Calcular a Nova Comissão Proposta
+    const comissaoProposta = COMISSAO_PADRAO - descontoComissao;
+    
+    // 3. Aplicar o Piso (Limite Mínimo de 5%)
+    const comissaoAplicada = Math.max(comissaoProposta, COMISSAO_MINIMA);
+    
+    // 4. Calcular o Valor da Comissão em Reais
+    const valorComissao = precoBaseFrete * comissaoAplicada;
+    
+    // 5. Calcular o Preço Final do Frete para o Embarcador
+    const precoFinalFrete = parseFloat((precoBaseFrete + valorComissao).toFixed(2));
+    
+    console.log(
+      `[LogiMind 3.0] ${cota.carrier_name}: ` +
+      `Base=R$ ${precoBaseFrete.toFixed(2)} | ` +
+      `Desconto=${(descontoComissao * 100).toFixed(1)}% | ` +
+      `Comissão Aplicada=${(comissaoAplicada * 100).toFixed(1)}% (R$ ${valorComissao.toFixed(2)}) | ` +
+      `Preço Final=R$ ${precoFinalFrete}`
+    );
+    
+    return {
+      carrier_id: cota.carrier_id,
+      carrier_name: cota.carrier_name,
+      carrier_size: cota.carrier_size,
+      specialties: cota.specialties,
+      base_price: precoBaseFrete,
+      commission_applied: parseFloat(comissaoAplicada.toFixed(4)),
+      final_price: precoFinalFrete,
+      delivery_days: cota.delivery_days,
+      quality_index: cota.quality_index,
+      route_adjustment_factor: fatorAjusteDemanda,
+      adjustment_reason: 'HIGH_DEMAND_ROUTE',
+    };
+  });
+}
+
+/**
  * LogiMind 1.0 - Subsídio de Rotas de Retorno
  * Reduz a comissão da plataforma para aumentar o valor repassado ao transportador
  * em rotas de baixa ocupação, incentivando aceitação e fidelização.
  */
-function aplicarLogiMind(
+function aplicarSubsidioRotaRetorno(
   cotacoesBrutas: CarrierQuote[], 
   routeAdjustmentFactor: number
 ): ProcessedQuote[] {
@@ -298,27 +362,45 @@ serve(async (req) => {
       );
     }
 
-    // 2. Get route adjustment factor (if exists)
+    // 2. Get route data (adjustment_factor for return routes, demand_level for high demand)
     const { data: route } = await supabaseClient
       .from('routes')
-      .select('adjustment_factor')
+      .select('adjustment_factor, demand_level')
       .eq('origin_cep', quoteRequest.origin_cep)
       .eq('destination_cep', quoteRequest.destination_cep)
       .maybeSingle();
 
     const routeAdjustmentFactor = route?.adjustment_factor ?? 0;
-    console.log(`Route adjustment factor: ${routeAdjustmentFactor}`);
+    const demandLevel = route?.demand_level ?? 'medium';
+    console.log(`Route data - Adjustment Factor: ${routeAdjustmentFactor}, Demand Level: ${demandLevel}`);
 
     // 3. Generate mock quotes from carriers
     const cotacoesBrutas = gerarCotacoesMockadas(carriers, quoteRequest.weight_kg);
 
-    // 4. Apply LogiMind 1.0 - Route optimization
-    const cotacoesComRotas = aplicarLogiMind(cotacoesBrutas, routeAdjustmentFactor);
+    // 4. Apply LogiMind strategy based on route characteristics
+    let cotacoesComRotas: ProcessedQuote[];
+    
+    // Determinar qual regra aplicar baseado nas características da rota
+    if (demandLevel === 'high') {
+      // LogiMind 3.0 - Rotas de Alta Demanda (competitividade via redução de margem)
+      // Converte demand_level "high" em fator numérico (0.8 = alta competição)
+      const fatorAjusteDemanda = 0.8;
+      cotacoesComRotas = aplicarRegraAltaDemanda(cotacoesBrutas, fatorAjusteDemanda);
+      console.log('[Route Strategy] HIGH DEMAND route - Applying commission reduction for market competitiveness');
+    } else if (routeAdjustmentFactor > 0) {
+      // LogiMind 1.0 - Rotas de Retorno (subsídio para aumentar aceitação)
+      cotacoesComRotas = aplicarSubsidioRotaRetorno(cotacoesBrutas, routeAdjustmentFactor);
+      console.log('[Route Strategy] RETURN route - Applying subsidy to increase driver acceptance');
+    } else {
+      // Rota padrão - aplica comissão normal (10%)
+      cotacoesComRotas = aplicarSubsidioRotaRetorno(cotacoesBrutas, 0);
+      console.log('[Route Strategy] STANDARD route - Applying default 10% commission');
+    }
 
     // 5. Get market reference price
     const precoMercadoReferencia = buscarPrecoMercadoReferencia(cotacoesBrutas);
 
-    // 6. Apply LogiMind 2.0 - Competition rule
+    // 6. Apply LogiMind 2.0 - Competition rule (safety net para qualquer rota)
     const cotacoesProcessadas = aplicarRegraCompeticao(cotacoesComRotas, precoMercadoReferencia);
 
     // 7. Create quote record
@@ -367,11 +449,16 @@ serve(async (req) => {
     }
 
     // 9. Return processed quotes with quote ID
+    const routeType = demandLevel === 'high' ? 'high_demand' : 
+                     routeAdjustmentFactor > 0.5 ? 'return' : 
+                     routeAdjustmentFactor > 0 ? 'competitive' : 'standard';
+    
     return new Response(
       JSON.stringify({
         quote_id: quote.id,
         quotes: cotacoesProcessadas,
-        route_type: routeAdjustmentFactor > 0.5 ? 'return' : routeAdjustmentFactor > 0 ? 'competitive' : 'standard',
+        route_type: routeType,
+        demand_level: demandLevel,
         restricted_origin: restrictedOrigin,
         restricted_destination: restrictedDestination,
       }),
