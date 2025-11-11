@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Package, MapPin, Loader2, TrendingUp, Info } from "lucide-react";
+import { ArrowLeft, Package, MapPin, Loader2, TrendingUp, Info, Lightbulb } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { Stepper } from "@/components/ui/stepper";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -337,11 +337,21 @@ const Quote = () => {
             </div>
 
             {formData.service_type === "ftl" && (
-              <div className="mt-4 p-4 bg-accent/10 border border-accent/20 rounded-lg">
-                <p className="text-sm text-accent-foreground">
-                  💡 <strong>Novo:</strong> No serviço Dedicado, você receberá ofertas de motoristas 
-                  autônomos qualificados que darão lances de preço e prazo para sua carga.
-                </p>
+              <div className="mt-4 p-4 bg-accent/5 border-2 border-accent/30 rounded-lg animate-fade-in shadow-sm">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center">
+                    <Lightbulb className="h-5 w-5 text-accent" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-foreground mb-1">
+                      <strong className="text-accent">Novo Recurso:</strong> Sistema de Lances para FTL
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      No serviço Dedicado, você receberá ofertas de motoristas autônomos qualificados 
+                      que darão lances de preço e prazo para sua carga em tempo real.
+                    </p>
+                  </div>
+                </div>
               </div>
             )}
           </Card>
