@@ -59,6 +59,317 @@ export type Database = {
         }
         Relationships: []
       }
+      driver_bids: {
+        Row: {
+          bid_price: number
+          created_at: string
+          delivery_date: string
+          driver_profile_id: string
+          id: string
+          opportunity_id: string
+          rejection_reason: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          bid_price: number
+          created_at?: string
+          delivery_date: string
+          driver_profile_id: string
+          id?: string
+          opportunity_id: string
+          rejection_reason?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          bid_price?: number
+          created_at?: string
+          delivery_date?: string
+          driver_profile_id?: string
+          id?: string
+          opportunity_id?: string
+          rejection_reason?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_bids_driver_profile_id_fkey"
+            columns: ["driver_profile_id"]
+            isOneToOne: false
+            referencedRelation: "driver_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      driver_cnh_data: {
+        Row: {
+          cnh_category: Database["public"]["Enums"]["cnh_category"]
+          cnh_number: string
+          created_at: string
+          driver_profile_id: string
+          expiry_date: string
+          first_license_date: string | null
+          id: string
+          issue_date: string
+          issuing_authority: string | null
+          updated_at: string
+        }
+        Insert: {
+          cnh_category: Database["public"]["Enums"]["cnh_category"]
+          cnh_number: string
+          created_at?: string
+          driver_profile_id: string
+          expiry_date: string
+          first_license_date?: string | null
+          id?: string
+          issue_date: string
+          issuing_authority?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cnh_category?: Database["public"]["Enums"]["cnh_category"]
+          cnh_number?: string
+          created_at?: string
+          driver_profile_id?: string
+          expiry_date?: string
+          first_license_date?: string | null
+          id?: string
+          issue_date?: string
+          issuing_authority?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_cnh_data_driver_profile_id_fkey"
+            columns: ["driver_profile_id"]
+            isOneToOne: true
+            referencedRelation: "driver_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      driver_documents: {
+        Row: {
+          created_at: string
+          document_number: string | null
+          document_type: string
+          driver_profile_id: string
+          expiry_date: string | null
+          file_name: string
+          file_path: string
+          file_size: number | null
+          file_type: string | null
+          id: string
+          is_verified: boolean | null
+          updated_at: string
+          verification_notes: string | null
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          document_number?: string | null
+          document_type: string
+          driver_profile_id: string
+          expiry_date?: string | null
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          is_verified?: boolean | null
+          updated_at?: string
+          verification_notes?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          document_number?: string | null
+          document_type?: string
+          driver_profile_id?: string
+          expiry_date?: string | null
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          is_verified?: boolean | null
+          updated_at?: string
+          verification_notes?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_documents_driver_profile_id_fkey"
+            columns: ["driver_profile_id"]
+            isOneToOne: false
+            referencedRelation: "driver_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      driver_profiles: {
+        Row: {
+          address_cep: string
+          address_city: string
+          address_complement: string | null
+          address_neighborhood: string
+          address_number: string
+          address_state: string
+          address_street: string
+          approval_notes: string | null
+          approved_at: string | null
+          approved_by: string | null
+          cpf: string
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          phone: string
+          rejected_reason: string | null
+          status: Database["public"]["Enums"]["driver_status"]
+          updated_at: string
+          user_id: string
+          whatsapp: string | null
+        }
+        Insert: {
+          address_cep: string
+          address_city: string
+          address_complement?: string | null
+          address_neighborhood: string
+          address_number: string
+          address_state: string
+          address_street: string
+          approval_notes?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          cpf: string
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          phone: string
+          rejected_reason?: string | null
+          status?: Database["public"]["Enums"]["driver_status"]
+          updated_at?: string
+          user_id: string
+          whatsapp?: string | null
+        }
+        Update: {
+          address_cep?: string
+          address_city?: string
+          address_complement?: string | null
+          address_neighborhood?: string
+          address_number?: string
+          address_state?: string
+          address_street?: string
+          approval_notes?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          cpf?: string
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          phone?: string
+          rejected_reason?: string | null
+          status?: Database["public"]["Enums"]["driver_status"]
+          updated_at?: string
+          user_id?: string
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
+      driver_vehicles: {
+        Row: {
+          brand: string | null
+          color: string | null
+          created_at: string
+          crlv_expiry_date: string | null
+          crlv_file_path: string | null
+          driver_profile_id: string
+          has_refrigeration: boolean | null
+          has_sider: boolean | null
+          has_tarp: boolean | null
+          height_m: number | null
+          id: string
+          is_active: boolean | null
+          is_open_body: boolean | null
+          is_verified: boolean | null
+          length_m: number | null
+          license_plate: string
+          max_volume_m3: number | null
+          max_weight_kg: number
+          model: string | null
+          updated_at: string
+          vehicle_type: Database["public"]["Enums"]["vehicle_type"]
+          width_m: number | null
+          year: number | null
+        }
+        Insert: {
+          brand?: string | null
+          color?: string | null
+          created_at?: string
+          crlv_expiry_date?: string | null
+          crlv_file_path?: string | null
+          driver_profile_id: string
+          has_refrigeration?: boolean | null
+          has_sider?: boolean | null
+          has_tarp?: boolean | null
+          height_m?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_open_body?: boolean | null
+          is_verified?: boolean | null
+          length_m?: number | null
+          license_plate: string
+          max_volume_m3?: number | null
+          max_weight_kg: number
+          model?: string | null
+          updated_at?: string
+          vehicle_type: Database["public"]["Enums"]["vehicle_type"]
+          width_m?: number | null
+          year?: number | null
+        }
+        Update: {
+          brand?: string | null
+          color?: string | null
+          created_at?: string
+          crlv_expiry_date?: string | null
+          crlv_file_path?: string | null
+          driver_profile_id?: string
+          has_refrigeration?: boolean | null
+          has_sider?: boolean | null
+          has_tarp?: boolean | null
+          height_m?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_open_body?: boolean | null
+          is_verified?: boolean | null
+          length_m?: number | null
+          license_plate?: string
+          max_volume_m3?: number | null
+          max_weight_kg?: number
+          model?: string | null
+          updated_at?: string
+          vehicle_type?: Database["public"]["Enums"]["vehicle_type"]
+          width_m?: number | null
+          year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_vehicles_driver_profile_id_fkey"
+            columns: ["driver_profile_id"]
+            isOneToOne: false
+            referencedRelation: "driver_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
           actual_delivery: string | null
@@ -360,7 +671,18 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      cnh_category: "A" | "B" | "C" | "D" | "E" | "AB" | "AC" | "AD" | "AE"
+      driver_status: "pending" | "approved" | "rejected" | "suspended"
+      vehicle_type:
+        | "moto"
+        | "carro"
+        | "picape"
+        | "van"
+        | "caminhao_toco"
+        | "caminhao_truck"
+        | "carreta"
+        | "carreta_ls"
+        | "carreta_bi_truck"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -487,6 +809,20 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      cnh_category: ["A", "B", "C", "D", "E", "AB", "AC", "AD", "AE"],
+      driver_status: ["pending", "approved", "rejected", "suspended"],
+      vehicle_type: [
+        "moto",
+        "carro",
+        "picape",
+        "van",
+        "caminhao_toco",
+        "caminhao_truck",
+        "carreta",
+        "carreta_ls",
+        "carreta_bi_truck",
+      ],
+    },
   },
 } as const
