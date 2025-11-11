@@ -182,8 +182,8 @@ const Tracking = () => {
       
       <div className="container mx-auto px-4 py-6">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
+        <div className="mb-6 space-y-3">
+          <div className="flex items-center justify-between">
             <Button
               variant="ghost"
               size="sm"
@@ -191,17 +191,21 @@ const Tracking = () => {
               className="gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
-              Voltar
+              <span className="hidden sm:inline">Voltar</span>
             </Button>
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold">Rastreamento</h1>
-              <p className="text-sm text-muted-foreground">Código: {trackingCode}</p>
-            </div>
+            
+            <Button variant="outline" size="sm" onClick={fetchTrackingData}>
+              Atualizar
+            </Button>
           </div>
           
-          <Button variant="outline" size="sm" onClick={fetchTrackingData}>
-            Atualizar
-          </Button>
+          <div>
+            <h1 className="text-xl md:text-2xl lg:text-3xl font-bold mb-2">Rastreamento</h1>
+            <div className="bg-muted/50 rounded-lg p-3 border border-border">
+              <p className="text-xs text-muted-foreground mb-1">Código de Rastreio</p>
+              <p className="text-sm md:text-base font-mono font-semibold break-all">{trackingCode}</p>
+            </div>
+          </div>
         </div>
 
         {/* Layout em 3 Colunas */}
