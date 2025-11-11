@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Package, Menu, User, LayoutDashboard } from "lucide-react";
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Package, Menu, User, LayoutDashboard, Truck, Users, FileText, Home } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
@@ -8,6 +9,7 @@ import type { User as SupabaseUser } from "@supabase/supabase-js";
 const Navbar = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -23,7 +25,13 @@ const Navbar = () => {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
+    setMobileMenuOpen(false);
     navigate("/");
+  };
+
+  const handleNavigation = (path: string) => {
+    setMobileMenuOpen(false);
+    navigate(path);
   };
 
   return (
@@ -86,9 +94,112 @@ const Navbar = () => {
                 </Link>
               </>
             )}
-            <Button variant="ghost" size="icon" className="md:hidden">
-              <Menu className="h-5 w-5" />
-            </Button>
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="md:hidden">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[280px] sm:w-[350px]">
+                <SheetHeader>
+                  <SheetTitle className="flex items-center gap-2">
+                    <Package className="h-5 w-5 text-primary" />
+                    LogiMarket
+                  </SheetTitle>
+                </SheetHeader>
+                <nav className="flex flex-col gap-4 mt-8">
+                  <Button
+                    variant="ghost"
+                    className="justify-start gap-3 text-base"
+                    onClick={() => handleNavigation("/")}
+                  >
+                    <Home className="h-5 w-5" />
+                    Início
+                  </Button>
+                  
+                  {user ? (
+                    <>
+                      <Button
+                        variant="ghost"
+                        className="justify-start gap-3 text-base"
+                        onClick={() => handleNavigation("/dashboard")}
+                      >
+                        <LayoutDashboard className="h-5 w-5" />
+                        Dashboard
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="justify-start gap-3 text-base"
+                        onClick={() => handleNavigation("/quote")}
+                      >
+                        <FileText className="h-5 w-5" />
+                        Nova Cotação
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="justify-start gap-3 text-base"
+                        onClick={() => handleNavigation("/motorista/dashboard")}
+                      >
+                        <Truck className="h-5 w-5" />
+                        Dashboard Motorista
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="justify-start gap-3 text-base"
+                        onClick={() => handleNavigation("/admin/motoristas")}
+                      >
+                        <Users className="h-5 w-5" />
+                        Admin Motoristas
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="justify-start gap-3 text-base"
+                        onClick={() => handleNavigation("/admin/pedidos")}
+                      >
+                        <FileText className="h-5 w-5" />
+                        Admin Pedidos
+                      </Button>
+                      <div className="border-t pt-4 mt-4">
+                        <Button
+                          variant="ghost"
+                          className="justify-start gap-3 text-base w-full"
+                          onClick={handleSignOut}
+                        >
+                          <User className="h-5 w-5" />
+                          Sair
+                        </Button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <Button
+                        variant="ghost"
+                        className="justify-start gap-3 text-base"
+                        onClick={() => handleNavigation("/parceiro/cadastro")}
+                      >
+                        <Truck className="h-5 w-5" />
+                        Seja um Parceiro
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="justify-start gap-3 text-base"
+                        onClick={() => handleNavigation("/auth")}
+                      >
+                        <User className="h-5 w-5" />
+                        Entrar
+                      </Button>
+                      <Button
+                        variant="default"
+                        className="justify-start gap-3 text-base mt-4"
+                        onClick={() => handleNavigation("/auth")}
+                      >
+                        Começar Grátis
+                      </Button>
+                    </>
+                  )}
+                </nav>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </div>
