@@ -33,7 +33,17 @@ const Quote = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     origin_cep: "",
+    origin_number: "",
+    origin_type: "commercial",
+    origin_address: "",
+    origin_neighborhood: "",
+    origin_city: "",
     destination_cep: "",
+    destination_number: "",
+    destination_type: "commercial",
+    destination_address: "",
+    destination_neighborhood: "",
+    destination_city: "",
     weight_kg: "",
     height_cm: "",
     width_cm: "",
@@ -42,6 +52,11 @@ const Quote = () => {
   const [quotes, setQuotes] = useState<QuoteResult[]>([]);
   const [routeType, setRouteType] = useState<string>("");
   const [sortBy, setSortBy] = useState<SortOption>("price");
+  const [loadingCep, setLoadingCep] = useState<"origin" | "destination" | null>(null);
+  const [restrictedAreas, setRestrictedAreas] = useState<{origin: boolean, destination: boolean}>({
+    origin: false,
+    destination: false
+  });
 
   const steps = [
     { label: "Localidades", description: "Origem e destino" },
@@ -49,7 +64,7 @@ const Quote = () => {
     { label: "Revisar", description: "Confirmar dados" },
   ];
 
-  // Preencher CEPs da URL
+  // Preencher CEPs da URL e buscar dados
   useEffect(() => {
     const origin = searchParams.get("origin");
     const dest = searchParams.get("dest");
@@ -60,13 +75,50 @@ const Quote = () => {
         origin_cep: origin || prev.origin_cep,
         destination_cep: dest || prev.destination_cep,
       }));
+      
+      // Buscar dados do CEP automaticamente
+      if (origin) fetchCepData(origin, "origin");
+      if (dest) fetchCepData(dest, "destination");
     }
   }, [searchParams]);
+
+  // Função para buscar dados do CEP via ViaCEP
+  const fetchCepData = async (cep: string, type: "origin" | "destination") => {
+    const cleanCep = cep.replace(/\D/g, "");
+    if (cleanCep.length !== 8) return;
+
+    setLoadingCep(type);
+    try {
+      const response = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
+      const data = await response.json();
+
+      if (data.erro) {
+        toast.error("CEP não encontrado");
+        return;
+      }
+
+      setFormData(prev => ({
+        ...prev,
+        [`${type}_address`]: data.logradouro,
+        [`${type}_neighborhood`]: data.bairro,
+        [`${type}_city`]: `${data.localidade} - ${data.uf}`,
+      }));
+    } catch (error) {
+      console.error("Error fetching CEP:", error);
+      toast.error("Erro ao buscar CEP");
+    } finally {
+      setLoadingCep(null);
+    }
+  };
 
   const handleNext = () => {
     if (currentStep === 1) {
       if (!formData.origin_cep || !formData.destination_cep) {
         toast.error("Por favor, preencha origem e destino");
+        return;
+      }
+      if (!formData.origin_number || !formData.destination_number) {
+        toast.error("Por favor, preencha os números dos endereços");
         return;
       }
       setCurrentStep(2);
@@ -102,7 +154,11 @@ const Quote = () => {
       const { data, error } = await supabase.functions.invoke('generate-quote', {
         body: {
           origin_cep: formData.origin_cep,
+          origin_number: formData.origin_number,
+          origin_type: formData.origin_type,
           destination_cep: formData.destination_cep,
+          destination_number: formData.destination_number,
+          destination_type: formData.destination_type,
           weight_kg: parseFloat(formData.weight_kg),
           height_cm: formData.height_cm ? parseFloat(formData.height_cm) : undefined,
           width_cm: formData.width_cm ? parseFloat(formData.width_cm) : undefined,
@@ -116,6 +172,10 @@ const Quote = () => {
 
       setQuotes(data.quotes);
       setRouteType(data.route_type);
+      setRestrictedAreas({
+        origin: data.restricted_origin || false,
+        destination: data.restricted_destination || false,
+      });
       toast.success("Cotação gerada com sucesso!");
     } catch (error: any) {
       console.error("Error generating quote:", error);
@@ -198,41 +258,150 @@ const Quote = () => {
             <form onSubmit={handleSubmit} className="space-y-6">
               {currentStep === 1 && (
                 <div className="space-y-6">
-                  <div className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="origin_cep">
-                    <MapPin className="h-4 w-4 inline mr-2" />
-                    CEP Origem
-                  </Label>
-                  <Input
-                    id="origin_cep"
-                    placeholder="00000-000"
-                    value={formData.origin_cep}
-                    onChange={(e) => setFormData({ ...formData, origin_cep: e.target.value })}
-                    required
-                  />
-                </div>
+                  <div className="space-y-6">
+                    {/* CEP e Endereço de Origem */}
+                    <div className="space-y-4 p-4 bg-muted/30 rounded-lg">
+                      <h3 className="font-semibold flex items-center gap-2">
+                        <MapPin className="h-4 w-4" />
+                        Endereço de Origem
+                      </h3>
+                      
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="origin_cep">CEP *</Label>
+                          <Input
+                            id="origin_cep"
+                            placeholder="00000-000"
+                            value={formData.origin_cep}
+                            onChange={(e) => {
+                              setFormData({ ...formData, origin_cep: e.target.value });
+                              if (e.target.value.replace(/\D/g, "").length === 8) {
+                                fetchCepData(e.target.value, "origin");
+                              }
+                            }}
+                            disabled={loadingCep === "origin"}
+                            required
+                          />
+                        </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="destination_cep">
-                    <MapPin className="h-4 w-4 inline mr-2" />
-                    CEP Destino
-                  </Label>
-                  <Input
-                    id="destination_cep"
-                    placeholder="00000-000"
-                    value={formData.destination_cep}
-                    onChange={(e) => setFormData({ ...formData, destination_cep: e.target.value })}
-                    required
-                  />
+                        <div className="space-y-2">
+                          <Label htmlFor="origin_number">Número *</Label>
+                          <Input
+                            id="origin_number"
+                            placeholder="123"
+                            value={formData.origin_number}
+                            onChange={(e) => setFormData({ ...formData, origin_number: e.target.value })}
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      {formData.origin_address && (
+                        <div className="grid md:grid-cols-3 gap-4">
+                          <div className="space-y-2">
+                            <Label>Logradouro</Label>
+                            <Input value={formData.origin_address} disabled />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Bairro</Label>
+                            <Input value={formData.origin_neighborhood} disabled />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Cidade</Label>
+                            <Input value={formData.origin_city} disabled />
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="space-y-2">
+                        <Label htmlFor="origin_type">Tipo de Local</Label>
+                        <select
+                          id="origin_type"
+                          value={formData.origin_type}
+                          onChange={(e) => setFormData({ ...formData, origin_type: e.target.value })}
+                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        >
+                          <option value="commercial">Comercial</option>
+                          <option value="residential">Residencial</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* CEP e Endereço de Destino */}
+                    <div className="space-y-4 p-4 bg-muted/30 rounded-lg">
+                      <h3 className="font-semibold flex items-center gap-2">
+                        <MapPin className="h-4 w-4" />
+                        Endereço de Destino
+                      </h3>
+                      
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="destination_cep">CEP *</Label>
+                          <Input
+                            id="destination_cep"
+                            placeholder="00000-000"
+                            value={formData.destination_cep}
+                            onChange={(e) => {
+                              setFormData({ ...formData, destination_cep: e.target.value });
+                              if (e.target.value.replace(/\D/g, "").length === 8) {
+                                fetchCepData(e.target.value, "destination");
+                              }
+                            }}
+                            disabled={loadingCep === "destination"}
+                            required
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="destination_number">Número *</Label>
+                          <Input
+                            id="destination_number"
+                            placeholder="123"
+                            value={formData.destination_number}
+                            onChange={(e) => setFormData({ ...formData, destination_number: e.target.value })}
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      {formData.destination_address && (
+                        <div className="grid md:grid-cols-3 gap-4">
+                          <div className="space-y-2">
+                            <Label>Logradouro</Label>
+                            <Input value={formData.destination_address} disabled />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Bairro</Label>
+                            <Input value={formData.destination_neighborhood} disabled />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Cidade</Label>
+                            <Input value={formData.destination_city} disabled />
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="space-y-2">
+                        <Label htmlFor="destination_type">Tipo de Local</Label>
+                        <select
+                          id="destination_type"
+                          value={formData.destination_type}
+                          onChange={(e) => setFormData({ ...formData, destination_type: e.target.value })}
+                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        >
+                          <option value="commercial">Comercial</option>
+                          <option value="residential">Residencial</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end">
+                    <Button type="button" onClick={handleNext}>
+                      Próximo
+                    </Button>
                   </div>
                 </div>
-                <div className="flex justify-end">
-                  <Button type="button" onClick={handleNext}>
-                    Próximo
-                  </Button>
-                </div>
-              </div>
               )}
 
               {currentStep === 2 && (
@@ -514,6 +683,22 @@ const Quote = () => {
                           </div>
                         </div>
                       </div>
+
+                      {/* Alerta de Restrição - se aplicável */}
+                      {(restrictedAreas.origin || restrictedAreas.destination) && (
+                        <div className="flex items-start gap-2 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg mb-4 -mx-6 px-6">
+                          <span className="text-xl">⚠️</span>
+                          <div className="text-sm text-amber-700 dark:text-amber-300">
+                            <p className="font-semibold">Atenção: Área com Restrição</p>
+                            <p className="text-xs mt-1">
+                              {restrictedAreas.origin && `A coleta no CEP ${formData.origin_cep} `}
+                              {restrictedAreas.origin && restrictedAreas.destination && "e "}
+                              {restrictedAreas.destination && `a entrega no CEP ${formData.destination_cep} `}
+                              pode sofrer acréscimo ou ter horário restrito devido a regulamentações municipais.
+                            </p>
+                          </div>
+                        </div>
+                      )}
 
                       {/* Botão Contratar - No final */}
                       <Button variant="hero" size="lg" className="w-full mt-auto">

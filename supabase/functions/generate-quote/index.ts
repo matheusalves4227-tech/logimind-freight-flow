@@ -13,7 +13,11 @@ const LIMITE_MAXIMO_COMISSAO = 0.18; // 18%
 
 interface QuoteRequest {
   origin_cep: string;
+  origin_number: string;
+  origin_type: string;
   destination_cep: string;
+  destination_number: string;
+  destination_type: string;
   weight_kg: number;
   height_cm?: number;
   width_cm?: number;
@@ -71,6 +75,24 @@ function aplicarLogiMind(
       route_adjustment_factor: routeAdjustmentFactor,
     };
   });
+}
+
+/**
+ * Verifica se um CEP está em área de difícil acesso ou com restrição
+ */
+function verificarAreaRestrita(cep: string): boolean {
+  const cleanCep = cep.replace(/\D/g, "");
+  
+  // Mock de áreas restritas (primeiros 5 dígitos)
+  const areasRestritas = [
+    "01000", // Centro SP - restrição de caminhões
+    "20000", // Centro RJ - restrição de horário
+    "30100", // Centro BH - área de difícil acesso
+    "40000", // Centro Salvador - restrição de circulação
+  ];
+  
+  const prefix = cleanCep.substring(0, 5);
+  return areasRestritas.includes(prefix);
 }
 
 /**
@@ -138,6 +160,14 @@ serve(async (req) => {
         JSON.stringify({ error: 'Missing required fields' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
+    }
+
+    // Verificar áreas restritas
+    const restrictedOrigin = verificarAreaRestrita(quoteRequest.origin_cep);
+    const restrictedDestination = verificarAreaRestrita(quoteRequest.destination_cep);
+    
+    if (restrictedOrigin || restrictedDestination) {
+      console.log(`Restricted areas detected - Origin: ${restrictedOrigin}, Destination: ${restrictedDestination}`);
     }
 
     // 1. Fetch all active carriers
@@ -222,6 +252,8 @@ serve(async (req) => {
         quote_id: quote.id,
         quotes: cotacoesProcessadas,
         route_type: routeAdjustmentFactor > 0.5 ? 'return' : routeAdjustmentFactor > 0 ? 'competitive' : 'standard',
+        restricted_origin: restrictedOrigin,
+        restricted_destination: restrictedDestination,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
