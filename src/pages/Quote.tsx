@@ -843,7 +843,7 @@ const Quote = () => {
                 </div>
               )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 items-stretch">
                 {getSortedQuotes().map((quote, index) => {
                   const isBestPrice = index === 0 && sortBy === "price";
                   const isFastest = index === 0 && sortBy === "delivery";
@@ -851,7 +851,7 @@ const Quote = () => {
                   return (
                     <Card 
                       key={quote.carrier_id}
-                      className="relative overflow-hidden hover:shadow-xl transition-fast border border-border/50 flex flex-col rounded-xl animate-fade-in bg-card"
+                      className="relative overflow-hidden hover:shadow-xl transition-fast border border-border/50 flex flex-col rounded-xl animate-fade-in bg-card min-h-[650px]"
                       style={{ animationDelay: `${index * 50}ms` }}
                     >
                       {/* Ribbon lateral de destaque */}
@@ -862,8 +862,8 @@ const Quote = () => {
                       )}
 
                       <div className="p-4 md:p-6 flex flex-col h-full">
-                        {/* Header com nome, rating e badge */}
-                        <div className="flex items-start justify-between pb-3 md:pb-4 border-b border-dashed border-border mb-4 md:mb-5">
+                        {/* Header com nome, rating e badge - ALTURA FIXA */}
+                        <div className="flex items-start justify-between pb-3 md:pb-4 border-b border-dashed border-border mb-4 md:mb-5 min-h-[60px]">
                           <div className="flex-1 min-w-0">
                             <h3 className="text-base md:text-lg font-bold mb-1 flex items-center gap-2 flex-wrap">
                               <span className="truncate">{quote.carrier_name}</span>
@@ -911,34 +911,38 @@ const Quote = () => {
                           </div>
                         </div>
 
-                        {/* Badge de Destaque */}
-                        {(isBestPrice || isFastest || routeType === "high_demand") && (
-                          <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg mb-3 md:mb-4 text-xs font-semibold ${
-                            routeType === "high_demand" && isBestPrice
-                              ? "bg-gradient-to-r from-primary/20 to-secondary/20 text-primary border-2 border-primary/30 shadow-md" 
-                              : isBestPrice 
-                              ? "bg-secondary/10 text-secondary border border-secondary/20" 
-                              : "bg-accent/10 text-accent border border-accent/20"
-                          }`}>
-                            <span className="text-base">
-                              {routeType === "high_demand" && isBestPrice ? "🏆" : isBestPrice ? "💰" : "⚡"}
-                            </span>
-                            {routeType === "high_demand" && isBestPrice ? "Melhor Preço LogiMind - Oferta de Volume" : isBestPrice ? "Melhor Preço" : "Mais Rápido"}
-                          </div>
-                        )}
+                        {/* Badge de Destaque - ALTURA FIXA */}
+                        <div className="min-h-[40px] mb-3">
+                          {(isBestPrice || isFastest || routeType === "high_demand") && (
+                            <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold ${
+                              routeType === "high_demand" && isBestPrice
+                                ? "bg-gradient-to-r from-primary/20 to-secondary/20 text-primary border-2 border-primary/30 shadow-md" 
+                                : isBestPrice 
+                                ? "bg-secondary/10 text-secondary border border-secondary/20" 
+                                : "bg-accent/10 text-accent border border-accent/20"
+                            }`}>
+                              <span className="text-base">
+                                {routeType === "high_demand" && isBestPrice ? "🏆" : isBestPrice ? "💰" : "⚡"}
+                              </span>
+                              {routeType === "high_demand" && isBestPrice ? "Melhor Preço LogiMind - Oferta de Volume" : isBestPrice ? "Melhor Preço" : "Mais Rápido"}
+                            </div>
+                          )}
+                        </div>
 
-                        {/* Economia para Rotas de Alta Demanda */}
-                        {routeType === "high_demand" && isBestPrice && (
-                          <div className="flex items-center gap-2 p-2.5 bg-secondary/10 border border-secondary/20 rounded-lg mb-3 md:mb-4">
-                            <TrendingUp className="h-4 w-4 text-secondary flex-shrink-0" />
-                            <p className="text-xs font-semibold text-secondary">
-                              Preço 4% Abaixo da Média de Mercado! 🎯
-                            </p>
-                          </div>
-                        )}
+                        {/* Economia para Rotas de Alta Demanda - ALTURA FIXA */}
+                        <div className="min-h-[36px] mb-3">
+                          {routeType === "high_demand" && isBestPrice && (
+                            <div className="flex items-center gap-2 p-2.5 bg-secondary/10 border border-secondary/20 rounded-lg">
+                              <TrendingUp className="h-4 w-4 text-secondary flex-shrink-0" />
+                              <p className="text-xs font-semibold text-secondary">
+                                Preço 4% Abaixo da Média de Mercado! 🎯
+                              </p>
+                            </div>
+                          )}
+                        </div>
 
-                        {/* Seção de Preço - DESTAQUE CENTRAL */}
-                        <div className="text-center py-3 mb-3">
+                        {/* Seção de Preço - ALTURA FIXA E ALINHADA */}
+                        <div className="text-center py-3 mb-3 min-h-[90px] flex flex-col justify-center">
                           <p className="text-[10px] md:text-xs text-muted-foreground mb-1.5 uppercase tracking-wide flex items-center justify-center gap-1">
                             <DollarSign className="h-3 w-3" />
                             Preço Final LogiMarket
