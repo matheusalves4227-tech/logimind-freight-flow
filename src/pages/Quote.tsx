@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Package, MapPin, Loader2, TrendingUp, Info, Lightbulb } from "lucide-react";
+import { ArrowLeft, Package, MapPin, Loader2, TrendingUp, Info, Lightbulb, Truck, Clock, DollarSign, Zap } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { Stepper } from "@/components/ui/stepper";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -722,7 +722,7 @@ const Quote = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                 {getSortedQuotes().map((quote, index) => {
                   const isBestPrice = index === 0 && sortBy === "price";
                   const isFastest = index === 0 && sortBy === "delivery";
@@ -730,7 +730,7 @@ const Quote = () => {
                   return (
                     <Card 
                       key={quote.carrier_id}
-                      className="relative overflow-hidden hover:shadow-xl transition-all duration-300 border border-border/50"
+                      className="relative overflow-hidden hover:shadow-xl transition-all duration-300 border border-border/50 flex flex-col"
                     >
                       {/* Ribbon lateral de destaque */}
                       {(isBestPrice || isFastest) && (
@@ -739,13 +739,14 @@ const Quote = () => {
                         }`} />
                       )}
 
-                      <div className="p-6 flex flex-col h-full">
+                      <div className="p-4 md:p-6 flex flex-col h-full">
                         {/* Header com nome, rating e badge */}
-                        <div className="flex items-start justify-between pb-4 border-b border-dashed border-border mb-5">
-                          <div className="flex-1">
-                            <h3 className="text-lg font-bold mb-1 flex items-center gap-2">
-                              {quote.carrier_name}
-                              <span className="px-2 py-0.5 bg-muted text-muted-foreground text-xs rounded font-medium">
+                        <div className="flex items-start justify-between pb-3 md:pb-4 border-b border-dashed border-border mb-4 md:mb-5">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-base md:text-lg font-bold mb-1 flex items-center gap-2 flex-wrap">
+                              <span className="truncate">{quote.carrier_name}</span>
+                              <span className="px-2 py-0.5 bg-muted text-muted-foreground text-xs rounded font-medium flex-shrink-0 flex items-center gap-1">
+                                <Truck className="h-3 w-3" />
                                 {formData.service_type === "ltl" ? "LTL" : "FTL"}
                               </span>
                             </h3>
@@ -757,11 +758,11 @@ const Quote = () => {
                               </p>
                             )}
                           </div>
-                          <div className="flex items-center gap-1.5 bg-secondary/10 px-2.5 py-1 rounded-full">
+                          <div className="flex items-center gap-1.5 bg-secondary/10 px-2 md:px-2.5 py-1 rounded-full flex-shrink-0 ml-2">
                             <div className="w-4 h-4 rounded-full bg-secondary flex items-center justify-center">
                               <span className="text-[10px] text-secondary-foreground">★</span>
                             </div>
-                            <span className="text-sm font-bold text-secondary">
+                            <span className="text-xs md:text-sm font-bold text-secondary">
                               {quote.quality_index.toFixed(1)}
                             </span>
                           </div>
@@ -769,7 +770,7 @@ const Quote = () => {
 
                         {/* Badge de Destaque */}
                         {(isBestPrice || isFastest) && (
-                          <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg mb-4 text-xs font-semibold ${
+                          <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg mb-3 md:mb-4 text-xs font-semibold ${
                             isBestPrice 
                               ? "bg-secondary/10 text-secondary border border-secondary/20" 
                               : "bg-accent/10 text-accent border border-accent/20"
@@ -780,53 +781,60 @@ const Quote = () => {
                         )}
 
                         {/* Seção de Preço - DESTAQUE CENTRAL */}
-                        <div className="text-center py-6 mb-4">
-                          <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wide">
+                        <div className="text-center py-4 md:py-6 mb-3 md:mb-4">
+                          <p className="text-[10px] md:text-xs text-muted-foreground mb-1 uppercase tracking-wide flex items-center justify-center gap-1">
+                            <DollarSign className="h-3 w-3" />
                             Preço Final LogiMarket
                           </p>
-                          <div className="text-5xl font-extrabold text-primary leading-none">
+                          <div className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-primary leading-none break-words">
                             {quote.final_price.toLocaleString('pt-BR', { 
                               style: 'currency', 
-                              currency: 'BRL' 
+                              currency: 'BRL',
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2
                             })}
                           </div>
                         </div>
 
                         {/* Métricas em Cards Internos */}
-                        <div className="space-y-3 mb-6">
-                          {/* Prazo de Entrega */}
-                          <div className="flex items-center gap-3 p-3 bg-accent/5 rounded-lg border border-accent/10">
-                            <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
-                              <span className="text-xl">🕒</span>
+                        <div className="space-y-2 md:space-y-3 mb-4 md:mb-6">
+                          {/* Prazo de Entrega - DESTAQUE LARANJA */}
+                          <div className="flex items-center gap-2 md:gap-3 p-3 bg-gradient-to-r from-accent/10 to-accent/5 rounded-lg border-2 border-accent/20 shadow-sm">
+                            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
+                              <Clock className="h-5 w-5 md:h-6 md:w-6 text-accent" />
                             </div>
-                            <div className="flex-1">
-                              <p className="text-xs text-muted-foreground font-medium">Prazo de Entrega</p>
-                              <p className="text-base font-bold text-accent">
-                                {quote.delivery_days} Dias Úteis
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[10px] md:text-xs text-accent/80 font-semibold uppercase tracking-wide">
+                                Prazo de Entrega
+                              </p>
+                              <p className="text-lg md:text-xl font-extrabold text-accent">
+                                {quote.delivery_days} {quote.delivery_days === 1 ? 'Dia' : 'Dias'} Úteis
                               </p>
                             </div>
+                            <Zap className="h-5 w-5 text-accent flex-shrink-0" />
                           </div>
 
                           {/* Comissão LogiMind */}
-                          <div className="flex items-center gap-3 p-3 bg-primary/5 rounded-lg border border-primary/10">
-                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                              <span className="text-xl">💰</span>
+                          <div className="flex items-center gap-2 md:gap-3 p-3 bg-primary/5 rounded-lg border border-primary/10">
+                            <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                              <span className="text-base md:text-xl">💰</span>
                             </div>
-                            <div className="flex-1">
-                              <p className="text-xs text-muted-foreground font-medium">Comissão LogiMind</p>
-                              <div className="flex items-center gap-2">
-                                <p className="text-base font-bold text-primary">
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[10px] md:text-xs text-muted-foreground font-medium">Comissão LogiMind</p>
+                              <div className="flex items-center gap-1.5 md:gap-2 flex-wrap">
+                                <p className="text-sm md:text-base font-bold text-primary">
                                   {(quote.commission_applied * 100).toFixed(1)}%
                                 </p>
                                 {quote.adjustment_reason === 'ROUTE_OPTIMIZED' && quote.commission_applied >= 0.15 && (
                                   <TooltipProvider>
                                     <Tooltip>
                                       <TooltipTrigger>
-                                        <Info className="h-3.5 w-3.5 text-primary" />
+                                        <Info className="h-3 w-3 md:h-3.5 md:w-3.5 text-primary flex-shrink-0" />
                                       </TooltipTrigger>
                                       <TooltipContent className="max-w-xs">
                                         <p className="text-sm">
-                                          Rota de Retorno: Comissão otimizada para maximizar eficiência
+                                          <strong>Rota Otimizada:</strong> Comissão ajustada para rotas com menor ocupação. 
+                                          Isso ajuda a transportadora a maximizar eficiência operacional.
                                         </p>
                                       </TooltipContent>
                                     </Tooltip>
@@ -836,11 +844,12 @@ const Quote = () => {
                                   <TooltipProvider>
                                     <Tooltip>
                                       <TooltipTrigger>
-                                        <Info className="h-3.5 w-3.5 text-secondary" />
+                                        <Info className="h-3 w-3 md:h-3.5 md:w-3.5 text-secondary flex-shrink-0" />
                                       </TooltipTrigger>
                                       <TooltipContent className="max-w-xs">
                                         <p className="text-sm">
-                                          💡 <strong>LogiMind 2.0:</strong> Comissão reduzida para garantir competitividade
+                                          💡 <strong>LogiMind 2.0:</strong> Comissão reduzida automaticamente para garantir 
+                                          o melhor preço do mercado. Você economiza e a plataforma permanece competitiva!
                                         </p>
                                       </TooltipContent>
                                     </Tooltip>
@@ -848,22 +857,30 @@ const Quote = () => {
                                 )}
                               </div>
                               {quote.adjustment_reason && (
-                                <p className="text-[10px] text-muted-foreground mt-0.5">
-                                  {quote.adjustment_reason === 'COMPETITION' && "Otimização por Competição"}
-                                  {quote.adjustment_reason === 'ROUTE_OPTIMIZED' && "Rota Otimizada"}
-                                  {quote.adjustment_reason === 'STANDARD' && "Comissão Padrão"}
-                                </p>
+                                <div className="flex items-center gap-1 mt-0.5">
+                                  <MapPin className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                                  <p className="text-[9px] md:text-[10px] text-muted-foreground leading-tight">
+                                    {quote.adjustment_reason === 'COMPETITION' && "Preço otimizado por competição"}
+                                    {quote.adjustment_reason === 'ROUTE_OPTIMIZED' && "Rota com menor ocupação"}
+                                    {quote.adjustment_reason === 'STANDARD' && "Comissão padrão aplicada"}
+                                  </p>
+                                </div>
                               )}
                             </div>
                           </div>
 
                           {/* Preço Base - Discreto */}
-                          <div className="flex justify-between text-xs text-muted-foreground px-1">
-                            <span>Preço base:</span>
+                          <div className="flex justify-between items-center text-xs text-muted-foreground px-1">
+                            <span className="flex items-center gap-1">
+                              <Package className="h-3 w-3" />
+                              Preço base:
+                            </span>
                             <span className="font-medium">
                               {quote.base_price.toLocaleString('pt-BR', { 
                                 style: 'currency', 
-                                currency: 'BRL' 
+                                currency: 'BRL',
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
                               })}
                             </span>
                           </div>
@@ -871,9 +888,9 @@ const Quote = () => {
 
                         {/* Alerta de Restrição */}
                         {(restrictedAreas.origin || restrictedAreas.destination) && (
-                          <div className="flex items-start gap-2 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg mb-4">
-                            <span className="text-base">⚠️</span>
-                            <div className="text-xs text-amber-700 dark:text-amber-300">
+                          <div className="flex items-start gap-2 p-2 md:p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg mb-3 md:mb-4">
+                            <span className="text-sm md:text-base flex-shrink-0">⚠️</span>
+                            <div className="text-xs text-amber-700 dark:text-amber-300 min-w-0">
                               <p className="font-semibold">Área com Restrição</p>
                               <p className="text-[10px] mt-0.5 leading-tight">
                                 Possível acréscimo ou restrição de horário
@@ -886,7 +903,7 @@ const Quote = () => {
                         <Button 
                           variant="hero" 
                           size="lg" 
-                          className="w-full mt-auto shadow-md hover:shadow-lg transition-shadow"
+                          className="w-full mt-auto shadow-md hover:shadow-lg transition-shadow text-sm md:text-base"
                         >
                           Contratar Este Frete
                         </Button>
