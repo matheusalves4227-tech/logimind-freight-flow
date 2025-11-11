@@ -1,8 +1,16 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import LeadQualificationModal from "@/components/LeadQualificationModal";
 
 const CTA = () => {
+  const navigate = useNavigate();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   return (
+    <>
+      <LeadQualificationModal open={isModalOpen} onOpenChange={setIsModalOpen} />
     <section className="py-20 relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-hero opacity-10 -z-10" />
       
@@ -17,11 +25,20 @@ const CTA = () => {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button variant="hero" size="xl" className="group">
+            <Button 
+              variant="hero" 
+              size="xl" 
+              className="group"
+              onClick={() => navigate('/auth')}
+            >
               Começar Grátis
               <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
             </Button>
-            <Button variant="outline" size="xl">
+            <Button 
+              variant="outline" 
+              size="xl"
+              onClick={() => setIsModalOpen(true)}
+            >
               Fale com um Especialista
             </Button>
           </div>
@@ -32,6 +49,7 @@ const CTA = () => {
         </div>
       </div>
     </section>
+    </>
   );
 };
 
