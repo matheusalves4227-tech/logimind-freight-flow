@@ -775,7 +775,27 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      vw_logimarket_kpis_current: {
+        Row: {
+          faturamento_logimarket: number | null
+          gmv_total: number | null
+          margem_media: number | null
+          pedidos_concluidos: number | null
+          total_repassado: number | null
+        }
+        Relationships: []
+      }
+      vw_logimarket_performance: {
+        Row: {
+          faturamento_liquido_logimarket: number | null
+          gmv_vendas_brutas: number | null
+          media_comissao_aplicada: number | null
+          month_year: string | null
+          total_pedidos: number | null
+          total_repasse_motorista: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_role: {
