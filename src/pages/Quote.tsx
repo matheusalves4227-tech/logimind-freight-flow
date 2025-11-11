@@ -782,12 +782,12 @@ const Quote = () => {
                         )}
 
                         {/* Seção de Preço - DESTAQUE CENTRAL */}
-                        <div className="text-center py-4 md:py-6 mb-3 md:mb-4">
+                        <div className="text-center py-3 md:py-5 mb-3 md:mb-4">
                           <p className="text-[10px] md:text-xs text-muted-foreground mb-1 uppercase tracking-wide flex items-center justify-center gap-1">
                             <DollarSign className="h-3 w-3" />
                             Preço Final LogiMarket
                           </p>
-                          <div className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-primary leading-none break-words">
+                          <div className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-primary leading-tight">
                             {formatarMoeda(quote.final_price)}
                           </div>
                         </div>
@@ -795,24 +795,24 @@ const Quote = () => {
                         {/* Métricas em Cards Internos */}
                         <div className="space-y-2 md:space-y-3 mb-4 md:mb-6">
                           {/* Prazo de Entrega - DESTAQUE LARANJA */}
-                          <div className="flex items-center gap-2 md:gap-3 p-3 bg-gradient-to-r from-accent/10 to-accent/5 rounded-lg border-2 border-accent/20 shadow-sm">
-                            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
-                              <Clock className="h-5 w-5 md:h-6 md:w-6 text-accent" />
+                          <div className="flex items-center gap-2 md:gap-3 p-2.5 md:p-3 bg-gradient-to-r from-accent/10 to-accent/5 rounded-lg border-2 border-accent/20 shadow-sm">
+                            <div className="w-9 h-9 md:w-11 md:h-11 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
+                              <Clock className="h-4 w-4 md:h-5 md:w-5 text-accent" />
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="text-[10px] md:text-xs text-accent/80 font-semibold uppercase tracking-wide">
                                 Prazo de Entrega
                               </p>
-                              <p className="text-lg md:text-xl font-extrabold text-accent">
+                              <p className="text-base md:text-lg font-extrabold text-accent">
                                 {quote.delivery_days} {quote.delivery_days === 1 ? 'Dia' : 'Dias'} Úteis
                               </p>
                             </div>
-                            <Zap className="h-5 w-5 text-accent flex-shrink-0" />
+                            <Zap className="h-4 w-4 md:h-5 md:w-5 text-accent flex-shrink-0" />
                           </div>
 
                           {/* Detalhes LogiMind - Discreto e Secundário */}
-                          <div className="bg-muted/30 rounded-lg p-3 space-y-2 text-left">
-                            <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold mb-2 flex items-center gap-1">
+                          <div className="bg-muted/30 rounded-lg p-2.5 md:p-3 space-y-1.5 md:space-y-2 text-left">
+                            <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold mb-1.5 md:mb-2 flex items-center gap-1">
                               <Info className="h-3 w-3" />
                               Detalhes LogiMind
                             </p>
