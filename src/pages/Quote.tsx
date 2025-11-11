@@ -861,9 +861,9 @@ const Quote = () => {
                         }`} />
                       )}
 
-                      <div className="p-4 md:p-6 flex flex-col h-full">
-                        {/* Header com nome, rating e badge - ALTURA FIXA */}
-                        <div className="flex items-start justify-between pb-3 md:pb-4 border-b border-dashed border-border mb-4 md:mb-5 min-h-[60px]">
+                      <div className="p-3 md:p-4 flex flex-col h-full">
+                        {/* Header com nome, rating e badge */}
+                        <div className="flex items-start justify-between pb-2 border-b border-dashed border-border mb-2 min-h-[60px]">
                           <div className="flex-1 min-w-0">
                             <h3 className="text-base md:text-lg font-bold mb-1 flex items-center gap-2 flex-wrap">
                               <span className="truncate">{quote.carrier_name}</span>
@@ -911,8 +911,8 @@ const Quote = () => {
                           </div>
                         </div>
 
-                        {/* Badge de Destaque - ALTURA FIXA */}
-                        <div className="min-h-[40px] mb-3">
+                  {/* Badge de Destaque */}
+                  <div className="min-h-[36px] mb-2">
                           {(isBestPrice || isFastest || routeType === "high_demand") && (
                             <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold ${
                               routeType === "high_demand" && isBestPrice
@@ -929,8 +929,8 @@ const Quote = () => {
                           )}
                         </div>
 
-                        {/* Economia para Rotas de Alta Demanda - ALTURA FIXA */}
-                        <div className="min-h-[36px] mb-3">
+                  {/* Economia para Rotas de Alta Demanda */}
+                  <div className="min-h-[32px] mb-2">
                           {routeType === "high_demand" && isBestPrice && (
                             <div className="flex items-center gap-2 p-2.5 bg-secondary/10 border border-secondary/20 rounded-lg">
                               <TrendingUp className="h-4 w-4 text-secondary flex-shrink-0" />
@@ -941,8 +941,8 @@ const Quote = () => {
                           )}
                         </div>
 
-                        {/* Seção de Preço - ALTURA FIXA E ALINHADA */}
-                        <div className="text-center py-3 mb-3 min-h-[90px] flex flex-col justify-center">
+                  {/* Seção de Preço */}
+                  <div className="text-center py-2 mb-2 min-h-[90px] flex flex-col justify-center">
                           <p className="text-[10px] md:text-xs text-muted-foreground mb-1.5 uppercase tracking-wide flex items-center justify-center gap-1">
                             <DollarSign className="h-3 w-3" />
                             Preço Final LogiMarket
@@ -953,9 +953,9 @@ const Quote = () => {
                         </div>
 
                         {/* Métricas em Cards Internos */}
-                        <div className="space-y-2 mb-4">
+                        <div className="space-y-1.5 mb-2">
                           {/* Prazo de Entrega - Compacto */}
-                          <div className="flex items-center gap-2 p-2.5 bg-gradient-to-r from-accent/10 to-accent/5 rounded-lg border border-accent/20">
+                          <div className="flex items-center gap-2 p-2 bg-gradient-to-r from-accent/10 to-accent/5 rounded-lg border border-accent/20">
                             <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
                               <Clock className="h-4 w-4 text-accent" />
                             </div>
@@ -971,8 +971,8 @@ const Quote = () => {
                           </div>
 
                           {/* Detalhes LogiMind - Discreto e Compacto */}
-                          <div className="bg-muted/30 rounded-lg p-2.5 space-y-1.5 text-left text-xs">
-                            <p className="text-[9px] uppercase tracking-wide text-muted-foreground font-medium mb-1.5 flex items-center gap-1 opacity-70">
+                          <div className="bg-muted/30 rounded-lg p-2 space-y-1 text-left text-xs">
+                            <p className="text-[9px] uppercase tracking-wide text-muted-foreground font-medium mb-1 flex items-center gap-1 opacity-70">
                               <Info className="h-3 w-3" />
                               Detalhes LogiMind
                             </p>
@@ -1081,7 +1081,7 @@ const Quote = () => {
 
                         {/* Alerta de Restrição - Compacto */}
                         {(restrictedAreas.origin || restrictedAreas.destination) && (
-                          <div className="flex items-start gap-2 p-2 bg-amber-500/10 border border-amber-500/20 rounded-lg mb-3">
+                          <div className="flex items-start gap-2 p-1.5 bg-amber-500/10 border border-amber-500/20 rounded-lg mb-2">
                             <span className="text-sm flex-shrink-0">⚠️</span>
                             <div className="text-xs text-amber-700 dark:text-amber-300 min-w-0">
                               <p className="font-semibold">Área com Restrição</p>
@@ -1112,14 +1112,14 @@ const Quote = () => {
 
                         {/* LogiGuard Pro - Upgrade de Segurança */}
                         {quote.logiguard_pro?.available && (
-                          <div className={`mt-3 p-3 rounded-lg border ${
+                          <div className={`mt-2 p-2 rounded-lg border ${
                             quote.logiguard_pro.recommended 
                               ? 'bg-gradient-to-br from-accent/10 to-secondary/10 border-accent' 
                               : 'bg-muted/20 border-border'
                           }`}>
                             {/* Selo Recomendado */}
                             {quote.logiguard_pro.recommended && (
-                              <div className="flex items-center gap-1.5 mb-2 px-2 py-0.5 bg-accent/20 border border-accent rounded-md w-fit">
+                              <div className="flex items-center gap-1.5 mb-1.5 px-2 py-0.5 bg-accent/20 border border-accent rounded-md w-fit">
                                 <span className="text-sm">🛡️</span>
                                 <span className="text-[10px] font-bold text-accent uppercase tracking-wide">
                                   RECOMENDADO
@@ -1128,7 +1128,7 @@ const Quote = () => {
                             )}
 
                             {/* Header */}
-                            <div className="flex items-start justify-between mb-2">
+                            <div className="flex items-start justify-between mb-1.5">
                               <div className="flex-1">
                                 <h4 className="font-bold text-xs flex items-center gap-1.5 mb-0.5">
                                   <span className="text-sm">🛡️</span>
@@ -1147,13 +1147,13 @@ const Quote = () => {
                             </div>
 
                             {/* Descrição */}
-                            <p className="text-[10px] text-muted-foreground mb-2 leading-relaxed">
+                            <p className="text-[10px] text-muted-foreground mb-1.5 leading-relaxed">
                               Monitore sua carga em tempo real. Inclui seguro adicional contra roubo e 
                               acionamento automático de Escolta Digital em zonas de risco.
                             </p>
 
                             {/* Justificativa LogiMind */}
-                            <div className="p-2 bg-background/50 rounded border border-border mb-2">
+                            <div className="p-1.5 bg-background/50 rounded border border-border mb-1.5">
                               <p className="text-[9px] text-muted-foreground font-semibold mb-0.5 uppercase">
                                 ⚙️ Análise LogiMind
                               </p>
@@ -1169,7 +1169,7 @@ const Quote = () => {
                             </div>
 
                             {/* Checkbox/Toggle para adicionar */}
-                            <label className="flex items-center gap-2.5 cursor-pointer hover:bg-background/50 p-2 rounded transition-colors">
+                            <label className="flex items-center gap-2.5 cursor-pointer hover:bg-background/50 p-1.5 rounded transition-colors">
                               <input
                                 type="checkbox"
                                 checked={selectedLogiGuard[quote.carrier_id] || false}
