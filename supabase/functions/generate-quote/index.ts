@@ -11,6 +11,10 @@ const COMISSAO_PADRAO = 0.10; // 10%
 const LIMITE_MAXIMO_AJUSTE = 0.08; // 8%
 const LIMITE_MAXIMO_COMISSAO = 0.18; // 18%
 
+// LogiMind 2.0 - Regra de Competição
+const TOLERANCIA_PRECO = 1.03; // 3% acima do preço de mercado
+const COMISSAO_MINIMA = 0.05; // 5%
+
 interface QuoteRequest {
   origin_cep: string;
   origin_number: string;
@@ -34,14 +38,40 @@ interface CarrierQuote {
   quality_index: number;
 }
 
+interface ProcessedQuote {
+  carrier_id: string;
+  carrier_name: string;
+  carrier_size?: string;
+  specialties?: string[];
+  base_price: number;
+  commission_applied: number;
+  final_price: number;
+  delivery_days: number;
+  quality_index: number;
+  route_adjustment_factor: number;
+  adjustment_reason?: string;
+}
+
 /**
- * Aplica a lógica LogiMind para ajustar a comissão e calcular o preço final.
+ * Busca o preço de mercado de referência para a rota
+ * Mock: retorna 90% do menor preço base das transportadoras
+ */
+function buscarPrecoMercadoReferencia(cotacoesBrutas: CarrierQuote[]): number {
+  const menorPrecoBase = Math.min(...cotacoesBrutas.map(c => c.base_price));
+  // Simula um preço de mercado competitivo (90% do menor preço)
+  const precoMercado = menorPrecoBase * 0.90;
+  console.log(`Market reference price: ${precoMercado} (based on lowest base: ${menorPrecoBase})`);
+  return precoMercado;
+}
+
+/**
+ * LogiMind 1.0 - Aplica ajuste baseado em rotas de retorno
  */
 function aplicarLogiMind(
   cotacoesBrutas: CarrierQuote[], 
   routeAdjustmentFactor: number
-): any[] {
-  console.log(`Applying LogiMind with route adjustment factor: ${routeAdjustmentFactor}`);
+): ProcessedQuote[] {
+  console.log(`[LogiMind 1.0] Route adjustment factor: ${routeAdjustmentFactor}`);
   
   return cotacoesBrutas.map(cota => {
     const precoBaseFrete = cota.base_price;
@@ -59,9 +89,9 @@ function aplicarLogiMind(
     // 4. Calcular o Preço Final para o Embarcador
     const precoFinal = Math.round((precoBaseFrete * (1 + comissaoFinal)) * 100) / 100;
     
-    console.log(`Carrier ${cota.carrier_name}: Base=${precoBaseFrete}, Commission=${comissaoFinal}, Final=${precoFinal}`);
+    console.log(`[LogiMind 1.0] ${cota.carrier_name}: Base=${precoBaseFrete}, Commission=${comissaoFinal}, Final=${precoFinal}`);
     
-    // 5. Retornar a Cotação Final com os novos dados
+    // 5. Retornar a Cotação com Ajuste de Rota
     return {
       carrier_id: cota.carrier_id,
       carrier_name: cota.carrier_name,
@@ -73,7 +103,59 @@ function aplicarLogiMind(
       delivery_days: cota.delivery_days,
       quality_index: cota.quality_index,
       route_adjustment_factor: routeAdjustmentFactor,
+      adjustment_reason: routeAdjustmentFactor > 0 ? 'ROUTE_OPTIMIZED' : 'STANDARD',
     };
+  });
+}
+
+/**
+ * LogiMind 2.0 - Aplica regra de competição
+ * Reduz comissão se o preço estiver acima do mercado
+ */
+function aplicarRegraCompeticao(
+  cotasAjustadas: ProcessedQuote[],
+  precoMercadoReferencia: number
+): ProcessedQuote[] {
+  console.log(`[LogiMind 2.0] Applying competition rule with market reference: ${precoMercadoReferencia}`);
+  
+  return cotasAjustadas.map(cota => {
+    const precoFinalAtual = cota.final_price;
+    const precoBase = cota.base_price;
+    const comissaoAnterior = cota.commission_applied;
+    
+    // 1. Calcular o Preço Máximo Competitivo
+    const precoCompetitivoMax = Math.round(precoMercadoReferencia * TOLERANCIA_PRECO * 100) / 100;
+    
+    // 2. Verificar se está acima do limite competitivo
+    if (precoFinalAtual > precoCompetitivoMax) {
+      // A. Calcular a comissão necessária para atingir o preço competitivo
+      const comissaoNecessaria = (precoCompetitivoMax / precoBase) - 1;
+      
+      // B. Aplicar o piso mínimo de 5%
+      const novaComissao = Math.max(comissaoNecessaria, COMISSAO_MINIMA);
+      const novaComissaoFormatada = parseFloat(novaComissao.toFixed(4));
+      
+      // C. Recalcular o preço final
+      const novoPrecoFinal = Math.round((precoBase * (1 + novaComissaoFormatada)) * 100) / 100;
+      
+      console.log(
+        `[LogiMind 2.0] ${cota.carrier_name}: ` +
+        `Price ${precoFinalAtual} > ${precoCompetitivoMax} (competitive max). ` +
+        `Reducing commission ${(comissaoAnterior * 100).toFixed(1)}% → ${(novaComissaoFormatada * 100).toFixed(1)}%, ` +
+        `New price: ${novoPrecoFinal}`
+      );
+      
+      return {
+        ...cota,
+        commission_applied: novaComissaoFormatada,
+        final_price: novoPrecoFinal,
+        adjustment_reason: 'COMPETITION',
+      };
+    }
+    
+    // Já está competitivo, mantém os valores da regra de rotas
+    console.log(`[LogiMind 2.0] ${cota.carrier_name}: Price ${precoFinalAtual} is competitive (max: ${precoCompetitivoMax})`);
+    return cota;
   });
 }
 
@@ -198,10 +280,16 @@ serve(async (req) => {
     // 3. Generate mock quotes from carriers
     const cotacoesBrutas = gerarCotacoesMockadas(carriers, quoteRequest.weight_kg);
 
-    // 4. Apply LogiMind pricing intelligence
-    const cotacoesProcessadas = aplicarLogiMind(cotacoesBrutas, routeAdjustmentFactor);
+    // 4. Apply LogiMind 1.0 - Route optimization
+    const cotacoesComRotas = aplicarLogiMind(cotacoesBrutas, routeAdjustmentFactor);
 
-    // 5. Create quote record
+    // 5. Get market reference price
+    const precoMercadoReferencia = buscarPrecoMercadoReferencia(cotacoesBrutas);
+
+    // 6. Apply LogiMind 2.0 - Competition rule
+    const cotacoesProcessadas = aplicarRegraCompeticao(cotacoesComRotas, precoMercadoReferencia);
+
+    // 7. Create quote record
     const { data: quote, error: quoteError } = await supabaseClient
       .from('quotes')
       .insert({
@@ -225,7 +313,7 @@ serve(async (req) => {
       );
     }
 
-    // 6. Insert quote items
+    // 8. Insert quote items
     const quoteItems = cotacoesProcessadas.map(item => ({
       quote_id: quote.id,
       carrier_id: item.carrier_id,
@@ -246,7 +334,7 @@ serve(async (req) => {
       // Continue anyway, we have the processed quotes
     }
 
-    // 7. Return processed quotes with quote ID
+    // 9. Return processed quotes with quote ID
     return new Response(
       JSON.stringify({
         quote_id: quote.id,

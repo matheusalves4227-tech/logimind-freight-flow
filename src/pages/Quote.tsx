@@ -22,6 +22,7 @@ interface QuoteResult {
   delivery_days: number;
   quality_index: number;
   route_adjustment_factor: number;
+  adjustment_reason?: string;
 }
 
 type SortOption = "price" | "delivery" | "quality";
@@ -639,7 +640,7 @@ const Quote = () => {
                           <span>Comissão:</span>
                           <div className="flex items-center gap-2">
                             <span className="font-medium">{(quote.commission_applied * 100).toFixed(1)}%</span>
-                            {quote.commission_applied >= 0.15 && (
+                            {quote.adjustment_reason === 'ROUTE_OPTIMIZED' && quote.commission_applied >= 0.15 && (
                               <TooltipProvider>
                                 <Tooltip>
                                   <TooltipTrigger>
@@ -649,6 +650,21 @@ const Quote = () => {
                                     <p className="text-sm">
                                       Comissão ajustada para otimizar rota de retorno. 
                                       Você está ajudando a transportadora a ser mais eficiente!
+                                    </p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            )}
+                            {quote.adjustment_reason === 'COMPETITION' && (
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger>
+                                    <Info className="h-4 w-4 text-secondary" />
+                                  </TooltipTrigger>
+                                  <TooltipContent className="max-w-xs">
+                                    <p className="text-sm">
+                                      💡 <strong>LogiMind 2.0:</strong> Comissão reduzida automaticamente para garantir 
+                                      o melhor preço do mercado! Você economiza e a plataforma permanece competitiva.
                                     </p>
                                   </TooltipContent>
                                 </Tooltip>
