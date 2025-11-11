@@ -52,14 +52,18 @@ export default {
         "gradient-primary": "var(--gradient-primary)",
         "gradient-hero": "var(--gradient-hero)",
         "gradient-accent": "var(--gradient-accent)",
+        "gradient-success": "var(--gradient-success)",
       },
       boxShadow: {
         sm: "var(--shadow-sm)",
         md: "var(--shadow-md)",
         lg: "var(--shadow-lg)",
+        accent: "var(--shadow-accent)",
+        success: "var(--shadow-success)",
       },
       transitionProperty: {
         base: "var(--transition-base)",
+        fast: "var(--transition-fast)",
       },
       borderRadius: {
         lg: "var(--radius)",

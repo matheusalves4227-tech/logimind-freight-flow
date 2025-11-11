@@ -731,7 +731,8 @@ const Quote = () => {
                   return (
                     <Card 
                       key={quote.carrier_id}
-                      className="relative overflow-hidden hover:shadow-xl transition-all duration-300 border border-border/50 flex flex-col"
+                      className="relative overflow-hidden hover:shadow-xl transition-fast border border-border/50 flex flex-col rounded-xl animate-fade-in bg-card"
+                      style={{ animationDelay: `${index * 50}ms` }}
                     >
                       {/* Ribbon lateral de destaque */}
                       {(isBestPrice || isFastest) && (
@@ -781,61 +782,61 @@ const Quote = () => {
                           </div>
                         )}
 
-                        {/* Seção de Preço - DESTAQUE CENTRAL */}
-                        <div className="text-center py-3 md:py-5 mb-3 md:mb-4">
-                          <p className="text-[10px] md:text-xs text-muted-foreground mb-1 uppercase tracking-wide flex items-center justify-center gap-1">
+                        {/* Seção de Preço - DESTAQUE CENTRAL com Hierarquia 3.2em */}
+                        <div className="text-center py-4 md:py-6 mb-3 md:mb-4">
+                          <p className="text-[10px] md:text-xs text-muted-foreground mb-2 uppercase tracking-wide flex items-center justify-center gap-1">
                             <DollarSign className="h-3 w-3" />
                             Preço Final LogiMarket
                           </p>
-                          <div className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-primary leading-tight whitespace-nowrap">
+                          <div className="text-[2rem] sm:text-[2.5rem] md:text-[3.2rem] font-extrabold text-primary leading-none whitespace-nowrap animate-fade-in">
                             {formatarMoeda(quote.final_price)}
                           </div>
                         </div>
 
                         {/* Métricas em Cards Internos */}
                         <div className="space-y-2 md:space-y-3 mb-4 md:mb-6">
-                          {/* Prazo de Entrega - DESTAQUE LARANJA */}
-                          <div className="flex items-center gap-2 md:gap-3 p-2.5 md:p-3 bg-gradient-to-r from-accent/10 to-accent/5 rounded-lg border-2 border-accent/20 shadow-sm">
-                            <div className="w-9 h-9 md:w-11 md:h-11 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
-                              <Clock className="h-4 w-4 md:h-5 md:w-5 text-accent" />
+                          {/* Prazo de Entrega - DESTAQUE LARANJA com Hierarquia 1.1em */}
+                          <div className="flex items-center gap-2 md:gap-3 p-3 md:p-3.5 bg-gradient-to-r from-accent/10 to-accent/5 rounded-lg border-2 border-accent/30 shadow-accent transition-fast hover:shadow-lg hover:border-accent/40">
+                            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
+                              <Clock className="h-5 w-5 md:h-6 md:w-6 text-accent" />
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="text-[10px] md:text-xs text-accent/80 font-semibold uppercase tracking-wide">
                                 Prazo de Entrega
                               </p>
-                              <p className="text-base md:text-lg font-extrabold text-accent">
+                              <p className="text-[1.1rem] md:text-[1.2rem] font-extrabold text-accent">
                                 {quote.delivery_days} {quote.delivery_days === 1 ? 'Dia' : 'Dias'} Úteis
                               </p>
                             </div>
-                            <Zap className="h-4 w-4 md:h-5 md:w-5 text-accent flex-shrink-0" />
+                            <Zap className="h-5 w-5 md:h-6 md:w-6 text-accent flex-shrink-0" />
                           </div>
 
-                          {/* Detalhes LogiMind - Discreto e Secundário */}
-                          <div className="bg-muted/30 rounded-lg p-2.5 md:p-3 space-y-1.5 md:space-y-2 text-left">
-                            <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold mb-1.5 md:mb-2 flex items-center gap-1">
+                          {/* Detalhes LogiMind - Discreto e Secundário com Hierarquia 0.85em */}
+                          <div className="bg-muted/30 rounded-lg p-2.5 md:p-3 space-y-1.5 md:space-y-2 text-left text-[0.85rem]">
+                            <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold mb-1.5 md:mb-2 flex items-center gap-1 opacity-70">
                               <Info className="h-3 w-3" />
                               Detalhes LogiMind
                             </p>
                             
                             {/* Preço Base */}
-                            <div className="flex justify-between items-center text-xs">
+                            <div className="flex justify-between items-center text-[0.8rem]">
                               <span className="text-muted-foreground flex items-center gap-1">
                                 <Package className="h-3 w-3" />
                                 Preço base:
                               </span>
-                              <span className="font-medium text-foreground">
+                              <span className="font-medium text-foreground/80">
                                 {formatarMoeda(quote.base_price)}
                               </span>
                             </div>
 
                             {/* Comissão */}
-                            <div className="flex justify-between items-center text-xs">
+                            <div className="flex justify-between items-center text-[0.8rem]">
                               <span className="text-muted-foreground flex items-center gap-1">
                                 <DollarSign className="h-3 w-3" />
                                 Comissão aplicada:
                               </span>
                               <div className="flex items-center gap-1.5">
-                                <span className="font-medium text-primary">
+                                <span className="font-medium text-primary/80">
                                   {formatarPorcentagemSimples(quote.commission_applied)}
                                 </span>
                                 {quote.adjustment_reason === 'ROUTE_OPTIMIZED' && quote.commission_applied >= 0.15 && (
@@ -875,7 +876,7 @@ const Quote = () => {
                             {quote.adjustment_reason && (
                               <div className="flex items-start gap-1.5 pt-1">
                                 <MapPin className="h-3 w-3 text-muted-foreground flex-shrink-0 mt-0.5" />
-                                <p className="text-[10px] text-muted-foreground leading-tight">
+                                <p className="text-[0.7rem] text-muted-foreground leading-tight opacity-80">
                                   {quote.adjustment_reason === 'COMPETITION' && "Preço otimizado por competição de mercado"}
                                   {quote.adjustment_reason === 'ROUTE_OPTIMIZED' && "Rota com menor ocupação - Otimização LogiMind"}
                                   {quote.adjustment_reason === 'STANDARD' && "Comissão padrão aplicada"}
