@@ -46,8 +46,8 @@ const Navbar = () => {
             <Link to="/#how-it-works" className="text-foreground hover:text-primary transition-colors">
               Como Funciona
             </Link>
-            <Link to="/#pricing" className="text-foreground hover:text-primary transition-colors">
-              Preços
+            <Link to="/parceiro/cadastro" className="text-foreground hover:text-primary transition-colors">
+              Seja um Parceiro
             </Link>
           </div>
 

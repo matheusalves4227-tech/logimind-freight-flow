@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Package, MapPin, Loader2, TrendingUp, Info, Lightbulb, Truck, Clock, DollarSign, Zap } from "lucide-react";
+import { ArrowLeft, Package, MapPin, Loader2, TrendingUp, Info, Lightbulb, Truck, Clock, DollarSign, Zap, Building2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { Stepper } from "@/components/ui/stepper";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -812,10 +812,31 @@ const Quote = () => {
                               </span>
                             </h3>
                             {quote.carrier_size && (
-                              <p className="text-xs text-muted-foreground">
-                                {quote.carrier_size === 'large' && 'Grande Porte'}
-                                {quote.carrier_size === 'medium' && 'Médio Porte'}
-                                {quote.carrier_size === 'small' && 'Pequeno Porte'}
+                              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                {quote.carrier_size === 'autonomous' && (
+                                  <>
+                                    <Truck className="h-3 w-3 text-accent" />
+                                    <span className="text-accent font-medium">Motorista Autônomo Certificado</span>
+                                  </>
+                                )}
+                                {quote.carrier_size === 'large' && (
+                                  <>
+                                    <Building2 className="h-3 w-3 text-primary" />
+                                    <span className="text-primary font-medium">Transportadora Parceira - Frota Grande</span>
+                                  </>
+                                )}
+                                {quote.carrier_size === 'medium' && (
+                                  <>
+                                    <Building2 className="h-3 w-3 text-primary" />
+                                    <span className="text-primary font-medium">Transportadora Parceira - Médio Porte</span>
+                                  </>
+                                )}
+                                {quote.carrier_size === 'small' && (
+                                  <>
+                                    <Building2 className="h-3 w-3 text-primary" />
+                                    <span className="text-primary font-medium">Transportadora Parceira - PME</span>
+                                  </>
+                                )}
                               </p>
                             )}
                           </div>
