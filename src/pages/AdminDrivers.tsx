@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Shield, Users, FileText, AlertCircle, CheckCircle, Wallet, Truck, TrendingUp, Clock } from 'lucide-react';
 import { DriverApprovalModal } from '@/components/admin/DriverApprovalModal';
 import { PaymentTestPanel } from '@/components/admin/PaymentTestPanel';
+import { FinancialKPIs } from '@/components/admin/FinancialKPIs';
 import { useToast } from '@/hooks/use-toast';
 
 interface PendingDriver {
@@ -273,6 +274,9 @@ const AdminDrivers = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* KPIs Financeiros */}
+        <FinancialKPIs />
 
         {/* Painel de Teste de Repasse Financeiro */}
         <PaymentTestPanel />
