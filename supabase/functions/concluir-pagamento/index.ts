@@ -128,36 +128,33 @@ Deno.serve(async (req) => {
     const comissaoPerc = orderData.comissao_logimarket_perc || 0.10; // Default 10%
     const comissaoVal = parseFloat((precoFinal * comissaoPerc).toFixed(2));
     const valorRepasseLiquido = parseFloat((precoFinal - comissaoVal).toFixed(2));
+    
+    // Calcular data limite do repasse (D+2 úteis)
+    const dataLimite = new Date();
+    dataLimite.setDate(dataLimite.getDate() + 2);
 
     console.log(`[REPASSE] Cálculo financeiro:`, {
       precoFinal,
       comissaoPerc: `${(comissaoPerc * 100).toFixed(2)}%`,
       comissaoVal: `R$ ${comissaoVal.toFixed(2)}`,
-      valorRepasseLiquido: `R$ ${valorRepasseLiquido.toFixed(2)}`
+      valorRepasseLiquido: `R$ ${valorRepasseLiquido.toFixed(2)}`,
+      dataLimiteRepasse: dataLimite.toISOString()
     });
 
-    // 5. SIMULAÇÃO: Integração com Gateway de Pagamento
-    // TODO: Implementar integração real com Pagar.me, Stripe Connect, ou Mercado Pago
-    // Por enquanto, simularemos o sucesso do repasse
+    // 5. NOVO FLUXO: Marcar como PENDENTE_REPASSE ao invés de processar imediatamente
+    // O repasse real será feito através da edge function processar-repasse-agora
+    // após aprovação manual do time financeiro
     
-    const simulatedGatewayResponse = {
-      success: true,
-      transaction_id: `TXN-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      amount: valorRepasseLiquido,
-      recipient: orderData.driver_name || orderData.carrier_name,
-      processed_at: new Date().toISOString(),
-      method: 'PIX', // Método de repasse simulado
-    };
+    console.log(`[REPASSE] Marcando pedido como PENDENTE_REPASSE (fila de aprovação)`);
 
-    console.log(`[REPASSE] Resposta simulada do gateway:`, simulatedGatewayResponse);
-
-    // 6. Atualizar Order com dados financeiros e status
+    // 6. Atualizar Order com dados financeiros e status PENDENTE_REPASSE
     const { error: updateOrderError } = await supabaseClient
       .from('orders')
       .update({
         comissao_logimarket_val: comissaoVal,
         valor_repasse_liquido: valorRepasseLiquido,
-        status_pagamento: simulatedGatewayResponse.success ? 'paid' : 'failed',
+        status_pagamento: 'PENDENTE_REPASSE',
+        repasse_data_limite: dataLimite.toISOString(),
         updated_at: new Date().toISOString(),
       })
       .eq('id', order_id);
@@ -173,17 +170,19 @@ Deno.serve(async (req) => {
       );
     }
 
-    // 7. Registrar transação de SAÍDA (PAYMENT_OUT - Repasse ao Motorista)
+    // 7. Registrar transação de PENDENTE (não PAID ainda)
     const { error: transactionError } = await supabaseClient
       .from('financial_transactions')
       .insert({
         order_id: order_id,
         type: 'PAYMENT_OUT',
         amount: valorRepasseLiquido,
-        status: simulatedGatewayResponse.success ? 'PAID' : 'FAILED',
-        gateway_transaction_id: simulatedGatewayResponse.transaction_id,
-        gateway_response: simulatedGatewayResponse,
-        processed_at: new Date().toISOString(),
+        status: 'PENDING',
+        gateway_response: {
+          message: 'Aguardando aprovação manual do time financeiro',
+          data_limite: dataLimite.toISOString(),
+        },
+        created_at: new Date().toISOString(),
       });
 
     if (transactionError) {
@@ -191,22 +190,19 @@ Deno.serve(async (req) => {
       // Não vamos falhar a requisição, apenas logar o erro
     }
 
-    // 8. TODO: Enviar notificação ao motorista/transportadora
-    // Implementar webhook ou notificação push informando sobre o repasse
-
-    console.log(`[REPASSE] ✅ Processo concluído com sucesso para pedido ${order_id}`);
+    console.log(`[REPASSE] ✅ Pedido ${order_id} marcado como PENDENTE_REPASSE`);
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: 'Repasse processado com sucesso',
+        message: 'Pedido marcado para repasse. Aguardando aprovação do time financeiro.',
         data: {
           order_id,
           valor_total: precoFinal,
           comissao_logimarket: comissaoVal,
-          valor_repassado: valorRepasseLiquido,
-          status_pagamento: 'paid',
-          transaction_id: simulatedGatewayResponse.transaction_id,
+          valor_a_repassar: valorRepasseLiquido,
+          status_pagamento: 'PENDENTE_REPASSE',
+          data_limite_repasse: dataLimite.toISOString(),
         },
       }),
       {

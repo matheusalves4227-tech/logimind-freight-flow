@@ -101,6 +101,13 @@ export type Database = {
             referencedRelation: "driver_profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "driver_bids_driver_profile_id_fkey"
+            columns: ["driver_profile_id"]
+            isOneToOne: false
+            referencedRelation: "vw_pedidos_para_repasse"
+            referencedColumns: ["driver_profile_id"]
+          },
         ]
       }
       driver_cnh_data: {
@@ -147,6 +154,13 @@ export type Database = {
             isOneToOne: true
             referencedRelation: "driver_profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "driver_cnh_data_driver_profile_id_fkey"
+            columns: ["driver_profile_id"]
+            isOneToOne: true
+            referencedRelation: "vw_pedidos_para_repasse"
+            referencedColumns: ["driver_profile_id"]
           },
         ]
       }
@@ -209,6 +223,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "driver_profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "driver_documents_driver_profile_id_fkey"
+            columns: ["driver_profile_id"]
+            isOneToOne: false
+            referencedRelation: "vw_pedidos_para_repasse"
+            referencedColumns: ["driver_profile_id"]
           },
         ]
       }
@@ -389,6 +410,13 @@ export type Database = {
             referencedRelation: "driver_profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "driver_vehicles_driver_profile_id_fkey"
+            columns: ["driver_profile_id"]
+            isOneToOne: false
+            referencedRelation: "vw_pedidos_para_repasse"
+            referencedColumns: ["driver_profile_id"]
+          },
         ]
       }
       financial_transactions: {
@@ -439,6 +467,13 @@ export type Database = {
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "financial_transactions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "vw_pedidos_para_repasse"
+            referencedColumns: ["id"]
+          },
         ]
       }
       orders: {
@@ -455,6 +490,7 @@ export type Database = {
           current_longitude: number | null
           destination_address: string
           destination_cep: string
+          driver_id: string | null
           driver_name: string | null
           driver_phone: string | null
           estimated_delivery: string | null
@@ -468,6 +504,7 @@ export type Database = {
           origin_address: string
           origin_cep: string
           quote_id: string | null
+          repasse_data_limite: string | null
           service_type: string
           status: string
           status_pagamento: string | null
@@ -492,6 +529,7 @@ export type Database = {
           current_longitude?: number | null
           destination_address: string
           destination_cep: string
+          driver_id?: string | null
           driver_name?: string | null
           driver_phone?: string | null
           estimated_delivery?: string | null
@@ -505,6 +543,7 @@ export type Database = {
           origin_address: string
           origin_cep: string
           quote_id?: string | null
+          repasse_data_limite?: string | null
           service_type: string
           status?: string
           status_pagamento?: string | null
@@ -529,6 +568,7 @@ export type Database = {
           current_longitude?: number | null
           destination_address?: string
           destination_cep?: string
+          driver_id?: string | null
           driver_name?: string | null
           driver_phone?: string | null
           estimated_delivery?: string | null
@@ -542,6 +582,7 @@ export type Database = {
           origin_address?: string
           origin_cep?: string
           quote_id?: string | null
+          repasse_data_limite?: string | null
           service_type?: string
           status?: string
           status_pagamento?: string | null
@@ -560,6 +601,20 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "carriers"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "driver_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "vw_pedidos_para_repasse"
+            referencedColumns: ["driver_profile_id"]
           },
           {
             foreignKeyName: "orders_quote_id_fkey"
@@ -747,6 +802,13 @@ export type Database = {
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "tracking_events_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "vw_pedidos_para_repasse"
+            referencedColumns: ["id"]
+          },
         ]
       }
       user_roles: {
@@ -793,6 +855,26 @@ export type Database = {
           month_year: string | null
           total_pedidos: number | null
           total_repasse_motorista: number | null
+        }
+        Relationships: []
+      }
+      vw_pedidos_para_repasse: {
+        Row: {
+          bank_account_number: string | null
+          bank_name: string | null
+          comissao_logimarket_val: number | null
+          created_at: string | null
+          driver_profile_id: string | null
+          final_price: number | null
+          id: string | null
+          motorista_nome: string | null
+          pix_key: string | null
+          pix_key_type: string | null
+          prioridade: string | null
+          repasse_data_limite: string | null
+          tracking_code: string | null
+          updated_at: string | null
+          valor_repasse_liquido: number | null
         }
         Relationships: []
       }

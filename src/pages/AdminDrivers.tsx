@@ -10,6 +10,7 @@ import { Shield, Users, FileText, AlertCircle, CheckCircle, Wallet, Truck, Trend
 import { DriverApprovalModal } from '@/components/admin/DriverApprovalModal';
 import { PaymentTestPanel } from '@/components/admin/PaymentTestPanel';
 import { FinancialKPIs } from '@/components/admin/FinancialKPIs';
+import { PendingPayoutsTable } from '@/components/admin/PendingPayoutsTable';
 import { useToast } from '@/hooks/use-toast';
 
 interface PendingDriver {
@@ -277,6 +278,9 @@ const AdminDrivers = () => {
 
         {/* KPIs Financeiros */}
         <FinancialKPIs />
+
+        {/* Fila de Repasses Pendentes */}
+        <PendingPayoutsTable />
 
         {/* Painel de Teste de Repasse Financeiro */}
         <PaymentTestPanel />
