@@ -180,10 +180,10 @@ const Tracking = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-4 pt-20 pb-6 sm:pt-6">
         {/* Header */}
         <div className="mb-6 space-y-3">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2">
             <Button
               variant="ghost"
               size="sm"
