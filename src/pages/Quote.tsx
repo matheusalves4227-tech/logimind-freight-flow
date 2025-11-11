@@ -24,6 +24,14 @@ interface QuoteResult {
   quality_index: number;
   route_adjustment_factor: number;
   adjustment_reason?: string;
+  logiguard_pro?: {
+    available: boolean;
+    recommended: boolean;
+    base_cost: number;
+    markup_value: number;
+    total_price: number;
+    risk_factor: number;
+  };
 }
 
 type SortOption = "price" | "delivery" | "quality";
@@ -36,6 +44,7 @@ const Quote = () => {
   const [formData, setFormData] = useState({
     service_type: "ltl", // "ltl" (Padrão/Econômico) ou "ftl" (Dedicado/Expresso)
     vehicle_type: "", // Para FTL: "moto", "carro", "picape", "caminhao"
+    cargo_value: "", // Valor declarado da carga (para LogiGuard Pro)
     origin_cep: "",
     origin_number: "",
     origin_type: "commercial",
@@ -62,6 +71,7 @@ const Quote = () => {
     destination: false
   });
   const [contractingCarrierId, setContractingCarrierId] = useState<string | null>(null);
+  const [selectedLogiGuard, setSelectedLogiGuard] = useState<{ [key: string]: boolean }>({});
 
   const steps = [
     { label: "Localidades", description: "Origem e destino" },
@@ -175,6 +185,7 @@ const Quote = () => {
           height_cm: formData.height_cm ? parseFloat(formData.height_cm) : undefined,
           width_cm: formData.width_cm ? parseFloat(formData.width_cm) : undefined,
           length_cm: formData.length_cm ? parseFloat(formData.length_cm) : undefined,
+          cargo_value: formData.cargo_value ? parseFloat(formData.cargo_value) : undefined,
         }
       });
 
@@ -658,7 +669,26 @@ const Quote = () => {
                         <option value="caminhao_truck">🚛 Caminhão Truck</option>
                       </select>
                     </div>
-                  )}
+                   )}
+
+                  {/* Valor da Carga (Opcional para LogiGuard Pro) */}
+                  <div className="space-y-2 p-4 bg-accent/5 border border-accent/30 rounded-lg">
+                    <Label htmlFor="cargo_value" className="flex items-center gap-2">
+                      <DollarSign className="h-4 w-4 text-accent" />
+                      Valor da Carga (R$) - Opcional
+                    </Label>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      Informe o valor declarado da carga para receber recomendação de serviços de segurança (LogiGuard Pro)
+                    </p>
+                    <Input
+                      id="cargo_value"
+                      type="number"
+                      step="0.01"
+                      placeholder="0,00"
+                      value={formData.cargo_value}
+                      onChange={(e) => setFormData({ ...formData, cargo_value: e.target.value })}
+                    />
+                  </div>
 
                   <div className="flex justify-between">
                     <Button type="button" variant="outline" onClick={handleBack}>
@@ -1062,9 +1092,92 @@ const Quote = () => {
                               Contratando...
                             </>
                           ) : (
-                            'Contratar Este Frete'
+                            "Contratar Este Frete"
                           )}
                         </Button>
+
+                        {/* LogiGuard Pro - Upgrade de Segurança */}
+                        {quote.logiguard_pro?.available && (
+                          <div className={`mt-4 p-4 rounded-lg border-2 ${
+                            quote.logiguard_pro.recommended 
+                              ? 'bg-gradient-to-br from-accent/10 to-secondary/10 border-accent shadow-md' 
+                              : 'bg-muted/30 border-border'
+                          }`}>
+                            {/* Selo Recomendado */}
+                            {quote.logiguard_pro.recommended && (
+                              <div className="flex items-center gap-2 mb-3 px-2 py-1 bg-accent/20 border border-accent rounded-md w-fit">
+                                <span className="text-lg">🛡️</span>
+                                <span className="text-xs font-bold text-accent uppercase tracking-wide">
+                                  RECOMENDADO
+                                </span>
+                              </div>
+                            )}
+
+                            {/* Header */}
+                            <div className="flex items-start justify-between mb-3">
+                              <div className="flex-1">
+                                <h4 className="font-bold text-sm flex items-center gap-2 mb-1">
+                                  <span className="text-base">🛡️</span>
+                                  LogiGuard Pro
+                                </h4>
+                                <p className="text-xs text-muted-foreground">
+                                  Rastreamento 24/7 + Escolta Digital
+                                </p>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-xs text-muted-foreground">+</p>
+                                <p className="text-lg font-bold text-accent">
+                                  {formatarMoeda(quote.logiguard_pro.total_price)}
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Descrição */}
+                            <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
+                              Monitore sua carga em tempo real. Inclui seguro adicional contra roubo e 
+                              acionamento automático de Escolta Digital em zonas de risco.
+                            </p>
+
+                            {/* Justificativa LogiMind */}
+                            <div className="p-2.5 bg-background/50 rounded border border-border mb-3">
+                              <p className="text-[10px] text-muted-foreground font-semibold mb-1 uppercase">
+                                ⚙️ Análise LogiMind
+                              </p>
+                              <p className="text-xs text-foreground/80 leading-relaxed">
+                                {formData.cargo_value && parseFloat(formData.cargo_value) > 100000 && (
+                                  <>Recomendamos este serviço devido ao <strong>alto valor da sua carga</strong> (R$ {parseFloat(formData.cargo_value).toLocaleString('pt-BR', {minimumFractionDigits: 2})}) e o </>
+                                )}
+                                {(!formData.cargo_value || parseFloat(formData.cargo_value) <= 100000) && (
+                                  <>Recomendamos este serviço devido ao </>
+                                )}
+                                <strong>Fator de Risco {(quote.logiguard_pro.risk_factor * 100).toFixed(0)}%</strong> desta rota.
+                              </p>
+                            </div>
+
+                            {/* Checkbox/Toggle para adicionar */}
+                            <label className="flex items-center gap-3 cursor-pointer hover:bg-background/50 p-2 rounded transition-colors">
+                              <input
+                                type="checkbox"
+                                checked={selectedLogiGuard[quote.carrier_id] || false}
+                                onChange={(e) => setSelectedLogiGuard({
+                                  ...selectedLogiGuard,
+                                  [quote.carrier_id]: e.target.checked
+                                })}
+                                className="w-5 h-5 text-accent border-2 border-border rounded focus:ring-2 focus:ring-accent focus:ring-offset-0"
+                              />
+                              <div className="flex-1">
+                                <p className="text-sm font-semibold">
+                                  Adicionar LogiGuard Pro
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  Preço total com segurança: <strong className="text-foreground">
+                                    {formatarMoeda(quote.final_price + quote.logiguard_pro.total_price)}
+                                  </strong>
+                                </p>
+                              </div>
+                            </label>
+                          </div>
+                        )}
                       </div>
                     </Card>
                   );

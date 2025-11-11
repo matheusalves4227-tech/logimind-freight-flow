@@ -20,6 +20,13 @@ const TOLERANCIA_PRECO = 1.03; // 3% acima do preço de mercado
 // Em rotas de alta liquidez/competição, reduz comissão para garantir melhor preço final
 const INTERVALO_AJUSTE_DEMANDA = COMISSAO_PADRAO - COMISSAO_MINIMA; // 0.05 (5%)
 
+// LogiGuard Pro - Serviço de Segurança e Rastreamento Premium
+const LOGIGUARD_MARKUP = 0.25; // 25% de markup sobre o custo base
+const LOGIGUARD_VALOR_LIMITE = 50000.00; // R$ 50.000,00 - Limite para recomendar
+const LOGIGUARD_RISCO_LIMITE = 0.65; // 65% - Fator de risco mínimo para oferecer
+const LOGIGUARD_RECOMENDACAO_VALOR = 100000.00; // R$ 100k para recomendação ativa
+const LOGIGUARD_RECOMENDACAO_RISCO = 0.80; // 80% de risco para recomendação ativa
+
 interface QuoteRequest {
   service_type: string;
   vehicle_type?: string; // Para FTL: "moto", "carro", "picape", "caminhao_toco", "caminhao_truck"
@@ -33,6 +40,7 @@ interface QuoteRequest {
   height_cm?: number;
   width_cm?: number;
   length_cm?: number;
+  cargo_value?: number; // Valor declarado da carga para LogiGuard Pro
 }
 
 interface CarrierQuote {
@@ -57,6 +65,68 @@ interface ProcessedQuote {
   quality_index: number;
   route_adjustment_factor: number;
   adjustment_reason?: string;
+  logiguard_pro?: {
+    available: boolean;
+    recommended: boolean;
+    base_cost: number;
+    markup_value: number;
+    total_price: number;
+    risk_factor: number;
+  };
+}
+
+/**
+ * Calcula o serviço LogiGuard Pro com base no valor da carga e risco da rota
+ * 
+ * @param cargoValue - Valor declarado da carga
+ * @param riskFactor - Fator de risco da rota (0.0 a 1.0)
+ * @returns Dados do LogiGuard Pro ou undefined se não aplicável
+ */
+function calcularLogiGuardPro(cargoValue: number | undefined, riskFactor: number): 
+  { available: boolean; recommended: boolean; base_cost: number; markup_value: number; total_price: number; risk_factor: number; } | undefined {
+  
+  // Se não há valor declarado, não oferece o serviço
+  if (!cargoValue || cargoValue <= 0) {
+    return undefined;
+  }
+  
+  // Verifica se deve exibir a opção LogiGuard Pro
+  const shouldOffer = cargoValue > LOGIGUARD_VALOR_LIMITE || riskFactor >= LOGIGUARD_RISCO_LIMITE;
+  
+  if (!shouldOffer) {
+    return undefined;
+  }
+  
+  // Calcula o custo base do serviço (variável por valor e risco)
+  // Fórmula: R$ 10 base + (0.02% do valor da carga) + (fator de risco × R$ 5)
+  const baseCost = parseFloat((10 + (cargoValue * 0.0002) + (riskFactor * 5)).toFixed(2));
+  
+  // Calcula o markup LogiMarket (25%)
+  const markupValue = parseFloat((baseCost * LOGIGUARD_MARKUP).toFixed(2));
+  
+  // Preço total do LogiGuard Pro
+  const totalPrice = parseFloat((baseCost + markupValue).toFixed(2));
+  
+  // Determina se deve recomendar ativamente (selo RECOMENDADO)
+  const recommended = cargoValue > LOGIGUARD_RECOMENDACAO_VALOR && riskFactor > LOGIGUARD_RECOMENDACAO_RISCO;
+  
+  console.log(
+    `[LogiGuard Pro] Cargo Value: R$ ${cargoValue.toFixed(2)} | ` +
+    `Risk Factor: ${(riskFactor * 100).toFixed(0)}% | ` +
+    `Base Cost: R$ ${baseCost} | ` +
+    `Markup (25%): R$ ${markupValue} | ` +
+    `Total: R$ ${totalPrice} | ` +
+    `Recommended: ${recommended ? 'YES' : 'NO'}`
+  );
+  
+  return {
+    available: true,
+    recommended,
+    base_cost: baseCost,
+    markup_value: markupValue,
+    total_price: totalPrice,
+    risk_factor: riskFactor,
+  };
 }
 
 /**
@@ -362,7 +432,9 @@ serve(async (req) => {
       );
     }
 
-    // 2. Get route data (adjustment_factor for return routes, demand_level for high demand)
+    // 2. Get route data (adjustment_factor for return routes, demand_level for high demand, risk_factor for LogiGuard)
+    // NOTA: O campo risk_factor precisa ser adicionado à tabela routes via migration
+    // Para simular, vamos usar um valor padrão baseado na rota
     const { data: route } = await supabaseClient
       .from('routes')
       .select('adjustment_factor, demand_level')
@@ -372,7 +444,12 @@ serve(async (req) => {
 
     const routeAdjustmentFactor = route?.adjustment_factor ?? 0;
     const demandLevel = route?.demand_level ?? 'medium';
-    console.log(`Route data - Adjustment Factor: ${routeAdjustmentFactor}, Demand Level: ${demandLevel}`);
+    
+    // Mock de risk_factor até adicionar à tabela routes
+    // TODO: Adicionar campo risk_factor à tabela routes via migration
+    const riskFactor = 0.70; // Simulação: 70% de risco para demonstração
+    
+    console.log(`Route data - Adjustment Factor: ${routeAdjustmentFactor}, Demand Level: ${demandLevel}, Risk Factor: ${riskFactor}`);
 
     // 3. Generate mock quotes from carriers
     const cotacoesBrutas = gerarCotacoesMockadas(carriers, quoteRequest.weight_kg);
@@ -403,6 +480,15 @@ serve(async (req) => {
     // 6. Apply LogiMind 2.0 - Competition rule (safety net para qualquer rota)
     const cotacoesProcessadas = aplicarRegraCompeticao(cotacoesComRotas, precoMercadoReferencia);
 
+    // 6.5. Calculate LogiGuard Pro para cada cotação
+    const logiGuardPro = calcularLogiGuardPro(quoteRequest.cargo_value, riskFactor);
+    
+    // Adiciona LogiGuard Pro a todas as cotações processadas
+    const cotacoesComLogiGuard = cotacoesProcessadas.map(cota => ({
+      ...cota,
+      logiguard_pro: logiGuardPro,
+    }));
+
     // 7. Create quote record
     const { data: quote, error: quoteError } = await supabaseClient
       .from('quotes')
@@ -428,7 +514,7 @@ serve(async (req) => {
     }
 
     // 8. Insert quote items
-    const quoteItems = cotacoesProcessadas.map(item => ({
+    const quoteItems = cotacoesComLogiGuard.map(item => ({
       quote_id: quote.id,
       carrier_id: item.carrier_id,
       base_price: item.base_price,
@@ -448,7 +534,7 @@ serve(async (req) => {
       // Continue anyway, we have the processed quotes
     }
 
-    // 9. Return processed quotes with quote ID
+    // 9. Return processed quotes with quote ID and LogiGuard Pro data
     const routeType = demandLevel === 'high' ? 'high_demand' : 
                      routeAdjustmentFactor > 0.5 ? 'return' : 
                      routeAdjustmentFactor > 0 ? 'competitive' : 'standard';
@@ -456,11 +542,12 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         quote_id: quote.id,
-        quotes: cotacoesProcessadas,
+        quotes: cotacoesComLogiGuard,
         route_type: routeType,
         demand_level: demandLevel,
         restricted_origin: restrictedOrigin,
         restricted_destination: restrictedDestination,
+        logiguard_available: logiGuardPro?.available ?? false,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
