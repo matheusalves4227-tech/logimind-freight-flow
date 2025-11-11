@@ -32,6 +32,8 @@ const AdminDrivers = () => {
   const [pendingDrivers, setPendingDrivers] = useState<PendingDriver[]>([]);
   const [selectedDriver, setSelectedDriver] = useState<PendingDriver | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [totalDrivers, setTotalDrivers] = useState(0);
+  const [verifiedDocs, setVerifiedDocs] = useState(0);
 
   useEffect(() => {
     checkAdminAccess();
@@ -74,6 +76,7 @@ const AdminDrivers = () => {
 
   const fetchPendingDrivers = async () => {
     try {
+      // Buscar motoristas pendentes
       const { data: drivers, error } = await supabase
         .from('driver_profiles')
         .select(`
@@ -92,6 +95,23 @@ const AdminDrivers = () => {
       if (error) throw error;
 
       setPendingDrivers(drivers || []);
+      
+      // Buscar total de motoristas aprovados
+      const { count: totalCount } = await supabase
+        .from('driver_profiles')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'approved');
+      
+      setTotalDrivers(totalCount || 0);
+
+      // Buscar total de documentos verificados
+      const { count: docsCount } = await supabase
+        .from('driver_documents')
+        .select('id', { count: 'exact', head: true })
+        .eq('is_verified', true);
+      
+      setVerifiedDocs(docsCount || 0);
+      
     } catch (error) {
       console.error('Erro ao buscar motoristas pendentes:', error);
       toast({
@@ -163,7 +183,7 @@ const AdminDrivers = () => {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground font-medium">Total Motoristas</p>
-                  <p className="text-3xl font-bold text-secondary">-</p>
+                  <p className="text-3xl font-bold text-secondary">{totalDrivers}</p>
                 </div>
               </div>
             </CardContent>
@@ -177,7 +197,7 @@ const AdminDrivers = () => {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground font-medium">Docs Verificados</p>
-                  <p className="text-3xl font-bold text-primary">-</p>
+                  <p className="text-3xl font-bold text-primary">{verifiedDocs}</p>
                 </div>
               </div>
             </CardContent>
