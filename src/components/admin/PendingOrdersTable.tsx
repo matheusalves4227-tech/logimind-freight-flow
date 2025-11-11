@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, MapPin, Package } from 'lucide-react';
+import { AlertCircle, Eye, Package } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { PendingOrderDetail } from './PendingOrderDetail';
 
 interface PendingOrder {
   id: string;
@@ -16,14 +16,21 @@ interface PendingOrder {
   origin_cep: string;
   destination_cep: string;
   weight_kg: number;
+  height_cm?: number;
+  width_cm?: number;
+  length_cm?: number;
   service_type: string;
   final_price: number;
+  base_price?: number;
+  commission_applied?: number;
+  comissao_logimarket_perc?: number;
   status: string;
   carrier_name: string | null;
   driver_id: string | null;
   driver_name: string | null;
   created_at: string;
   estimated_delivery: string | null;
+  user_id: string;
 }
 
 interface PendingOrdersTableProps {
@@ -31,10 +38,11 @@ interface PendingOrdersTableProps {
 }
 
 export const PendingOrdersTable = ({ onUpdate }: PendingOrdersTableProps) => {
-  const navigate = useNavigate();
   const { toast } = useToast();
   const [orders, setOrders] = useState<PendingOrder[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedOrder, setSelectedOrder] = useState<PendingOrder | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
 
   useEffect(() => {
     fetchOrders();
@@ -44,7 +52,7 @@ export const PendingOrdersTable = ({ onUpdate }: PendingOrdersTableProps) => {
     try {
       const { data, error } = await supabase
         .from('orders')
-        .select('*')
+        .select('id, tracking_code, origin_address, destination_address, origin_cep, destination_cep, weight_kg, height_cm, width_cm, length_cm, service_type, final_price, base_price, commission_applied, comissao_logimarket_perc, status, carrier_name, driver_id, driver_name, created_at, estimated_delivery, user_id')
         .or('status.eq.pending,driver_id.is.null')
         .order('created_at', { ascending: false })
         .limit(50);
@@ -202,10 +210,13 @@ export const PendingOrdersTable = ({ onUpdate }: PendingOrdersTableProps) => {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => navigate(`/tracking/${order.tracking_code}`)}
+                          onClick={() => {
+                            setSelectedOrder(order);
+                            setDetailOpen(true);
+                          }}
                           className="gap-2"
                         >
-                          <MapPin className="h-4 w-4" />
+                          <Eye className="h-4 w-4" />
                           Ver Detalhes
                         </Button>
                       </TableCell>
@@ -217,6 +228,16 @@ export const PendingOrdersTable = ({ onUpdate }: PendingOrdersTableProps) => {
           </div>
         )}
       </CardContent>
+
+      <PendingOrderDetail
+        order={selectedOrder}
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+        onUpdate={() => {
+          fetchOrders();
+          onUpdate();
+        }}
+      />
     </Card>
   );
 };
