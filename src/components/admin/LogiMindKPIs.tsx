@@ -49,16 +49,20 @@ export const LogiMindKPIs = () => {
     }
   };
 
-  const formatPercent = (value: number | null) => {
-    if (value === null || value === undefined) return '0,00%';
+  const formatPercent = (value: number | null | undefined) => {
+    if (value === null || value === undefined || typeof value !== 'number' || isNaN(value)) {
+      return '0,00%';
+    }
     return (value * 100).toLocaleString('pt-BR', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }) + '%';
   };
 
-  const formatCurrency = (value: number | null) => {
-    if (value === null || value === undefined) return 'R$ 0,00';
+  const formatCurrency = (value: number | null | undefined) => {
+    if (value === null || value === undefined || typeof value !== 'number' || isNaN(value)) {
+      return 'R$ 0,00';
+    }
     return value.toLocaleString('pt-BR', {
       style: 'currency',
       currency: 'BRL',
@@ -67,8 +71,10 @@ export const LogiMindKPIs = () => {
     });
   };
 
-  const formatNumber = (value: number | null) => {
-    if (value === null || value === undefined) return '0';
+  const formatNumber = (value: number | null | undefined) => {
+    if (value === null || value === undefined || typeof value !== 'number' || isNaN(value)) {
+      return '0';
+    }
     return value.toLocaleString('pt-BR');
   };
 
