@@ -1,13 +1,11 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { MapPin, Package, Calendar, DollarSign, Truck, AlertCircle } from "lucide-react";
+import { MapPin, TrendingUp, Clock, DollarSign, Filter, Zap, Award, Calendar } from "lucide-react";
 import { formatarMoeda } from "@/lib/formatters";
-import { toast } from "sonner";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { DriverFreightDetail } from "./DriverFreightDetail";
 
 interface DriverOpportunitiesProps {
   driverProfile: any;
@@ -15,321 +13,312 @@ interface DriverOpportunitiesProps {
 
 interface Opportunity {
   id: string;
-  origin_cep: string;
-  origin_address: string;
-  destination_cep: string;
-  destination_address: string;
+  origin_city: string;
+  destination_city: string;
+  distance_km: number;
   weight_kg: number;
   vehicle_type: string;
-  suggested_price_min: number;
-  suggested_price_max: number;
-  deadline: Date;
-  distance_km: number;
+  // Valores LogiMind
+  driver_receives: number; // Valor que o motorista recebe
+  commission_standard: number; // Comissão padrão 10%
+  commission_adjustment: number; // Ajuste LogiMind (ex: 5.6%)
+  commission_total_percent: number; // Total 15.6%
+  route_factor: number; // 0.7 = alta desbalanceamento
+  bonus_amount: number; // R$ 56,00 de bônus
+  is_premium: boolean; // true se comissão > 10%
+  deadline_minutes?: number; // Minutos até expirar
 }
 
 export const DriverOpportunities = ({ driverProfile }: DriverOpportunitiesProps) => {
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [selectedOpportunity, setSelectedOpportunity] = useState<Opportunity | null>(null);
-  const [bidPrice, setBidPrice] = useState("");
-  const [bidDeliveryDate, setBidDeliveryDate] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<'all' | 'premium' | 'nearby' | 'flexible'>('all');
+  const [monthlyBonusEarnings, setMonthlyBonusEarnings] = useState(850);
 
   useEffect(() => {
     loadOpportunities();
   }, []);
 
-  const loadOpportunities = async () => {
-    // Mock data - em produção, viria de uma query que busca FTL orders pendentes
-    // filtradas por tipo de veículo do motorista e localização
+  const loadOpportunities = () => {
+    // Mock data com fretes premium de rotas de retorno
     const mockOpportunities: Opportunity[] = [
       {
-        id: "OPP-001",
-        origin_cep: "01310-100",
-        origin_address: "Av. Paulista, 1000 - São Paulo/SP",
-        destination_cep: "20040-020",
-        destination_address: "Centro - Rio de Janeiro/RJ",
+        id: "FRT-001",
+        origin_city: "São Paulo, SP",
+        destination_city: "Três Corações, MG",
+        distance_km: 320,
         weight_kg: 5000,
-        vehicle_type: "Carreta",
-        suggested_price_min: 4800,
-        suggested_price_max: 5200,
-        deadline: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
-        distance_km: 430
+        vehicle_type: "Carreta Baú",
+        driver_receives: 1250,
+        commission_standard: 125, // 10% de 1250
+        commission_adjustment: 56, // 5.6% adicional
+        commission_total_percent: 15.6,
+        route_factor: 0.7, // Alta desbalanceamento
+        bonus_amount: 56,
+        is_premium: true,
+        deadline_minutes: 930, // 15h30min
       },
       {
-        id: "OPP-002",
-        origin_cep: "04538-133",
-        origin_address: "Itaim Bibi - São Paulo/SP",
-        destination_cep: "80060-000",
-        destination_address: "Curitiba/PR",
-        weight_kg: 3200,
-        vehicle_type: "Truck",
-        suggested_price_min: 2800,
-        suggested_price_max: 3100,
-        deadline: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
-        distance_km: 410
+        id: "FRT-002",
+        origin_city: "São Paulo, SP",
+        destination_city: "Campinas, SP",
+        distance_km: 95,
+        weight_kg: 2500,
+        vehicle_type: "Caminhão Toco",
+        driver_receives: 650,
+        commission_standard: 65,
+        commission_adjustment: 0,
+        commission_total_percent: 10,
+        route_factor: 1.0, // Rota balanceada
+        bonus_amount: 0,
+        is_premium: false,
+      },
+      {
+        id: "FRT-003",
+        origin_city: "Campinas, SP",
+        destination_city: "Ribeirão Preto, SP",
+        distance_km: 230,
+        weight_kg: 4200,
+        vehicle_type: "Carreta Sider",
+        driver_receives: 980,
+        commission_standard: 98,
+        commission_adjustment: 39.2, // 4% adicional
+        commission_total_percent: 14,
+        route_factor: 0.8,
+        bonus_amount: 39.2,
+        is_premium: true,
+        deadline_minutes: 45,
       }
     ];
 
     setOpportunities(mockOpportunities);
   };
 
-  const handleSubmitBid = async () => {
-    if (!selectedOpportunity || !bidPrice || !bidDeliveryDate) {
-      toast.error("Preencha todos os campos do lance");
-      return;
+  const getFilteredOpportunities = () => {
+    if (activeFilter === 'premium') {
+      return opportunities.filter(o => o.is_premium);
     }
-
-    const priceValue = parseFloat(bidPrice);
-    
-    if (isNaN(priceValue) || priceValue <= 0) {
-      toast.error("Valor do lance inválido");
-      return;
+    if (activeFilter === 'nearby') {
+      return opportunities.filter(o => o.distance_km < 150);
     }
-
-    setLoading(true);
-
-    try {
-      // Aqui seria chamada a função LogiMind 3.0 para validar o lance
-      // e calcular se a comissão reduzida ainda garante margem mínima
-      
-      // Mock: validação simples
-      if (priceValue < selectedOpportunity.suggested_price_min * 0.8) {
-        toast.error("Lance muito baixo. O LogiMind não consegue processar este valor.");
-        setLoading(false);
-        return;
-      }
-
-      // Mock: Simular inserção de lance
-      // Descomente quando os tipos Supabase forem atualizados:
-      // const { error } = await supabase
-      //   .from('driver_bids')
-      //   .insert({
-      //     driver_profile_id: driverProfile.id,
-      //     opportunity_id: selectedOpportunity.id,
-      //     bid_price: priceValue,
-      //     delivery_date: bidDeliveryDate,
-      //     status: 'pending'
-      //   });
-      // if (error) throw error;
-      
-      console.log('Lance mock enviado:', {
-        driver_profile_id: driverProfile.id,
-        opportunity_id: selectedOpportunity.id,
-        bid_price: priceValue,
-        delivery_date: bidDeliveryDate
-      });
-
-      toast.success("Lance enviado com sucesso! Aguarde a resposta do embarcador.");
-      setSelectedOpportunity(null);
-      setBidPrice("");
-      setBidDeliveryDate("");
-      loadOpportunities();
-    } catch (error) {
-      console.error('Erro ao enviar lance:', error);
-      toast.error("Erro ao enviar lance. Tente novamente.");
-    } finally {
-      setLoading(false);
+    if (activeFilter === 'flexible') {
+      return opportunities.filter(o => !o.deadline_minutes || o.deadline_minutes > 120);
     }
+    return opportunities;
+  };
+
+  const filteredOpportunities = getFilteredOpportunities();
+
+  const formatDeadline = (minutes?: number) => {
+    if (!minutes) return null;
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours}h${mins.toString().padStart(2, '0')}min`;
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground">Oportunidades de Frete</h2>
-          <p className="text-muted-foreground">Cargas FTL disponíveis próximas a você</p>
-        </div>
-        <Badge variant="secondary" className="text-sm">
-          {opportunities.length} oportunidades
-        </Badge>
-      </div>
-
-      {/* Mapa - Placeholder */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="h-64 bg-muted rounded-lg flex items-center justify-center">
-            <div className="text-center">
-              <MapPin className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
-              <p className="text-muted-foreground">Mapa de oportunidades (Mapbox)</p>
-              <p className="text-sm text-muted-foreground">Será implementado com integração Mapbox</p>
+      {/* Visão Rápida - Ganhos Extras */}
+      <Card className="bg-gradient-to-r from-secondary/10 to-secondary/5 border-2 border-secondary/30">
+        <CardContent className="pt-6 pb-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-full bg-secondary/20 flex items-center justify-center">
+                <Award className="h-7 w-7 text-secondary" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+                  Ganhos Extras LogiMind este Mês
+                </p>
+                <p className="text-3xl font-extrabold text-secondary">
+                  {formatarMoeda(monthlyBonusEarnings)}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Comissões otimizadas em rotas de retorno
+                </p>
+              </div>
             </div>
+            <TrendingUp className="h-10 w-10 text-secondary opacity-30" />
           </div>
         </CardContent>
       </Card>
 
+      {/* Filtros de Oportunidade */}
+      <div className="flex flex-wrap gap-3">
+        <Button
+          variant={activeFilter === 'all' ? 'default' : 'outline'}
+          onClick={() => setActiveFilter('all')}
+          className="gap-2"
+        >
+          <Filter className="h-4 w-4" />
+          Todas ({opportunities.length})
+        </Button>
+        <Button
+          variant={activeFilter === 'premium' ? 'default' : 'outline'}
+          onClick={() => setActiveFilter('premium')}
+          className="gap-2 bg-gradient-to-r from-secondary to-secondary/80 hover:from-secondary/90 hover:to-secondary/70 text-secondary-foreground border-secondary"
+        >
+          <Award className="h-4 w-4" />
+          Premium / Retorno ({opportunities.filter(o => o.is_premium).length})
+        </Button>
+        <Button
+          variant={activeFilter === 'nearby' ? 'default' : 'outline'}
+          onClick={() => setActiveFilter('nearby')}
+          className="gap-2"
+        >
+          <MapPin className="h-4 w-4" />
+          Perto de Você
+        </Button>
+        <Button
+          variant={activeFilter === 'flexible' ? 'default' : 'outline'}
+          onClick={() => setActiveFilter('flexible')}
+          className="gap-2"
+        >
+          <Calendar className="h-4 w-4" />
+          Prazo Flexível
+        </Button>
+      </div>
+
       {/* Lista de Oportunidades */}
       <div className="grid grid-cols-1 gap-4">
-        {opportunities.map((opp) => (
-          <Card key={opp.id} className="hover:shadow-md transition-shadow">
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div className="space-y-1 flex-1">
-                  <div className="flex items-center gap-2">
-                    <CardTitle className="text-lg">{opp.id}</CardTitle>
-                    <Badge variant="outline">{opp.vehicle_type}</Badge>
+        {filteredOpportunities.map((opp) => (
+          <Card 
+            key={opp.id} 
+            className={`hover:shadow-lg transition-all duration-300 ${
+              opp.is_premium ? 'border-2 border-secondary/40 bg-gradient-to-br from-secondary/5 to-background' : ''
+            }`}
+          >
+            <CardHeader className="pb-3">
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex items-center gap-3">
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                    opp.is_premium ? 'bg-gradient-to-br from-secondary to-secondary/70' : 'bg-primary/10'
+                  }`}>
+                    <DollarSign className={`h-6 w-6 ${opp.is_premium ? 'text-secondary-foreground' : 'text-primary'}`} />
                   </div>
-                  <CardDescription className="flex items-center gap-2 mt-2">
-                    <MapPin className="h-4 w-4" />
-                    <span className="text-sm">
-                      {opp.origin_address} → {opp.destination_address}
-                    </span>
-                  </CardDescription>
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-bold text-lg">{opp.id}</span>
+                      <Badge variant="outline" className="text-xs">
+                        {opp.vehicle_type}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <MapPin className="h-3.5 w-3.5" />
+                      <span>{opp.origin_city} → {opp.destination_city}</span>
+                      <span className="text-xs">• {opp.distance_km} km</span>
+                    </div>
+                  </div>
                 </div>
+
+                {opp.is_premium && (
+                  <Badge className="bg-gradient-to-r from-secondary to-secondary/80 text-secondary-foreground border-0 shadow-md">
+                    <Award className="h-3 w-3 mr-1" />
+                    Frete Premium
+                  </Badge>
+                )}
               </div>
+
+              {/* Urgência */}
+              {opp.deadline_minutes && opp.deadline_minutes < 120 && (
+                <div className="flex items-center gap-2 p-2 bg-accent/10 border border-accent/30 rounded-lg">
+                  <Zap className="h-4 w-4 text-accent flex-shrink-0" />
+                  <span className="text-xs font-semibold text-accent">
+                    ⚠️ Expira em {formatDeadline(opp.deadline_minutes)}!
+                  </span>
+                </div>
+              )}
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                <div className="flex items-center gap-2">
-                  <Package className="h-4 w-4 text-muted-foreground" />
-                  <div>
+
+            <CardContent className="pt-0">
+              <div className="space-y-4">
+                {/* Valor de Recebimento - DESTAQUE PRINCIPAL */}
+                <div className="p-4 bg-primary/5 border-2 border-primary/20 rounded-lg">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
+                    Você Recebe
+                  </p>
+                  <div className="flex items-baseline gap-2">
+                    <p className="text-4xl font-extrabold text-primary">
+                      {formatarMoeda(opp.driver_receives)}
+                    </p>
+                    {opp.is_premium && opp.bonus_amount > 0 && (
+                      <Badge className="bg-secondary/10 text-secondary border border-secondary/30">
+                        +{formatarMoeda(opp.bonus_amount)} Bônus
+                      </Badge>
+                    )}
+                  </div>
+                  {opp.is_premium && (
+                    <p className="text-xs text-muted-foreground mt-2">
+                      <span className="text-secondary font-semibold">{opp.commission_total_percent}%</span> Comissão LogiMind (Rota de Retorno)
+                    </p>
+                  )}
+                </div>
+
+                {/* Métricas Rápidas */}
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="text-center p-2 bg-muted/30 rounded-lg">
                     <p className="text-xs text-muted-foreground">Peso</p>
-                    <p className="font-semibold">{opp.weight_kg} kg</p>
+                    <p className="font-bold text-sm">{opp.weight_kg} kg</p>
                   </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Truck className="h-4 w-4 text-muted-foreground" />
-                  <div>
+                  <div className="text-center p-2 bg-muted/30 rounded-lg">
                     <p className="text-xs text-muted-foreground">Distância</p>
-                    <p className="font-semibold">{opp.distance_km} km</p>
+                    <p className="font-bold text-sm">{opp.distance_km} km</p>
                   </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <p className="text-xs text-muted-foreground">Prazo para lance</p>
-                    <p className="font-semibold text-sm">
-                      {opp.deadline.toLocaleDateString('pt-BR')}
+                  <div className="text-center p-2 bg-muted/30 rounded-lg">
+                    <p className="text-xs text-muted-foreground">R$/km</p>
+                    <p className="font-bold text-sm text-secondary">
+                      {formatarMoeda(opp.driver_receives / opp.distance_km)}
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <DollarSign className="h-4 w-4 text-green-600" />
-                  <div>
-                    <p className="text-xs text-muted-foreground">Sugestão LogiMind</p>
-                    <p className="font-semibold text-green-600 text-sm">
-                      {formatarMoeda(opp.suggested_price_min)} - {formatarMoeda(opp.suggested_price_max)}
-                    </p>
-                  </div>
-                </div>
+
+                {/* CTA */}
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button 
+                      className={`w-full ${
+                        opp.is_premium 
+                          ? 'bg-gradient-to-r from-secondary to-secondary/80 hover:from-secondary/90 hover:to-secondary/70' 
+                          : ''
+                      }`}
+                      size="lg"
+                      onClick={() => setSelectedOpportunity(opp)}
+                    >
+                      {opp.is_premium ? '⭐ Ver Detalhes Premium' : 'Ver Detalhes do Frete'}
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle className="flex items-center gap-2">
+                        Detalhes do Frete - {opp.id}
+                        {opp.is_premium && (
+                          <Badge className="bg-gradient-to-r from-secondary to-secondary/80 text-secondary-foreground">
+                            <Award className="h-3 w-3 mr-1" />
+                            Premium
+                          </Badge>
+                        )}
+                      </DialogTitle>
+                    </DialogHeader>
+                    {selectedOpportunity && (
+                      <DriverFreightDetail opportunity={selectedOpportunity} />
+                    )}
+                  </DialogContent>
+                </Dialog>
               </div>
-
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button 
-                    className="w-full" 
-                    onClick={() => setSelectedOpportunity(opp)}
-                  >
-                    Ver Detalhes e Dar Lance
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl">
-                  <DialogHeader>
-                    <DialogTitle>Detalhes da Carga - {opp.id}</DialogTitle>
-                    <DialogDescription>
-                      Analise os detalhes e envie seu melhor lance
-                    </DialogDescription>
-                  </DialogHeader>
-
-                  <div className="space-y-6">
-                    {/* Mapa da Rota */}
-                    <div className="h-48 bg-muted rounded-lg flex items-center justify-center">
-                      <div className="text-center">
-                        <MapPin className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                        <p className="text-sm text-muted-foreground">Mapa da rota A → B</p>
-                      </div>
-                    </div>
-
-                    {/* Detalhes da Carga */}
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">Origem</p>
-                        <p className="text-sm">{opp.origin_address}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">Destino</p>
-                        <p className="text-sm">{opp.destination_address}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">Peso</p>
-                        <p className="text-sm">{opp.weight_kg} kg</p>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">Distância</p>
-                        <p className="text-sm">{opp.distance_km} km</p>
-                      </div>
-                    </div>
-
-                    {/* Sugestão LogiMind */}
-                    <Card className="bg-blue-50 border-blue-200">
-                      <CardContent className="pt-4">
-                        <div className="flex items-start gap-3">
-                          <AlertCircle className="h-5 w-5 text-blue-600 mt-0.5" />
-                          <div>
-                            <p className="font-semibold text-blue-900 text-sm">
-                              💡 Sugestão do LogiMind
-                            </p>
-                            <p className="text-sm text-blue-800 mt-1">
-                              O mercado está pagando entre <strong>{formatarMoeda(opp.suggested_price_min)}</strong> e{" "}
-                              <strong>{formatarMoeda(opp.suggested_price_max)}</strong> por esta rota.
-                            </p>
-                            <p className="text-xs text-blue-700 mt-2">
-                              Lance dentro desta faixa para aumentar suas chances de aprovação.
-                            </p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    {/* Formulário de Lance */}
-                    <div className="space-y-4">
-                      <div>
-                        <label className="text-sm font-medium text-foreground">
-                          Seu Lance (R$)
-                        </label>
-                        <Input
-                          type="number"
-                          placeholder="Ex: 5000.00"
-                          value={bidPrice}
-                          onChange={(e) => setBidPrice(e.target.value)}
-                          className="mt-1"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-foreground">
-                          Data de Entrega Proposta
-                        </label>
-                        <Input
-                          type="date"
-                          value={bidDeliveryDate}
-                          onChange={(e) => setBidDeliveryDate(e.target.value)}
-                          className="mt-1"
-                        />
-                      </div>
-                      <Button 
-                        onClick={handleSubmitBid} 
-                        disabled={loading}
-                        className="w-full bg-green-600 hover:bg-green-700"
-                      >
-                        {loading ? "Enviando..." : "ENVIAR MEU LANCE"}
-                      </Button>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {opportunities.length === 0 && (
+      {filteredOpportunities.length === 0 && (
         <Card>
-          <CardContent className="pt-6 pb-6 text-center">
-            <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground">
-              Nenhuma oportunidade disponível no momento.
+          <CardContent className="pt-12 pb-12 text-center">
+            <Filter className="h-16 w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
+            <p className="text-lg font-medium text-muted-foreground mb-2">
+              Nenhuma oportunidade encontrada
             </p>
-            <p className="text-sm text-muted-foreground mt-2">
-              Ative seu status para receber notificações de novas cargas.
+            <p className="text-sm text-muted-foreground">
+              Tente ajustar os filtros ou aguarde novas cargas
             </p>
           </CardContent>
         </Card>

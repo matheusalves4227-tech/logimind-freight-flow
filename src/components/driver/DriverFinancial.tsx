@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { DollarSign, TrendingUp, Calendar, CheckCircle, XCircle } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { DollarSign, TrendingUp, Calendar, CheckCircle, XCircle, Award, Target } from "lucide-react";
 import { formatarMoeda } from "@/lib/formatters";
 import {
   Table,
@@ -38,6 +39,8 @@ export const DriverFinancial = ({ driverProfile }: DriverFinancialProps) => {
   const [bidsHistory, setBidsHistory] = useState<Bid[]>([]);
   const [totalEarnings, setTotalEarnings] = useState(0);
   const [pendingBalance, setPendingBalance] = useState(0);
+  const [premiumBonusEarnings, setPremiumBonusEarnings] = useState(0);
+  const [premiumFreightsProgress, setPremiumFreightsProgress] = useState({ completed: 6, goal: 10 });
 
   useEffect(() => {
     loadFinancialData();
@@ -59,6 +62,13 @@ export const DriverFinancial = ({ driverProfile }: DriverFinancialProps) => {
         amount: 2800,
         status: "paid",
         description: "Frete São Paulo → Curitiba"
+      },
+      {
+        id: "PAY-003",
+        date: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000),
+        amount: 1250,
+        status: "paid",
+        description: "Frete Premium - SP → Três Corações/MG (+R$ 56,00 Bônus)"
       }
     ];
 
@@ -89,8 +99,10 @@ export const DriverFinancial = ({ driverProfile }: DriverFinancialProps) => {
 
     setPayments(mockPayments);
     setBidsHistory(mockBids);
-    setTotalEarnings(7750);
+    setTotalEarnings(9850);
     setPendingBalance(4850);
+    setPremiumBonusEarnings(850); // Total de bônus LogiMind acumulado
+    setPremiumFreightsProgress({ completed: 6, goal: 10 });
   };
 
   const getBidStatusBadge = (status: string) => {
@@ -117,20 +129,37 @@ export const DriverFinancial = ({ driverProfile }: DriverFinancialProps) => {
       </div>
 
       {/* KPIs Financeiros */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Ganho
+              Recebimentos do Mês
             </CardTitle>
-            <TrendingUp className="h-5 w-5 text-green-600" />
+            <TrendingUp className="h-5 w-5 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-green-600">
+            <div className="text-3xl font-bold text-primary">
               {formatarMoeda(totalEarnings)}
             </div>
             <p className="text-xs text-muted-foreground mt-2">
-              Últimos 30 dias
+              Valor total recebido
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-secondary/10 to-secondary/5 border-2 border-secondary/30">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Bônus LogiMind
+            </CardTitle>
+            <Award className="h-5 w-5 text-secondary" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-secondary">
+              {formatarMoeda(premiumBonusEarnings)}
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              Ganhos extras em rotas otimizadas
             </p>
           </CardContent>
         </Card>
@@ -140,10 +169,10 @@ export const DriverFinancial = ({ driverProfile }: DriverFinancialProps) => {
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Saldo a Receber
             </CardTitle>
-            <DollarSign className="h-5 w-5 text-blue-600" />
+            <DollarSign className="h-5 w-5 text-accent" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-blue-600">
+            <div className="text-3xl font-bold text-accent">
               {formatarMoeda(pendingBalance)}
             </div>
             <p className="text-xs text-muted-foreground mt-2">
@@ -155,20 +184,59 @@ export const DriverFinancial = ({ driverProfile }: DriverFinancialProps) => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Próximo Pagamento
+              Próximo Repasse
             </CardTitle>
-            <Calendar className="h-5 w-5 text-orange-600" />
+            <Calendar className="h-5 w-5 text-primary" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-foreground">
-              {new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR')}
+              {new Date(Date.now() + 4 * 60 * 60 * 1000).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
             </div>
             <p className="text-xs text-muted-foreground mt-2">
-              Prazo estimado
+              Pagamento PIX em 4h úteis
             </p>
           </CardContent>
         </Card>
       </div>
+
+      {/* Meta de Fretes Premium - Gamificação */}
+      <Card className="bg-gradient-to-r from-secondary/5 to-background border-2 border-secondary/20">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-secondary/20 flex items-center justify-center">
+                <Target className="h-6 w-6 text-secondary" />
+              </div>
+              <div>
+                <CardTitle className="text-secondary">Meta de Fretes Premium</CardTitle>
+                <CardDescription>Sua meta para este mês</CardDescription>
+              </div>
+            </div>
+            <Badge className="bg-secondary/10 text-secondary border border-secondary/30 text-lg px-4 py-2">
+              {premiumFreightsProgress.completed}/{premiumFreightsProgress.goal}
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            <Progress 
+              value={(premiumFreightsProgress.completed / premiumFreightsProgress.goal) * 100} 
+              className="h-3"
+            />
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">
+                Mais {premiumFreightsProgress.goal - premiumFreightsProgress.completed} fretes premium para completar sua meta!
+              </span>
+              <span className="font-semibold text-secondary">
+                {Math.round((premiumFreightsProgress.completed / premiumFreightsProgress.goal) * 100)}%
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              💡 Complete sua meta e ganhe ainda mais em bônus do LogiMind nas rotas de retorno
+            </p>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Histórico de Pagamentos */}
       <Card>
@@ -190,11 +258,26 @@ export const DriverFinancial = ({ driverProfile }: DriverFinancialProps) => {
               {payments.map((payment) => (
                 <TableRow key={payment.id}>
                   <TableCell>{payment.date.toLocaleDateString('pt-BR')}</TableCell>
-                  <TableCell>{payment.description}</TableCell>
-                  <TableCell className="font-semibold text-green-600">
+                  <TableCell>
+                    {payment.description}
+                    {payment.description.includes('Premium') && (
+                      <Badge className="ml-2 bg-secondary/10 text-secondary border border-secondary/30 text-xs">
+                        <Award className="h-3 w-3 mr-1" />
+                        Premium
+                      </Badge>
+                    )}
+                  </TableCell>
+                  <TableCell className="font-semibold text-secondary">
                     {formatarMoeda(payment.amount)}
                   </TableCell>
-                  <TableCell>{getPaymentStatusBadge(payment.status)}</TableCell>
+                  <TableCell>
+                    {getPaymentStatusBadge(payment.status)}
+                    {payment.status === "paid" && (
+                      <Badge variant="outline" className="ml-2 text-xs">
+                        PIX Realizado
+                      </Badge>
+                    )}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
