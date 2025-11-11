@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Tracking from "./pages/Tracking";
 import DriverDashboard from "./pages/DriverDashboard";
+import AdminDrivers from "./pages/AdminDrivers";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ const App = () => (
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/tracking/:trackingCode" element={<Tracking />} />
           <Route path="/motorista/dashboard" element={<DriverDashboard />} />
+          <Route path="/admin/motoristas" element={<AdminDrivers />} />
           <Route path="/auth" element={<Auth />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
