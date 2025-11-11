@@ -8,3 +8,6 @@ verify_jwt = true
 
 [functions.get-mapbox-token]
 verify_jwt = false
+
+[functions.create-order]
+verify_jwt = true

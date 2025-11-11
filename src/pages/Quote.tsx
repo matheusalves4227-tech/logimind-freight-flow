@@ -61,6 +61,7 @@ const Quote = () => {
     origin: false,
     destination: false
   });
+  const [contractingCarrierId, setContractingCarrierId] = useState<string | null>(null);
 
   const steps = [
     { label: "Localidades", description: "Origem e destino" },
@@ -233,6 +234,64 @@ const Quote = () => {
             Rota Padrão
           </div>
         );
+    }
+  };
+
+  const handleContractFreight = async (quote: QuoteResult) => {
+    try {
+      setContractingCarrierId(quote.carrier_id);
+      
+      // Verificar autenticação
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error("Você precisa estar logado para contratar um frete");
+        navigate("/auth");
+        return;
+      }
+
+      // Chamar edge function para criar pedido
+      const { data, error } = await supabase.functions.invoke('create-order', {
+        body: {
+          carrier_id: quote.carrier_id,
+          carrier_name: quote.carrier_name,
+          service_type: formData.service_type,
+          vehicle_type: formData.vehicle_type || null,
+          origin_cep: formData.origin_cep,
+          origin_address: `${formData.origin_address}, ${formData.origin_number} - ${formData.origin_city}`,
+          destination_cep: formData.destination_cep,
+          destination_address: `${formData.destination_address}, ${formData.destination_number} - ${formData.destination_city}`,
+          weight_kg: parseFloat(formData.weight_kg),
+          height_cm: formData.height_cm ? parseFloat(formData.height_cm) : null,
+          width_cm: formData.width_cm ? parseFloat(formData.width_cm) : null,
+          length_cm: formData.length_cm ? parseFloat(formData.length_cm) : null,
+          base_price: quote.base_price,
+          commission_applied: quote.commission_applied,
+          final_price: quote.final_price,
+          delivery_days: quote.delivery_days,
+          external_tracking_code: null,
+          driver_name: null,
+          driver_phone: null
+        }
+      });
+
+      if (error) {
+        console.error('Error creating order:', error);
+        toast.error("Erro ao contratar frete. Tente novamente.");
+        return;
+      }
+
+      toast.success(`Frete contratado! Código: ${data.tracking_code}`);
+      
+      // Redirecionar para página de rastreamento
+      setTimeout(() => {
+        navigate(`/tracking/${data.tracking_code}`);
+      }, 1500);
+
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      toast.error("Erro inesperado ao contratar frete");
+    } finally {
+      setContractingCarrierId(null);
     }
   };
 
@@ -904,8 +963,17 @@ const Quote = () => {
                           variant="hero" 
                           size="lg" 
                           className="w-full mt-auto shadow-md hover:shadow-lg transition-shadow text-sm md:text-base"
+                          onClick={() => handleContractFreight(quote)}
+                          disabled={contractingCarrierId !== null}
                         >
-                          Contratar Este Frete
+                          {contractingCarrierId === quote.carrier_id ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Contratando...
+                            </>
+                          ) : (
+                            'Contratar Este Frete'
+                          )}
                         </Button>
                       </div>
                     </Card>
