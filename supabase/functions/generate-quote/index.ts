@@ -6,14 +6,13 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// LogiMind Constants
-const COMISSAO_PADRAO = 0.10; // 10%
-const LIMITE_MAXIMO_AJUSTE = 0.08; // 8%
-const LIMITE_MAXIMO_COMISSAO = 0.18; // 18%
+// LogiMind Constants - Subsídio de Rotas de Retorno
+const COMISSAO_PADRAO = 0.10; // 10% - Comissão Padrão da Plataforma
+const SUBSIDIO_MAXIMO_PERMITIDO = 0.50; // 50% - Máximo de subsídio sobre a comissão padrão
+const COMISSAO_MINIMA = 0.05; // 5% - Comissão mínima da plataforma
 
-// LogiMind 2.0 - Regra de Competição
+// LogiMind 2.0 - Regra de Competição (mantida)
 const TOLERANCIA_PRECO = 1.03; // 3% acima do preço de mercado
-const COMISSAO_MINIMA = 0.05; // 5%
 
 interface QuoteRequest {
   service_type: string;
@@ -67,45 +66,70 @@ function buscarPrecoMercadoReferencia(cotacoesBrutas: CarrierQuote[]): number {
 }
 
 /**
- * LogiMind 1.0 - Aplica ajuste baseado em rotas de retorno
+ * LogiMind 1.0 - Subsídio de Rotas de Retorno
+ * Reduz a comissão da plataforma para aumentar o valor repassado ao transportador
+ * em rotas de baixa ocupação, incentivando aceitação e fidelização.
  */
 function aplicarLogiMind(
   cotacoesBrutas: CarrierQuote[], 
   routeAdjustmentFactor: number
 ): ProcessedQuote[] {
-  console.log(`[LogiMind 1.0] Route adjustment factor: ${routeAdjustmentFactor}`);
+  console.log(`[LogiMind 1.0 - Subsídio] Fator de Atratividade da Rota: ${routeAdjustmentFactor}`);
   
   return cotacoesBrutas.map(cota => {
-    const precoBaseFrete = cota.base_price;
+    const precoBrutoEmbarcador = cota.base_price;
     
-    // 1. Calcular o Ajuste de Comissão baseado na Rota
-    const ajusteProporcional = routeAdjustmentFactor * LIMITE_MAXIMO_AJUSTE;
+    // 1. Valor Monetário da Comissão Padrão (10%)
+    const valorComissaoPadrao = precoBrutoEmbarcador * COMISSAO_PADRAO;
     
-    // 2. Calcular a Nova Comissão (Comissão Padrão + Ajuste)
-    let novaComissao = COMISSAO_PADRAO + ajusteProporcional;
+    // 2. Cálculo do Percentual de Subsídio Efetivo
+    // O subsídio é proporcional ao Fator de Atratividade (routeAdjustmentFactor)
+    // e limitado ao máximo permitido (50% da comissão padrão)
+    const percentualSubsidioEfetivo = routeAdjustmentFactor * SUBSIDIO_MAXIMO_PERMITIDO;
     
-    // 3. Aplicar Limite Máximo (Garantindo que não ultrapasse 18%)
-    let comissaoFinal = Math.min(novaComissao, LIMITE_MAXIMO_COMISSAO);
-    comissaoFinal = parseFloat(comissaoFinal.toFixed(4));
+    // 3. Valor Monetário do Subsídio LogiMind
+    // Este é o valor que a LogiMind renuncia da sua comissão
+    const valorSubsidioLogiMind = valorComissaoPadrao * percentualSubsidioEfetivo;
     
-    // 4. Calcular o Preço Final para o Embarcador (Garantindo 2 casas decimais)
-    const precoFinal = parseFloat((precoBaseFrete * (1 + comissaoFinal)).toFixed(2));
+    // 4. Nova Comissão para a LogiMind (após subsídio)
+    let novaComissaoLogiMind = valorComissaoPadrao - valorSubsidioLogiMind;
     
-    console.log(`[LogiMind 1.0] ${cota.carrier_name}: Base=${precoBaseFrete}, Commission=${comissaoFinal}, Final=${precoFinal}`);
+    // Garantir que não fique abaixo da comissão mínima (5%)
+    const comissaoMinimaValor = precoBrutoEmbarcador * COMISSAO_MINIMA;
+    novaComissaoLogiMind = Math.max(novaComissaoLogiMind, comissaoMinimaValor);
     
-    // 5. Retornar a Cotação com Ajuste de Rota
+    // 5. Calcular o percentual de comissão final aplicado
+    const comissaoFinalPercentual = parseFloat((novaComissaoLogiMind / precoBrutoEmbarcador).toFixed(4));
+    
+    // 6. Preço Final para o Embarcador (Base + Comissão Final)
+    const precoFinalEmbarcador = parseFloat((precoBrutoEmbarcador + novaComissaoLogiMind).toFixed(2));
+    
+    // 7. Valor que o Transportador receberá (Preço Final - Comissão)
+    const valorTransportador = parseFloat((precoFinalEmbarcador - novaComissaoLogiMind).toFixed(2));
+    
+    console.log(
+      `[LogiMind Subsídio] ${cota.carrier_name}: ` +
+      `Base=${precoBrutoEmbarcador.toFixed(2)} | ` +
+      `Comissão Padrão=${(COMISSAO_PADRAO * 100).toFixed(0)}% (R$ ${valorComissaoPadrao.toFixed(2)}) | ` +
+      `Subsídio=${(percentualSubsidioEfetivo * 100).toFixed(1)}% (R$ ${valorSubsidioLogiMind.toFixed(2)}) | ` +
+      `Nova Comissão=${(comissaoFinalPercentual * 100).toFixed(1)}% (R$ ${novaComissaoLogiMind.toFixed(2)}) | ` +
+      `Preço Final Embarcador=${precoFinalEmbarcador} | ` +
+      `Transportador Recebe=${valorTransportador}`
+    );
+    
+    // 8. Retornar a Cotação com Subsídio Aplicado
     return {
       carrier_id: cota.carrier_id,
       carrier_name: cota.carrier_name,
       carrier_size: cota.carrier_size,
       specialties: cota.specialties,
-      base_price: precoBaseFrete,
-      commission_applied: comissaoFinal,
-      final_price: precoFinal,
+      base_price: precoBrutoEmbarcador,
+      commission_applied: comissaoFinalPercentual,
+      final_price: precoFinalEmbarcador,
       delivery_days: cota.delivery_days,
       quality_index: cota.quality_index,
       route_adjustment_factor: routeAdjustmentFactor,
-      adjustment_reason: routeAdjustmentFactor > 0 ? 'ROUTE_OPTIMIZED' : 'STANDARD',
+      adjustment_reason: routeAdjustmentFactor > 0 ? 'SUBSIDIZED_ROUTE' : 'STANDARD',
     };
   });
 }
