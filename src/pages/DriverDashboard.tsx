@@ -6,7 +6,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DriverStatus } from "@/components/driver/DriverStatus";
 import { DriverOpportunities } from "@/components/driver/DriverOpportunities";
 import { DriverActive } from "@/components/driver/DriverActive";
-import { DriverFinancial } from "@/components/driver/DriverFinancial";
+import { DriverBankAccount } from "@/components/driver/DriverBankAccount";
+import { DriverFinancialKPIs } from "@/components/driver/DriverFinancialKPIs";
+import { DriverPaymentHistory } from "@/components/driver/DriverPaymentHistory";
 import { Home, Map, Truck, Wallet } from "lucide-react";
 
 const DriverDashboard = () => {
@@ -108,8 +110,15 @@ const DriverDashboard = () => {
             <DriverActive driverProfile={driverProfile} />
           </TabsContent>
 
-          <TabsContent value="financial">
-            <DriverFinancial driverProfile={driverProfile} />
+          <TabsContent value="financial" className="space-y-6">
+            {/* KPIs Financeiros */}
+            <DriverFinancialKPIs />
+            
+            {/* Cadastro de Dados Bancários */}
+            <DriverBankAccount />
+            
+            {/* Histórico de Repasses */}
+            <DriverPaymentHistory />
           </TabsContent>
         </Tabs>
       </main>
