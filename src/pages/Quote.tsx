@@ -851,7 +851,7 @@ const Quote = () => {
                   return (
                     <Card 
                       key={quote.carrier_id}
-                      className="relative overflow-hidden hover:shadow-xl transition-fast border border-border/50 flex flex-col rounded-xl animate-fade-in bg-card min-h-[650px]"
+                      className="relative overflow-hidden hover:shadow-xl transition-fast border border-border/50 flex flex-col rounded-xl animate-fade-in bg-card"
                       style={{ animationDelay: `${index * 50}ms` }}
                     >
                       {/* Ribbon lateral de destaque */}
@@ -953,32 +953,32 @@ const Quote = () => {
                         </div>
 
                         {/* Métricas em Cards Internos */}
-                        <div className="space-y-2 md:space-y-3 mb-4 md:mb-6">
-                          {/* Prazo de Entrega - DESTAQUE LARANJA com Hierarquia 1.1em */}
-                          <div className="flex items-center gap-2 md:gap-3 p-3 md:p-3.5 bg-gradient-to-r from-accent/10 to-accent/5 rounded-lg border-2 border-accent/30 shadow-accent transition-fast hover:shadow-lg hover:border-accent/40">
-                            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
-                              <Clock className="h-5 w-5 md:h-6 md:w-6 text-accent" />
+                        <div className="space-y-2 mb-4">
+                          {/* Prazo de Entrega - Compacto */}
+                          <div className="flex items-center gap-2 p-2.5 bg-gradient-to-r from-accent/10 to-accent/5 rounded-lg border border-accent/20">
+                            <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
+                              <Clock className="h-4 w-4 text-accent" />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-[10px] md:text-xs text-accent/80 font-semibold uppercase tracking-wide">
+                              <p className="text-[9px] text-accent/70 font-medium uppercase tracking-wide">
                                 Prazo de Entrega
                               </p>
-                              <p className="text-[1.1rem] md:text-[1.2rem] font-extrabold text-accent">
+                              <p className="text-sm font-bold text-accent">
                                 {quote.delivery_days} {quote.delivery_days === 1 ? 'Dia' : 'Dias'} Úteis
                               </p>
                             </div>
-                            <Zap className="h-5 w-5 md:h-6 md:w-6 text-accent flex-shrink-0" />
+                            <Zap className="h-4 w-4 text-accent flex-shrink-0" />
                           </div>
 
-                          {/* Detalhes LogiMind - Discreto e Secundário com Hierarquia 0.85em */}
-                          <div className="bg-muted/30 rounded-lg p-2.5 md:p-3 space-y-1.5 md:space-y-2 text-left text-[0.85rem]">
-                            <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold mb-1.5 md:mb-2 flex items-center gap-1 opacity-70">
+                          {/* Detalhes LogiMind - Discreto e Compacto */}
+                          <div className="bg-muted/30 rounded-lg p-2.5 space-y-1.5 text-left text-xs">
+                            <p className="text-[9px] uppercase tracking-wide text-muted-foreground font-medium mb-1.5 flex items-center gap-1 opacity-70">
                               <Info className="h-3 w-3" />
                               Detalhes LogiMind
                             </p>
                             
                             {/* Preço Base */}
-                            <div className="flex justify-between items-center text-[0.8rem]">
+                            <div className="flex justify-between items-center text-[0.75rem]">
                               <span className="text-muted-foreground flex items-center gap-1">
                                 <Package className="h-3 w-3" />
                                 Preço base:
@@ -989,7 +989,7 @@ const Quote = () => {
                             </div>
 
                             {/* Comissão */}
-                            <div className="flex justify-between items-center text-[0.8rem]">
+                            <div className="flex justify-between items-center text-[0.75rem]">
                               <span className="text-muted-foreground flex items-center gap-1">
                                 <DollarSign className="h-3 w-3" />
                                 Comissão aplicada:
@@ -1067,26 +1067,26 @@ const Quote = () => {
                             {quote.adjustment_reason && (
                               <div className="flex items-start gap-1.5 pt-1">
                                 <MapPin className="h-3 w-3 text-muted-foreground flex-shrink-0 mt-0.5" />
-                                <p className="text-[0.7rem] text-muted-foreground leading-tight opacity-80">
-                                  {quote.adjustment_reason === 'HIGH_DEMAND_ROUTE' && "Rota de alta liquidez - Comissão reduzida para competitividade máxima"}
-                                  {quote.adjustment_reason === 'SUBSIDIZED_ROUTE' && "Rota com menor ocupação - Subsídio LogiMind aplicado"}
-                                  {quote.adjustment_reason === 'COMPETITION' && "Preço otimizado por competição de mercado"}
-                                  {quote.adjustment_reason === 'ROUTE_OPTIMIZED' && "Rota com menor ocupação - Otimização LogiMind"}
-                                  {quote.adjustment_reason === 'STANDARD' && "Comissão padrão aplicada"}
+                                <p className="text-[0.65rem] text-muted-foreground leading-tight opacity-80">
+                                  {quote.adjustment_reason === 'HIGH_DEMAND_ROUTE' && "Rota de alta liquidez"}
+                                  {quote.adjustment_reason === 'SUBSIDIZED_ROUTE' && "Rota subsidiada"}
+                                  {quote.adjustment_reason === 'COMPETITION' && "Preço otimizado"}
+                                  {quote.adjustment_reason === 'ROUTE_OPTIMIZED' && "Rota otimizada"}
+                                  {quote.adjustment_reason === 'STANDARD' && "Comissão padrão"}
                                 </p>
                               </div>
                             )}
                           </div>
                         </div>
 
-                        {/* Alerta de Restrição */}
+                        {/* Alerta de Restrição - Compacto */}
                         {(restrictedAreas.origin || restrictedAreas.destination) && (
-                          <div className="flex items-start gap-2 p-2 md:p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg mb-3 md:mb-4">
-                            <span className="text-sm md:text-base flex-shrink-0">⚠️</span>
+                          <div className="flex items-start gap-2 p-2 bg-amber-500/10 border border-amber-500/20 rounded-lg mb-3">
+                            <span className="text-sm flex-shrink-0">⚠️</span>
                             <div className="text-xs text-amber-700 dark:text-amber-300 min-w-0">
                               <p className="font-semibold">Área com Restrição</p>
                               <p className="text-[10px] mt-0.5 leading-tight">
-                                Possível acréscimo ou restrição de horário
+                                Possível acréscimo ou restrição
                               </p>
                             </div>
                           </div>
@@ -1096,7 +1096,7 @@ const Quote = () => {
                         <Button 
                           variant="hero" 
                           size="lg" 
-                          className="w-full mt-auto shadow-md hover:shadow-lg transition-shadow text-sm md:text-base"
+                          className="w-full mt-auto shadow-md hover:shadow-lg transition-shadow"
                           onClick={() => handleContractFreight(quote)}
                           disabled={contractingCarrierId !== null}
                         >
@@ -1112,64 +1112,64 @@ const Quote = () => {
 
                         {/* LogiGuard Pro - Upgrade de Segurança */}
                         {quote.logiguard_pro?.available && (
-                          <div className={`mt-4 p-4 rounded-lg border-2 ${
+                          <div className={`mt-3 p-3 rounded-lg border ${
                             quote.logiguard_pro.recommended 
-                              ? 'bg-gradient-to-br from-accent/10 to-secondary/10 border-accent shadow-md' 
-                              : 'bg-muted/30 border-border'
+                              ? 'bg-gradient-to-br from-accent/10 to-secondary/10 border-accent' 
+                              : 'bg-muted/20 border-border'
                           }`}>
                             {/* Selo Recomendado */}
                             {quote.logiguard_pro.recommended && (
-                              <div className="flex items-center gap-2 mb-3 px-2 py-1 bg-accent/20 border border-accent rounded-md w-fit">
-                                <span className="text-lg">🛡️</span>
-                                <span className="text-xs font-bold text-accent uppercase tracking-wide">
+                              <div className="flex items-center gap-1.5 mb-2 px-2 py-0.5 bg-accent/20 border border-accent rounded-md w-fit">
+                                <span className="text-sm">🛡️</span>
+                                <span className="text-[10px] font-bold text-accent uppercase tracking-wide">
                                   RECOMENDADO
                                 </span>
                               </div>
                             )}
 
                             {/* Header */}
-                            <div className="flex items-start justify-between mb-3">
+                            <div className="flex items-start justify-between mb-2">
                               <div className="flex-1">
-                                <h4 className="font-bold text-sm flex items-center gap-2 mb-1">
-                                  <span className="text-base">🛡️</span>
+                                <h4 className="font-bold text-xs flex items-center gap-1.5 mb-0.5">
+                                  <span className="text-sm">🛡️</span>
                                   LogiGuard Pro
                                 </h4>
-                                <p className="text-xs text-muted-foreground">
+                                <p className="text-[10px] text-muted-foreground">
                                   Rastreamento 24/7 + Escolta Digital
                                 </p>
                               </div>
                               <div className="text-right">
-                                <p className="text-xs text-muted-foreground">+</p>
-                                <p className="text-lg font-bold text-accent">
+                                <p className="text-[10px] text-muted-foreground">+</p>
+                                <p className="text-sm font-bold text-accent">
                                   {formatarMoeda(quote.logiguard_pro.total_price)}
                                 </p>
                               </div>
                             </div>
 
                             {/* Descrição */}
-                            <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
+                            <p className="text-[10px] text-muted-foreground mb-2 leading-relaxed">
                               Monitore sua carga em tempo real. Inclui seguro adicional contra roubo e 
                               acionamento automático de Escolta Digital em zonas de risco.
                             </p>
 
                             {/* Justificativa LogiMind */}
-                            <div className="p-2.5 bg-background/50 rounded border border-border mb-3">
-                              <p className="text-[10px] text-muted-foreground font-semibold mb-1 uppercase">
+                            <div className="p-2 bg-background/50 rounded border border-border mb-2">
+                              <p className="text-[9px] text-muted-foreground font-semibold mb-0.5 uppercase">
                                 ⚙️ Análise LogiMind
                               </p>
-                              <p className="text-xs text-foreground/80 leading-relaxed">
+                              <p className="text-[10px] text-foreground/80 leading-relaxed">
                                 {formData.cargo_value && parseFloat(formData.cargo_value) > 100000 && (
-                                  <>Recomendamos este serviço devido ao <strong>alto valor da sua carga</strong> (R$ {parseFloat(formData.cargo_value).toLocaleString('pt-BR', {minimumFractionDigits: 2})}) e o </>
+                                  <>Recomendado devido ao <strong>alto valor da carga</strong> e o </>
                                 )}
                                 {(!formData.cargo_value || parseFloat(formData.cargo_value) <= 100000) && (
-                                  <>Recomendamos este serviço devido ao </>
+                                  <>Recomendado devido ao </>
                                 )}
                                 <strong>Fator de Risco {(quote.logiguard_pro.risk_factor * 100).toFixed(0)}%</strong> desta rota.
                               </p>
                             </div>
 
                             {/* Checkbox/Toggle para adicionar */}
-                            <label className="flex items-center gap-3 cursor-pointer hover:bg-background/50 p-2 rounded transition-colors">
+                            <label className="flex items-center gap-2.5 cursor-pointer hover:bg-background/50 p-2 rounded transition-colors">
                               <input
                                 type="checkbox"
                                 checked={selectedLogiGuard[quote.carrier_id] || false}
@@ -1177,14 +1177,14 @@ const Quote = () => {
                                   ...selectedLogiGuard,
                                   [quote.carrier_id]: e.target.checked
                                 })}
-                                className="w-5 h-5 text-accent border-2 border-border rounded focus:ring-2 focus:ring-accent focus:ring-offset-0"
+                                className="w-4 h-4 text-accent border-2 border-border rounded focus:ring-2 focus:ring-accent focus:ring-offset-0"
                               />
                               <div className="flex-1">
-                                <p className="text-sm font-semibold">
+                                <p className="text-xs font-semibold">
                                   Adicionar LogiGuard Pro
                                 </p>
-                                <p className="text-xs text-muted-foreground">
-                                  Preço total com segurança: <strong className="text-foreground">
+                                <p className="text-[10px] text-muted-foreground">
+                                  Preço total: <strong className="text-foreground">
                                     {formatarMoeda(quote.final_price + quote.logiguard_pro.total_price)}
                                   </strong>
                                 </p>
