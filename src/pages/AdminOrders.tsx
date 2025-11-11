@@ -5,10 +5,11 @@ import Navbar from '@/components/Navbar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { FileText, Package, AlertCircle, Clock } from 'lucide-react';
+import { FileText, Package, AlertCircle, Clock, TrendingUp } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { PendingQuotesTable } from '@/components/admin/PendingQuotesTable';
 import { PendingOrdersTable } from '@/components/admin/PendingOrdersTable';
+import { LogiMindKPIs } from '@/components/admin/LogiMindKPIs';
 
 interface StatsData {
   pendingQuotes: number;
@@ -193,11 +194,15 @@ const AdminOrders = () => {
         </div>
 
         {/* Tabs de Conteúdo */}
-        <Tabs defaultValue="quotes" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 max-w-md">
+        <Tabs defaultValue="kpis" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3 max-w-2xl">
+            <TabsTrigger value="kpis" className="gap-2">
+              <TrendingUp className="h-4 w-4" />
+              KPIs LogiMind
+            </TabsTrigger>
             <TabsTrigger value="quotes" className="gap-2">
               <FileText className="h-4 w-4" />
-              Cotações Pendentes
+              Cotações
               {stats.pendingQuotes > 0 && (
                 <Badge variant="destructive" className="ml-2">
                   {stats.pendingQuotes}
@@ -206,7 +211,7 @@ const AdminOrders = () => {
             </TabsTrigger>
             <TabsTrigger value="orders" className="gap-2">
               <AlertCircle className="h-4 w-4" />
-              Pedidos s/ Motorista
+              Pedidos
               {stats.pendingOrders > 0 && (
                 <Badge variant="destructive" className="ml-2">
                   {stats.pendingOrders}
@@ -214,6 +219,10 @@ const AdminOrders = () => {
               )}
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="kpis">
+            <LogiMindKPIs />
+          </TabsContent>
 
           <TabsContent value="quotes">
             <PendingQuotesTable onUpdate={fetchStats} />

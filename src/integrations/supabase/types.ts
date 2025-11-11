@@ -858,6 +858,52 @@ export type Database = {
         }
         Relationships: []
       }
+      vw_logimind_dashboard_kpis: {
+        Row: {
+          kpi1_comissao_media: number | null
+          kpi1_take_rate_retorno: number | null
+          kpi1_total_fretes: number | null
+          kpi2_crescimento_volume: number | null
+          kpi2_fretes_atual: number | null
+          kpi2_gmv_atual: number | null
+          kpi3_arpf: number | null
+          kpi3_taxa_adesao: number | null
+        }
+        Relationships: []
+      }
+      vw_logimind_kpi_logiguard_pro: {
+        Row: {
+          arpf_logiguard: number | null
+          fretes_alto_risco: number | null
+          fretes_alto_valor: number | null
+          fretes_com_logiguard: number | null
+          fretes_elegiveis_total: number | null
+          receita_total_logiguard: number | null
+          taxa_adesao_perc: number | null
+        }
+        Relationships: []
+      }
+      vw_logimind_kpi_margem_retorno: {
+        Row: {
+          comissao_media_perc: number | null
+          comissao_total_retorno: number | null
+          gmv_rotas_retorno: number | null
+          take_rate_medio_retorno: number | null
+          total_fretes_retorno: number | null
+        }
+        Relationships: []
+      }
+      vw_logimind_kpi_volume_alta_demanda: {
+        Row: {
+          crescimento_gmv_perc: number | null
+          crescimento_volume_perc: number | null
+          fretes_anterior: number | null
+          fretes_atual: number | null
+          gmv_anterior: number | null
+          gmv_atual: number | null
+        }
+        Relationships: []
+      }
       vw_pedidos_para_repasse: {
         Row: {
           bank_account_number: string | null
