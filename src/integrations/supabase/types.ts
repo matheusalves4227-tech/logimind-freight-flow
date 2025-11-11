@@ -910,6 +910,7 @@ export type Database = {
           bank_name: string | null
           comissao_logimarket_val: number | null
           created_at: string | null
+          driver_id: string | null
           driver_profile_id: string | null
           final_price: number | null
           id: string | null
@@ -922,7 +923,22 @@ export type Database = {
           updated_at: string | null
           valor_repasse_liquido: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "orders_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "driver_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "vw_pedidos_para_repasse"
+            referencedColumns: ["driver_profile_id"]
+          },
+        ]
       }
     }
     Functions: {
