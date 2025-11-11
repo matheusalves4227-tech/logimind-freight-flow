@@ -93,7 +93,8 @@ Deno.serve(async (req) => {
     const orderData = order as OrderData;
 
     // 2. Validar Status - Pedido deve estar ENTREGUE
-    if (orderData.status !== 'DELIVERED' && orderData.status !== 'delivered') {
+    const statusLower = orderData.status.toLowerCase();
+    if (statusLower !== 'delivered' && statusLower !== 'entregue') {
       console.warn(`[REPASSE] Pedido ${order_id} não está em status DELIVERED (status atual: ${orderData.status})`);
       return new Response(
         JSON.stringify({ 
@@ -107,7 +108,8 @@ Deno.serve(async (req) => {
     }
 
     // 3. Validar se pagamento já não foi processado
-    if (orderData.status_pagamento === 'paid' || orderData.status_pagamento === 'PAID') {
+    const statusPagamentoLower = (orderData.status_pagamento || '').toLowerCase();
+    if (statusPagamentoLower === 'paid' || statusPagamentoLower === 'pago') {
       console.warn(`[REPASSE] Pedido ${order_id} já foi pago`);
       return new Response(
         JSON.stringify({ 

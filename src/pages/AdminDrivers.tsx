@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Shield, Users, FileText, AlertCircle, CheckCircle, Wallet, Truck, TrendingUp, Clock } from 'lucide-react';
 import { DriverApprovalModal } from '@/components/admin/DriverApprovalModal';
+import { PaymentTestPanel } from '@/components/admin/PaymentTestPanel';
 import { useToast } from '@/hooks/use-toast';
 
 interface PendingDriver {
@@ -272,6 +273,9 @@ const AdminDrivers = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Painel de Teste de Repasse Financeiro */}
+        <PaymentTestPanel />
 
         {/* Tabela de Motoristas Pendentes */}
         <Card className="card-logimarket mb-8">
