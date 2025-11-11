@@ -19,6 +19,17 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Loader2, Calendar, Package } from "lucide-react";
+import { z } from "zod";
+
+const leadSchema = z.object({
+  name: z.string().trim().min(2, "Nome deve ter pelo menos 2 caracteres").max(100, "Nome muito longo"),
+  email: z.string().trim().email("Email inválido").max(255, "Email muito longo"),
+  phone: z.string().trim().min(10, "Telefone inválido").max(20, "Telefone muito longo"),
+  company: z.string().trim().min(2, "Nome da empresa muito curto").max(100, "Nome da empresa muito longo"),
+  monthlyVolume: z.string().min(1, "Selecione o volume mensal"),
+  segment: z.string().min(1, "Selecione o segmento"),
+  challenge: z.string().trim().max(1000, "Descrição muito longa").optional(),
+});
 
 interface LeadQualificationModalProps {
   open: boolean;
@@ -41,36 +52,53 @@ const LeadQualificationModal = ({ open, onOpenChange }: LeadQualificationModalPr
     e.preventDefault();
     setLoading(true);
 
-    // Simulate API call - In production, this would send to your CRM/backend
-    setTimeout(() => {
-      toast.success(
-        "Obrigado! Nossa equipe entrará em contato em até 24 horas.",
-        {
-          description: "Você receberá um email de confirmação em breve.",
-        }
-      );
+    try {
+      // Validate form data with zod
+      const validatedData = leadSchema.parse(formData);
+
+      // Simulate API call - In production, this would send to your CRM/backend
+      setTimeout(() => {
+        toast.success(
+          "Obrigado! Nossa equipe entrará em contato em até 24 horas.",
+          {
+            description: "Você receberá um email de confirmação em breve.",
+          }
+        );
+        setLoading(false);
+        onOpenChange(false);
+        setFormData({
+          name: "",
+          email: "",
+          phone: "",
+          company: "",
+          monthlyVolume: "",
+          segment: "",
+          challenge: "",
+        });
+      }, 1500);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const firstError = error.issues[0];
+        toast.error("Erro de validação", {
+          description: firstError.message,
+        });
+      } else {
+        toast.error("Erro ao enviar solicitação");
+      }
       setLoading(false);
-      onOpenChange(false);
-      setFormData({
-        name: "",
-        email: "",
-        phone: "",
-        company: "",
-        monthlyVolume: "",
-        segment: "",
-        challenge: "",
-      });
-    }, 1500);
+    }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-2xl">Fale com um Especialista LogiMind</DialogTitle>
+          <DialogTitle className="text-2xl">
+            Fale com um Especialista LogiMind em Otimização de Fretes
+          </DialogTitle>
           <DialogDescription className="text-base">
-            Preencha o formulário abaixo e nossa equipe entrará em contato para entender suas
-            necessidades e apresentar a melhor solução logística.
+            Descreva sua necessidade e nossa equipe preparará uma Solução Logística com foco em
+            redução de custos e rotas mais eficientes.
           </DialogDescription>
         </DialogHeader>
 
@@ -136,10 +164,9 @@ const LeadQualificationModal = ({ open, onOpenChange }: LeadQualificationModalPr
                 <SelectValue placeholder="Selecione o volume aproximado" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="1-10">1 a 10 fretes/mês</SelectItem>
-                <SelectItem value="11-50">11 a 50 fretes/mês</SelectItem>
-                <SelectItem value="51-100">51 a 100 fretes/mês</SelectItem>
-                <SelectItem value="101-500">101 a 500 fretes/mês</SelectItem>
+                <SelectItem value="1-50">1 a 50 fretes/mês</SelectItem>
+                <SelectItem value="51-200">51 a 200 fretes/mês</SelectItem>
+                <SelectItem value="201-500">201 a 500 fretes/mês</SelectItem>
                 <SelectItem value="500+">Mais de 500 fretes/mês</SelectItem>
               </SelectContent>
             </Select>
@@ -159,8 +186,8 @@ const LeadQualificationModal = ({ open, onOpenChange }: LeadQualificationModalPr
                 <SelectItem value="e-commerce">E-commerce / Varejo Online</SelectItem>
                 <SelectItem value="industria">Indústria / Manufatura</SelectItem>
                 <SelectItem value="distribuicao">Distribuição / Atacado</SelectItem>
+                <SelectItem value="agronegocio">Agronegócio / Agricultura</SelectItem>
                 <SelectItem value="construcao">Construção Civil</SelectItem>
-                <SelectItem value="agricultura">Agricultura / Agronegócio</SelectItem>
                 <SelectItem value="farmaceutico">Farmacêutico / Saúde</SelectItem>
                 <SelectItem value="alimentos">Alimentos e Bebidas</SelectItem>
                 <SelectItem value="outro">Outro</SelectItem>
@@ -169,14 +196,17 @@ const LeadQualificationModal = ({ open, onOpenChange }: LeadQualificationModalPr
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="challenge">Principal Desafio Logístico</Label>
+            <Label htmlFor="challenge">
+              Qual o principal desafio que você busca resolver com a LogiMarket? *
+            </Label>
             <Textarea
               id="challenge"
-              placeholder="Ex: Altos custos de frete, dificuldade em encontrar transportadoras confiáveis, atrasos frequentes..."
+              placeholder="Ex: Altos custos de frete, dificuldade em encontrar transportadoras confiáveis, atrasos frequentes nas entregas, falta de visibilidade das cargas..."
               value={formData.challenge}
               onChange={(e) => setFormData({ ...formData, challenge: e.target.value })}
               rows={3}
               className="resize-none"
+              maxLength={1000}
             />
           </div>
 
@@ -184,15 +214,17 @@ const LeadQualificationModal = ({ open, onOpenChange }: LeadQualificationModalPr
             <div className="flex items-start gap-2">
               <Package className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
               <p className="text-sm text-muted-foreground">
-                <strong className="text-foreground">Análise Personalizada:</strong> Nossa equipe
-                irá analisar suas necessidades e preparar uma demonstração focada no seu segmento.
+                <strong className="text-foreground">Análise Personalizada LogiMind:</strong> Nossa
+                equipe irá analisar suas necessidades e preparar uma demonstração com base na
+                inteligência de precificação para o seu segmento.
               </p>
             </div>
             <div className="flex items-start gap-2">
               <Calendar className="h-5 w-5 text-secondary mt-0.5 flex-shrink-0" />
               <p className="text-sm text-muted-foreground">
-                <strong className="text-foreground">Resposta em 24h:</strong> Um especialista
-                entrará em contato para agendar uma reunião no melhor horário para você.
+                <strong className="text-foreground">Resposta em 24h Garantida:</strong> Um
+                especialista entrará em contato para agendar uma reunião no melhor horário para
+                você.
               </p>
             </div>
           </div>
@@ -214,7 +246,7 @@ const LeadQualificationModal = ({ open, onOpenChange }: LeadQualificationModalPr
                   Enviando...
                 </>
               ) : (
-                "Enviar Solicitação"
+                "Receber Solução LogiMind"
               )}
             </Button>
           </div>
