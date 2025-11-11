@@ -16,6 +16,7 @@ const TOLERANCIA_PRECO = 1.03; // 3% acima do preço de mercado
 const COMISSAO_MINIMA = 0.05; // 5%
 
 interface QuoteRequest {
+  service_type: string;
   origin_cep: string;
   origin_number: string;
   origin_type: string;
@@ -243,6 +244,9 @@ serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    // Log do tipo de serviço
+    console.log(`Service type: ${quoteRequest.service_type || 'ltl'} (LTL=Transportadoras, FTL=Autônomos)`);
 
     // Verificar áreas restritas
     const restrictedOrigin = verificarAreaRestrita(quoteRequest.origin_cep);
