@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Package, Menu, User } from "lucide-react";
+import { Package, Menu, User, LayoutDashboard } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
@@ -54,6 +54,12 @@ const Navbar = () => {
           <div className="flex items-center gap-4">
             {user ? (
               <>
+                <Link to="/dashboard">
+                  <Button variant="ghost" className="hidden md:inline-flex">
+                    <LayoutDashboard className="h-4 w-4 mr-2" />
+                    Dashboard
+                  </Button>
+                </Link>
                 <Link to="/quote">
                   <Button variant="hero" size="lg">
                     Nova Cotação
