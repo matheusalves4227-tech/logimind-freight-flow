@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Shield, Users, FileText, AlertCircle, CheckCircle, Wallet, Truck, TrendingUp, Clock } from 'lucide-react';
+import { Shield, Users, FileText, AlertCircle, CheckCircle, Wallet, Truck, TrendingUp, Clock, Package } from 'lucide-react';
 import { DriverApprovalModal } from '@/components/admin/DriverApprovalModal';
 import { PaymentTestPanel } from '@/components/admin/PaymentTestPanel';
 import { FinancialKPIs } from '@/components/admin/FinancialKPIs';
@@ -222,13 +222,25 @@ const AdminDrivers = () => {
       <main className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <Shield className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold text-foreground">Gestão de Motoristas</h1>
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <Shield className="h-8 w-8 text-primary" />
+                <h1 className="text-3xl font-bold text-foreground">Gestão de Motoristas</h1>
+              </div>
+              <p className="text-muted-foreground">
+                Painel administrativo para análise e aprovação de cadastros de motoristas
+              </p>
+            </div>
+            <Button
+              onClick={() => navigate('/admin/pedidos')}
+              variant="outline"
+              className="gap-2"
+            >
+              <Package className="h-4 w-4" />
+              Ver Pedidos e Cotações
+            </Button>
           </div>
-          <p className="text-muted-foreground">
-            Painel administrativo para análise e aprovação de cadastros de motoristas
-          </p>
         </div>
 
         {/* KPI Cards */}
