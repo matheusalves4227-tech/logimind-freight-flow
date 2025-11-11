@@ -79,12 +79,12 @@ export const TrackingTimeline = ({ events }: TrackingTimelineProps) => {
               <div 
                 className={`absolute -left-[23px] w-4 h-4 rounded-full border-[3px] border-background z-10 transition-all ${
                   isCritical 
-                    ? 'bg-destructive shadow-md' 
+                    ? 'bg-orange-500 shadow-lg shadow-orange-500/50' 
                     : isLatest 
-                    ? 'bg-accent shadow-accent animate-pulse' 
+                    ? 'bg-blue-500 shadow-lg shadow-blue-500/50 animate-pulse' 
                     : event.codigo_evento === 'DELIVERED'
-                    ? 'bg-secondary shadow-success'
-                    : 'bg-primary'
+                    ? 'bg-green-500 shadow-lg shadow-green-500/50'
+                    : 'bg-blue-400'
                 }`}
               />
 
@@ -92,22 +92,22 @@ export const TrackingTimeline = ({ events }: TrackingTimelineProps) => {
               <div 
                 className={`ml-2 p-3 rounded-lg border transition-all ${
                   isCritical 
-                    ? 'bg-destructive/5 border-destructive/20 border-l-4 border-l-destructive' 
+                    ? 'bg-orange-50 border-orange-200 border-l-4 border-l-orange-500' 
                     : isLatest
-                    ? 'bg-accent/5 border-accent/20 border-l-4 border-l-accent'
+                    ? 'bg-blue-50 border-blue-200 border-l-4 border-l-blue-500'
                     : event.codigo_evento === 'DELIVERED'
-                    ? 'bg-secondary/5 border-secondary/20 border-l-4 border-l-secondary'
+                    ? 'bg-green-50 border-green-200 border-l-4 border-l-green-500'
                     : 'bg-muted/30 border-border/50'
                 }`}
               >
                 <div className="flex items-start justify-between gap-2 mb-1">
                   <span className={`text-xs font-semibold ${
                     isCritical 
-                      ? 'text-destructive' 
+                      ? 'text-orange-600' 
                       : isLatest
-                      ? 'text-accent'
+                      ? 'text-blue-600'
                       : event.codigo_evento === 'DELIVERED'
-                      ? 'text-secondary'
+                      ? 'text-green-600'
                       : 'text-muted-foreground'
                   }`}>
                     {new Date(event.data_hora).toLocaleDateString('pt-BR', {
@@ -124,7 +124,7 @@ export const TrackingTimeline = ({ events }: TrackingTimelineProps) => {
                 </div>
 
                 <p className={`text-sm font-medium mb-1 flex items-start gap-2 ${
-                  isCritical ? 'text-destructive' : 'text-foreground'
+                  isCritical ? 'text-orange-700' : 'text-foreground'
                 }`}>
                   <span className="text-base flex-shrink-0">
                     {getEventEmoji(event.codigo_evento, isCritical)}

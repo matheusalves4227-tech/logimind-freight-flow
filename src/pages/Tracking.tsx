@@ -120,17 +120,21 @@ const Tracking = () => {
   };
 
   const getStatusBadge = (status: string) => {
-    const statusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' }> = {
-      'PENDING': { label: 'Pendente', variant: 'default' },
-      'CONFIRMED': { label: 'Confirmado', variant: 'default' },
-      'IN_TRANSIT': { label: 'Em Trânsito', variant: 'default' },
-      'DELIVERED': { label: 'Entregue', variant: 'secondary' },
-      'CANCELLED': { label: 'Cancelado', variant: 'destructive' },
-      'FAILED': { label: 'Falha na Entrega', variant: 'destructive' }
+    const statusMap: Record<string, { label: string; className: string }> = {
+      'PENDING': { label: 'Pendente', className: 'bg-gray-100 text-gray-700 border-gray-300' },
+      'CONFIRMED': { label: 'Confirmado', className: 'bg-blue-100 text-blue-700 border-blue-300' },
+      'IN_TRANSIT': { label: 'Em Trânsito', className: 'bg-blue-500 text-white border-blue-600' },
+      'DELIVERED': { label: 'Entregue', className: 'bg-green-500 text-white border-green-600' },
+      'CANCELLED': { label: 'Cancelado', className: 'bg-red-100 text-red-700 border-red-300' },
+      'FAILED': { label: 'Falha na Entrega', className: 'bg-orange-500 text-white border-orange-600' }
     };
 
-    const statusInfo = statusMap[status] || { label: status, variant: 'default' };
-    return <Badge variant={statusInfo.variant} className="text-xs">{statusInfo.label}</Badge>;
+    const statusInfo = statusMap[status] || { label: status, className: 'bg-gray-100 text-gray-700' };
+    return (
+      <Badge className={`text-xs font-semibold px-3 py-1 ${statusInfo.className}`}>
+        {statusInfo.label}
+      </Badge>
+    );
   };
 
   const hasCriticalEvents = trackingData?.historico_eventos.some(e => e.ocorrencia_critica);
