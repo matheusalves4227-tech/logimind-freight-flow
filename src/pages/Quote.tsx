@@ -213,6 +213,13 @@ const Quote = () => {
 
   const getRouteTypeBadge = () => {
     switch (routeType) {
+      case "high_demand":
+        return (
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary to-secondary rounded-full text-white text-sm font-medium shadow-md">
+            <Zap className="h-4 w-4" />
+            Rota de Alta Demanda - Preço Otimizado LogiMind
+          </div>
+        );
       case "return":
         return (
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-secondary/20 rounded-full text-secondary text-sm font-medium">
@@ -782,6 +789,20 @@ const Quote = () => {
                 </div>
               </div>
 
+              {/* Alerta de Urgência para Rotas de Alta Demanda */}
+              {routeType === "high_demand" && (
+                <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-primary/10 to-secondary/10 border-2 border-primary/30 rounded-lg mb-6 animate-pulse-subtle">
+                  <Clock className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="font-semibold text-foreground mb-1">⏱️ Preço Dinâmico - Oferta Limitada</p>
+                    <p className="text-sm text-muted-foreground">
+                      Este preço de <strong className="text-primary">Comissão Reduzida</strong> é válido por <strong className="text-primary">2 horas</strong> devido à demanda dinâmica da rota. 
+                      Garanta agora a melhor oferta do mercado!
+                    </p>
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                 {getSortedQuotes().map((quote, index) => {
                   const isBestPrice = index === 0 && sortBy === "price";
@@ -851,14 +872,28 @@ const Quote = () => {
                         </div>
 
                         {/* Badge de Destaque */}
-                        {(isBestPrice || isFastest) && (
+                        {(isBestPrice || isFastest || routeType === "high_demand") && (
                           <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg mb-3 md:mb-4 text-xs font-semibold ${
-                            isBestPrice 
+                            routeType === "high_demand" && isBestPrice
+                              ? "bg-gradient-to-r from-primary/20 to-secondary/20 text-primary border-2 border-primary/30 shadow-md" 
+                              : isBestPrice 
                               ? "bg-secondary/10 text-secondary border border-secondary/20" 
                               : "bg-accent/10 text-accent border border-accent/20"
                           }`}>
-                            <span className="text-base">{isBestPrice ? "💰" : "⚡"}</span>
-                            {isBestPrice ? "Melhor Preço" : "Mais Rápido"}
+                            <span className="text-base">
+                              {routeType === "high_demand" && isBestPrice ? "🏆" : isBestPrice ? "💰" : "⚡"}
+                            </span>
+                            {routeType === "high_demand" && isBestPrice ? "Melhor Preço LogiMind - Oferta de Volume" : isBestPrice ? "Melhor Preço" : "Mais Rápido"}
+                          </div>
+                        )}
+
+                        {/* Economia para Rotas de Alta Demanda */}
+                        {routeType === "high_demand" && isBestPrice && (
+                          <div className="flex items-center gap-2 p-2.5 bg-secondary/10 border border-secondary/20 rounded-lg mb-3 md:mb-4">
+                            <TrendingUp className="h-4 w-4 text-secondary flex-shrink-0" />
+                            <p className="text-xs font-semibold text-secondary">
+                              Preço 4% Abaixo da Média de Mercado! 🎯
+                            </p>
                           </div>
                         )}
 
@@ -934,6 +969,38 @@ const Quote = () => {
                                     </Tooltip>
                                   </TooltipProvider>
                                 )}
+                                {quote.adjustment_reason === 'HIGH_DEMAND_ROUTE' && (
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger>
+                                        <Info className="h-3 w-3 text-primary flex-shrink-0" />
+                                      </TooltipTrigger>
+                                      <TooltipContent className="max-w-xs bg-gradient-to-br from-primary/10 to-secondary/10 border-2 border-primary/30">
+                                        <div className="space-y-2">
+                                          <p className="text-sm font-semibold text-primary flex items-center gap-1">
+                                            <Zap className="h-4 w-4" />
+                                            LogiMind 3.0 - Rota de Alta Liquidez
+                                          </p>
+                                          <p className="text-xs text-muted-foreground">
+                                            📈 <strong>Análise de Rota:</strong> Esta é uma rota com alto volume de fretes, 
+                                            o que nos permite reduzir nossa margem.
+                                          </p>
+                                          <div className="border-t border-primary/20 pt-2 space-y-1">
+                                            <p className="text-xs"><strong>Base (Transportadora):</strong> {formatarMoeda(quote.base_price)}</p>
+                                            <p className="text-xs text-primary">
+                                              <strong>Comissão da Plataforma:</strong> {formatarPorcentagemSimples(quote.commission_applied)} 
+                                              <span className="text-muted-foreground"> (Normalmente 10%)</span>
+                                            </p>
+                                          </div>
+                                          <p className="text-xs font-semibold text-secondary border-t border-secondary/20 pt-2">
+                                            💡 <strong>Vantagem:</strong> LogiMarket reduziu sua comissão em até 40% para garantir 
+                                            o preço final mais baixo do mercado!
+                                          </p>
+                                        </div>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                )}
                                 {quote.adjustment_reason === 'COMPETITION' && (
                                   <TooltipProvider>
                                     <Tooltip>
@@ -957,6 +1024,8 @@ const Quote = () => {
                               <div className="flex items-start gap-1.5 pt-1">
                                 <MapPin className="h-3 w-3 text-muted-foreground flex-shrink-0 mt-0.5" />
                                 <p className="text-[0.7rem] text-muted-foreground leading-tight opacity-80">
+                                  {quote.adjustment_reason === 'HIGH_DEMAND_ROUTE' && "Rota de alta liquidez - Comissão reduzida para competitividade máxima"}
+                                  {quote.adjustment_reason === 'SUBSIDIZED_ROUTE' && "Rota com menor ocupação - Subsídio LogiMind aplicado"}
                                   {quote.adjustment_reason === 'COMPETITION' && "Preço otimizado por competição de mercado"}
                                   {quote.adjustment_reason === 'ROUTE_OPTIMIZED' && "Rota com menor ocupação - Otimização LogiMind"}
                                   {quote.adjustment_reason === 'STANDARD' && "Comissão padrão aplicada"}
