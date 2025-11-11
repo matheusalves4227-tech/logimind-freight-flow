@@ -943,7 +943,7 @@ const Quote = () => {
                             <DollarSign className="h-3 w-3" />
                             Preço Final LogiMarket
                           </p>
-                          <div className="text-[2rem] sm:text-[2.5rem] md:text-[3.2rem] font-extrabold text-primary leading-none whitespace-nowrap animate-fade-in">
+                          <div className="text-[2rem] sm:text-[2.2rem] md:text-[2.5rem] font-extrabold text-primary leading-none whitespace-nowrap animate-fade-in">
                             {formatarMoeda(quote.final_price)}
                           </div>
                         </div>
