@@ -942,6 +942,61 @@ export type Database = {
       }
     }
     Functions: {
+      get_logimarket_kpis_current: {
+        Args: never
+        Returns: {
+          faturamento_logimarket: number
+          gmv_total: number
+          margem_media: number
+          pedidos_concluidos: number
+          total_repassado: number
+        }[]
+      }
+      get_logimarket_performance: {
+        Args: never
+        Returns: {
+          faturamento_liquido_logimarket: number
+          gmv_vendas_brutas: number
+          media_comissao_aplicada: number
+          month_year: string
+          total_pedidos: number
+          total_repasse_motorista: number
+        }[]
+      }
+      get_logimind_dashboard_kpis: {
+        Args: never
+        Returns: {
+          kpi1_comissao_media: number
+          kpi1_take_rate_retorno: number
+          kpi1_total_fretes: number
+          kpi2_crescimento_volume: number
+          kpi2_fretes_atual: number
+          kpi2_gmv_atual: number
+          kpi3_arpf: number
+          kpi3_taxa_adesao: number
+        }[]
+      }
+      get_pedidos_para_repasse: {
+        Args: never
+        Returns: {
+          bank_account_number: string
+          bank_name: string
+          comissao_logimarket_val: number
+          created_at: string
+          driver_id: string
+          driver_profile_id: string
+          final_price: number
+          id: string
+          motorista_nome: string
+          pix_key: string
+          pix_key_type: string
+          prioridade: string
+          repasse_data_limite: string
+          tracking_code: string
+          updated_at: string
+          valor_repasse_liquido: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

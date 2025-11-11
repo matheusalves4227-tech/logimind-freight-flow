@@ -32,17 +32,15 @@ export const LogiMindKPIs = () => {
   const fetchKPIs = async () => {
     try {
       const { data, error } = await supabase
-        .from('vw_logimind_dashboard_kpis')
-        .select('*')
-        .single();
+        .rpc('get_logimind_dashboard_kpis');
 
       if (error) {
         console.error('Erro ao buscar KPIs LogiMind:', error);
         return;
       }
 
-      if (data) {
-        setKpis(data as LogiMindKPIData);
+      if (data && data.length > 0) {
+        setKpis(data[0] as LogiMindKPIData);
       }
     } catch (error) {
       console.error('Erro não tratado ao buscar KPIs LogiMind:', error);

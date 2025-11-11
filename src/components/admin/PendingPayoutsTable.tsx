@@ -47,8 +47,7 @@ export const PendingPayoutsTable = () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from('vw_pedidos_para_repasse')
-        .select('*');
+        .rpc('get_pedidos_para_repasse');
 
       if (error) throw error;
 

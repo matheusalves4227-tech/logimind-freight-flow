@@ -28,17 +28,15 @@ export const FinancialKPIs = () => {
   const fetchKPIs = async () => {
     try {
       const { data, error } = await supabase
-        .from('vw_logimarket_kpis_current')
-        .select('*')
-        .single();
+        .rpc('get_logimarket_kpis_current');
 
       if (error) {
         console.error('Erro ao buscar KPIs:', error);
         return;
       }
 
-      if (data) {
-        setKpis(data as KPIData);
+      if (data && data.length > 0) {
+        setKpis(data[0] as KPIData);
       }
     } catch (error) {
       console.error('Erro não tratado ao buscar KPIs:', error);
