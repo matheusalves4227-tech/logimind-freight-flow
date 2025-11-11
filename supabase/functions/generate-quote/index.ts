@@ -17,6 +17,7 @@ const COMISSAO_MINIMA = 0.05; // 5%
 
 interface QuoteRequest {
   service_type: string;
+  vehicle_type?: string; // Para FTL: "moto", "carro", "picape", "caminhao_toco", "caminhao_truck"
   origin_cep: string;
   origin_number: string;
   origin_type: string;
@@ -245,8 +246,11 @@ serve(async (req) => {
       );
     }
 
-    // Log do tipo de serviço
+    // Log do tipo de serviço e veículo (se FTL)
     console.log(`Service type: ${quoteRequest.service_type || 'ltl'} (LTL=Transportadoras, FTL=Autônomos)`);
+    if (quoteRequest.service_type === 'ftl' && quoteRequest.vehicle_type) {
+      console.log(`Vehicle type requested: ${quoteRequest.vehicle_type}`);
+    }
 
     // Verificar áreas restritas
     const restrictedOrigin = verificarAreaRestrita(quoteRequest.origin_cep);

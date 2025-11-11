@@ -34,6 +34,7 @@ const Quote = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     service_type: "ltl", // "ltl" (Padrão/Econômico) ou "ftl" (Dedicado/Expresso)
+    vehicle_type: "", // Para FTL: "moto", "carro", "picape", "caminhao"
     origin_cep: "",
     origin_number: "",
     origin_type: "commercial",
@@ -61,7 +62,6 @@ const Quote = () => {
   });
 
   const steps = [
-    { label: "Tipo de Serviço", description: "LTL ou FTL" },
     { label: "Localidades", description: "Origem e destino" },
     { label: "Carga", description: "Peso e dimensões" },
     { label: "Revisar", description: "Confirmar dados" },
@@ -116,9 +116,7 @@ const Quote = () => {
 
   const handleNext = () => {
     if (currentStep === 1) {
-      // Validação do tipo de serviço (sempre passa)
-      setCurrentStep(2);
-    } else if (currentStep === 2) {
+      // Step 1: Localidades
       if (!formData.origin_cep || !formData.destination_cep) {
         toast.error("Por favor, preencha origem e destino");
         return;
@@ -127,13 +125,18 @@ const Quote = () => {
         toast.error("Por favor, preencha os números dos endereços");
         return;
       }
-      setCurrentStep(3);
-    } else if (currentStep === 3) {
+      setCurrentStep(2);
+    } else if (currentStep === 2) {
+      // Step 2: Carga
       if (!formData.weight_kg) {
         toast.error("Por favor, preencha o peso da carga");
         return;
       }
-      setCurrentStep(4);
+      if (formData.service_type === "ftl" && !formData.vehicle_type) {
+        toast.error("Por favor, selecione o tipo de veículo");
+        return;
+      }
+      setCurrentStep(3);
     }
   };
 
@@ -259,106 +262,96 @@ const Quote = () => {
             </p>
           </div>
 
+          {/* Seletor de Serviço - Antes do Stepper */}
+          <Card className="p-6 mb-6 shadow-md">
+            <h3 className="font-semibold text-lg mb-4">Escolha o tipo de serviço</h3>
+            
+            <div className="grid md:grid-cols-2 gap-4">
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, service_type: "ltl" })}
+                className={`p-6 rounded-lg border-2 transition-all text-left ${
+                  formData.service_type === "ltl"
+                    ? "border-primary bg-primary/5"
+                    : "border-border hover:border-primary/50"
+                }`}
+              >
+                <div className="flex items-start gap-3 mb-3">
+                  <Package className="h-6 w-6 text-primary mt-1" />
+                  <div>
+                    <h4 className="font-bold text-lg">Frete Padrão (LTL)</h4>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Carga Fracionada
+                    </p>
+                  </div>
+                </div>
+                <p className="text-sm">
+                  Consolidado, econômico. Ideal para caixas e pallets.
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <span className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-md">
+                    📦 Caixas
+                  </span>
+                  <span className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-md">
+                    🏭 Pallets
+                  </span>
+                  <span className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-md">
+                    💰 Econômico
+                  </span>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, service_type: "ftl" })}
+                className={`p-6 rounded-lg border-2 transition-all text-left ${
+                  formData.service_type === "ftl"
+                    ? "border-accent bg-accent/5"
+                    : "border-border hover:border-accent/50"
+                }`}
+              >
+                <div className="flex items-start gap-3 mb-3">
+                  <Package className="h-6 w-6 text-accent mt-1" />
+                  <div>
+                    <h4 className="font-bold text-lg">Frete Dedicado (FTL)</h4>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Veículo Exclusivo
+                    </p>
+                  </div>
+                </div>
+                <p className="text-sm">
+                  Veículo exclusivo, urgência. Motoristas e Veículos Dedicados.
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <span className="px-2 py-1 bg-accent/10 text-accent text-xs rounded-md">
+                    🚚 Caminhão Completo
+                  </span>
+                  <span className="px-2 py-1 bg-accent/10 text-accent text-xs rounded-md">
+                    🏍️ Entregas Rápidas
+                  </span>
+                  <span className="px-2 py-1 bg-accent/10 text-accent text-xs rounded-md">
+                    ⚡ Urgente
+                  </span>
+                </div>
+              </button>
+            </div>
+
+            {formData.service_type === "ftl" && (
+              <div className="mt-4 p-4 bg-accent/10 border border-accent/20 rounded-lg">
+                <p className="text-sm text-accent-foreground">
+                  💡 <strong>Novo:</strong> No serviço Dedicado, você receberá ofertas de motoristas 
+                  autônomos qualificados que darão lances de preço e prazo para sua carga.
+                </p>
+              </div>
+            )}
+          </Card>
+
           <Card className="p-6 mb-8 shadow-md">
             <Stepper steps={steps} currentStep={currentStep} className="mb-8" />
             
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Step 1: Localidades (Origin/Destination) */}
               {currentStep === 1 && (
-                <div className="space-y-6">
-                  <div className="space-y-4">
-                    <h3 className="font-semibold text-lg">Escolha o tipo de serviço</h3>
-                    
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <button
-                        type="button"
-                        onClick={() => setFormData({ ...formData, service_type: "ltl" })}
-                        className={`p-6 rounded-lg border-2 transition-all text-left ${
-                          formData.service_type === "ltl"
-                            ? "border-primary bg-primary/5"
-                            : "border-border hover:border-primary/50"
-                        }`}
-                      >
-                        <div className="flex items-start gap-3 mb-3">
-                          <Package className="h-6 w-6 text-primary mt-1" />
-                          <div>
-                            <h4 className="font-bold text-lg">Padrão / Econômico</h4>
-                            <p className="text-sm text-muted-foreground mt-1">
-                              Carga Fracionada (LTL)
-                            </p>
-                          </div>
-                        </div>
-                        <p className="text-sm">
-                          Envio consolidado com outras cargas. Ideal para caixas, pallets e cargas que não ocupam 
-                          o veículo completo. <strong>Foco em melhor preço.</strong>
-                        </p>
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          <span className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-md">
-                            📦 Caixas
-                          </span>
-                          <span className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-md">
-                            🏭 Pallets
-                          </span>
-                          <span className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-md">
-                            💰 Econômico
-                          </span>
-                        </div>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setFormData({ ...formData, service_type: "ftl" })}
-                        className={`p-6 rounded-lg border-2 transition-all text-left ${
-                          formData.service_type === "ftl"
-                            ? "border-accent bg-accent/5"
-                            : "border-border hover:border-accent/50"
-                        }`}
-                      >
-                        <div className="flex items-start gap-3 mb-3">
-                          <Package className="h-6 w-6 text-accent mt-1" />
-                          <div>
-                            <h4 className="font-bold text-lg">Dedicado / Expresso</h4>
-                            <p className="text-sm text-muted-foreground mt-1">
-                              Carga Completa ou Urgente (FTL)
-                            </p>
-                          </div>
-                        </div>
-                        <p className="text-sm">
-                          Veículo exclusivo para sua carga. Disponível para carros, caminhonetes, motos e caminhões. 
-                          <strong>Foco em velocidade e flexibilidade.</strong>
-                        </p>
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          <span className="px-2 py-1 bg-accent/10 text-accent text-xs rounded-md">
-                            🚚 Caminhão Completo
-                          </span>
-                          <span className="px-2 py-1 bg-accent/10 text-accent text-xs rounded-md">
-                            🏍️ Entregas Rápidas
-                          </span>
-                          <span className="px-2 py-1 bg-accent/10 text-accent text-xs rounded-md">
-                            ⚡ Urgente
-                          </span>
-                        </div>
-                      </button>
-                    </div>
-
-                    {formData.service_type === "ftl" && (
-                      <div className="p-4 bg-accent/10 border border-accent/20 rounded-lg">
-                        <p className="text-sm text-accent-foreground">
-                          💡 <strong>Novo:</strong> No serviço Dedicado, você receberá ofertas de motoristas 
-                          autônomos qualificados que darão lances de preço e prazo para sua carga.
-                        </p>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex justify-end">
-                    <Button type="button" onClick={handleNext}>
-                      Próximo
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {currentStep === 4 && (
                 <div className="space-y-6">
                   <div className="space-y-6">
                     {/* CEP e Endereço de Origem */}
@@ -498,7 +491,10 @@ const Quote = () => {
                     </div>
                   </div>
 
-                  <div className="flex justify-end">
+                  <div className="flex justify-between">
+                    <Button type="button" variant="outline" onClick={handleBack}>
+                      Voltar
+                    </Button>
                     <Button type="button" onClick={handleNext}>
                       Próximo
                     </Button>
@@ -506,74 +502,99 @@ const Quote = () => {
                 </div>
               )}
 
+              {/* Step 2: Carga (Weight and Dimensions or Vehicle Type) */}
               {currentStep === 2 && (
                 <div className="space-y-6">
-                  <div className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="weight_kg">
-                    <Package className="h-4 w-4 inline mr-2" />
-                    Peso (kg)
-                  </Label>
-                  <Input
-                    id="weight_kg"
-                    type="number"
-                    step="0.01"
-                    placeholder="0.00"
-                    value={formData.weight_kg}
-                    onChange={(e) => setFormData({ ...formData, weight_kg: e.target.value })}
-                    required
-                  />
-                </div>
+                  {/* Peso - Sempre exibido */}
+                  <div className="space-y-2">
+                    <Label htmlFor="weight_kg">
+                      <Package className="h-4 w-4 inline mr-2" />
+                      Peso (kg) *
+                    </Label>
+                    <Input
+                      id="weight_kg"
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      value={formData.weight_kg}
+                      onChange={(e) => setFormData({ ...formData, weight_kg: e.target.value })}
+                      required
+                    />
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="height_cm">Altura (cm) - Opcional</Label>
-                  <Input
-                    id="height_cm"
-                    type="number"
-                    step="0.01"
-                    placeholder="0.00"
-                    value={formData.height_cm}
-                    onChange={(e) => setFormData({ ...formData, height_cm: e.target.value })}
-                  />
-                </div>
-              </div>
+                  {/* Condicional: LTL mostra dimensões, FTL mostra tipo de veículo */}
+                  {formData.service_type === "ltl" ? (
+                    <>
+                      <div className="grid md:grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="height_cm">Altura (cm) - Opcional</Label>
+                          <Input
+                            id="height_cm"
+                            type="number"
+                            step="0.01"
+                            placeholder="0.00"
+                            value={formData.height_cm}
+                            onChange={(e) => setFormData({ ...formData, height_cm: e.target.value })}
+                          />
+                        </div>
 
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="width_cm">Largura (cm) - Opcional</Label>
-                  <Input
-                    id="width_cm"
-                    type="number"
-                    step="0.01"
-                    placeholder="0.00"
-                    value={formData.width_cm}
-                    onChange={(e) => setFormData({ ...formData, width_cm: e.target.value })}
-                  />
-                </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="width_cm">Largura (cm) - Opcional</Label>
+                          <Input
+                            id="width_cm"
+                            type="number"
+                            step="0.01"
+                            placeholder="0.00"
+                            value={formData.width_cm}
+                            onChange={(e) => setFormData({ ...formData, width_cm: e.target.value })}
+                          />
+                        </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="length_cm">Comprimento (cm) - Opcional</Label>
-                  <Input
-                    id="length_cm"
-                    type="number"
-                    step="0.01"
-                    placeholder="0.00"
-                    value={formData.length_cm}
-                    onChange={(e) => setFormData({ ...formData, length_cm: e.target.value })}
-                  />
+                        <div className="space-y-2">
+                          <Label htmlFor="length_cm">Comprimento (cm) - Opcional</Label>
+                          <Input
+                            id="length_cm"
+                            type="number"
+                            step="0.01"
+                            placeholder="0.00"
+                            value={formData.length_cm}
+                            onChange={(e) => setFormData({ ...formData, length_cm: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="space-y-2">
+                      <Label htmlFor="vehicle_type">Tipo de Veículo Necessário *</Label>
+                      <select
+                        id="vehicle_type"
+                        value={formData.vehicle_type}
+                        onChange={(e) => setFormData({ ...formData, vehicle_type: e.target.value })}
+                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        required
+                      >
+                        <option value="">Selecione o tipo de veículo</option>
+                        <option value="moto">🏍️ Moto</option>
+                        <option value="carro">🚗 Carro Baú</option>
+                        <option value="picape">🚙 Picape</option>
+                        <option value="caminhao_toco">🚚 Caminhão Toco</option>
+                        <option value="caminhao_truck">🚛 Caminhão Truck</option>
+                      </select>
+                    </div>
+                  )}
+
+                  <div className="flex justify-between">
+                    <Button type="button" variant="outline" onClick={handleBack}>
+                      Voltar
+                    </Button>
+                    <Button type="button" onClick={handleNext}>
+                      Próximo
+                    </Button>
                   </div>
                 </div>
-                <div className="flex justify-between">
-                  <Button type="button" variant="outline" onClick={handleBack}>
-                    Voltar
-                  </Button>
-                  <Button type="button" onClick={handleNext}>
-                    Próximo
-                  </Button>
-                </div>
-              </div>
               )}
 
+              {/* Step 3: Review */}
               {currentStep === 3 && (
                 <div className="space-y-6">
                   <div className="bg-muted/50 p-6 rounded-lg space-y-4">
@@ -590,6 +611,18 @@ const Quote = () => {
                         <p className="text-sm text-muted-foreground">Peso</p>
                         <p className="font-medium">{formData.weight_kg} kg</p>
                       </div>
+                      {formData.service_type === "ftl" && formData.vehicle_type && (
+                        <div>
+                          <p className="text-sm text-muted-foreground">Tipo de Veículo</p>
+                          <p className="font-medium">
+                            {formData.vehicle_type === "moto" && "🏍️ Moto"}
+                            {formData.vehicle_type === "carro" && "🚗 Carro Baú"}
+                            {formData.vehicle_type === "picape" && "🚙 Picape"}
+                            {formData.vehicle_type === "caminhao_toco" && "🚚 Caminhão Toco"}
+                            {formData.vehicle_type === "caminhao_truck" && "🚛 Caminhão Truck"}
+                          </p>
+                        </div>
+                      )}
                       <div>
                         <p className="text-sm text-muted-foreground">CEP Origem</p>
                         <p className="font-medium">{formData.origin_cep} - Nº {formData.origin_number}</p>
