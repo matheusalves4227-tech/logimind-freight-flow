@@ -224,12 +224,19 @@ export type Database = {
           approval_notes: string | null
           approved_at: string | null
           approved_by: string | null
+          bank_account_digit: string | null
+          bank_account_number: string | null
+          bank_account_type: string | null
+          bank_agency: string | null
+          bank_name: string | null
           cpf: string
           created_at: string
           email: string
           full_name: string
           id: string
           phone: string
+          pix_key: string | null
+          pix_key_type: string | null
           rejected_reason: string | null
           status: Database["public"]["Enums"]["driver_status"]
           updated_at: string
@@ -247,12 +254,19 @@ export type Database = {
           approval_notes?: string | null
           approved_at?: string | null
           approved_by?: string | null
+          bank_account_digit?: string | null
+          bank_account_number?: string | null
+          bank_account_type?: string | null
+          bank_agency?: string | null
+          bank_name?: string | null
           cpf: string
           created_at?: string
           email: string
           full_name: string
           id?: string
           phone: string
+          pix_key?: string | null
+          pix_key_type?: string | null
           rejected_reason?: string | null
           status?: Database["public"]["Enums"]["driver_status"]
           updated_at?: string
@@ -270,12 +284,19 @@ export type Database = {
           approval_notes?: string | null
           approved_at?: string | null
           approved_by?: string | null
+          bank_account_digit?: string | null
+          bank_account_number?: string | null
+          bank_account_type?: string | null
+          bank_agency?: string | null
+          bank_name?: string | null
           cpf?: string
           created_at?: string
           email?: string
           full_name?: string
           id?: string
           phone?: string
+          pix_key?: string | null
+          pix_key_type?: string | null
           rejected_reason?: string | null
           status?: Database["public"]["Enums"]["driver_status"]
           updated_at?: string
@@ -370,12 +391,64 @@ export type Database = {
           },
         ]
       }
+      financial_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          error_message: string | null
+          gateway_response: Json | null
+          gateway_transaction_id: string | null
+          id: string
+          order_id: string
+          processed_at: string | null
+          status: Database["public"]["Enums"]["transaction_status"]
+          type: Database["public"]["Enums"]["transaction_type"]
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          error_message?: string | null
+          gateway_response?: Json | null
+          gateway_transaction_id?: string | null
+          id?: string
+          order_id: string
+          processed_at?: string | null
+          status?: Database["public"]["Enums"]["transaction_status"]
+          type: Database["public"]["Enums"]["transaction_type"]
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          error_message?: string | null
+          gateway_response?: Json | null
+          gateway_transaction_id?: string | null
+          id?: string
+          order_id?: string
+          processed_at?: string | null
+          status?: Database["public"]["Enums"]["transaction_status"]
+          type?: Database["public"]["Enums"]["transaction_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_transactions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
           actual_delivery: string | null
           base_price: number
           carrier_id: string | null
           carrier_name: string
+          comissao_logimarket_perc: number | null
+          comissao_logimarket_val: number | null
           commission_applied: number
           created_at: string
           current_latitude: number | null
@@ -387,6 +460,7 @@ export type Database = {
           estimated_delivery: string | null
           external_tracking_code: string | null
           final_price: number
+          gateway_transaction_id: string | null
           height_cm: number | null
           id: string
           last_location_update: string | null
@@ -396,9 +470,11 @@ export type Database = {
           quote_id: string | null
           service_type: string
           status: string
+          status_pagamento: string | null
           tracking_code: string
           updated_at: string
           user_id: string
+          valor_repasse_liquido: number | null
           vehicle_type: string | null
           weight_kg: number
           width_cm: number | null
@@ -408,6 +484,8 @@ export type Database = {
           base_price: number
           carrier_id?: string | null
           carrier_name: string
+          comissao_logimarket_perc?: number | null
+          comissao_logimarket_val?: number | null
           commission_applied: number
           created_at?: string
           current_latitude?: number | null
@@ -419,6 +497,7 @@ export type Database = {
           estimated_delivery?: string | null
           external_tracking_code?: string | null
           final_price: number
+          gateway_transaction_id?: string | null
           height_cm?: number | null
           id?: string
           last_location_update?: string | null
@@ -428,9 +507,11 @@ export type Database = {
           quote_id?: string | null
           service_type: string
           status?: string
+          status_pagamento?: string | null
           tracking_code: string
           updated_at?: string
           user_id: string
+          valor_repasse_liquido?: number | null
           vehicle_type?: string | null
           weight_kg: number
           width_cm?: number | null
@@ -440,6 +521,8 @@ export type Database = {
           base_price?: number
           carrier_id?: string | null
           carrier_name?: string
+          comissao_logimarket_perc?: number | null
+          comissao_logimarket_val?: number | null
           commission_applied?: number
           created_at?: string
           current_latitude?: number | null
@@ -451,6 +534,7 @@ export type Database = {
           estimated_delivery?: string | null
           external_tracking_code?: string | null
           final_price?: number
+          gateway_transaction_id?: string | null
           height_cm?: number | null
           id?: string
           last_location_update?: string | null
@@ -460,9 +544,11 @@ export type Database = {
           quote_id?: string | null
           service_type?: string
           status?: string
+          status_pagamento?: string | null
           tracking_code?: string
           updated_at?: string
           user_id?: string
+          valor_repasse_liquido?: number | null
           vehicle_type?: string | null
           weight_kg?: number
           width_cm?: number | null
@@ -673,6 +759,8 @@ export type Database = {
     Enums: {
       cnh_category: "A" | "B" | "C" | "D" | "E" | "AB" | "AC" | "AD" | "AE"
       driver_status: "pending" | "approved" | "rejected" | "suspended"
+      transaction_status: "PENDING" | "HELD" | "PAID" | "FAILED" | "REFUNDED"
+      transaction_type: "PAYMENT_IN" | "PAYMENT_OUT"
       vehicle_type:
         | "moto"
         | "carro"
@@ -812,6 +900,8 @@ export const Constants = {
     Enums: {
       cnh_category: ["A", "B", "C", "D", "E", "AB", "AC", "AD", "AE"],
       driver_status: ["pending", "approved", "rejected", "suspended"],
+      transaction_status: ["PENDING", "HELD", "PAID", "FAILED", "REFUNDED"],
+      transaction_type: ["PAYMENT_IN", "PAYMENT_OUT"],
       vehicle_type: [
         "moto",
         "carro",
