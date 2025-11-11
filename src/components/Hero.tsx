@@ -25,9 +25,9 @@ const Hero = () => {
         </div>
 
         {/* 3 Cards de Direcionamento Triplo */}
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-20">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto mb-12 md:mb-20 px-4 md:px-0">
           {/* Card 1: Embarcador (Verde) */}
-          <div className="group bg-card rounded-3xl p-8 shadow-lg border-2 border-secondary/30 hover:border-secondary hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
+          <div className="group bg-card rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-lg border-2 border-secondary/30 hover:border-secondary hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 md:hover:-translate-y-2">
             <div className="flex flex-col items-center text-center space-y-6">
               <div className="relative">
                 <div className="absolute inset-0 bg-secondary/20 rounded-2xl blur-xl" />
@@ -73,7 +73,7 @@ const Hero = () => {
           </div>
 
           {/* Card 2: Transportadora (Azul) */}
-          <div className="group bg-card rounded-3xl p-8 shadow-lg border-2 border-primary/30 hover:border-primary hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
+          <div className="group bg-card rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-lg border-2 border-primary/30 hover:border-primary hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 md:hover:-translate-y-2">
             <div className="flex flex-col items-center text-center space-y-6">
               <div className="relative">
                 <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl" />
@@ -119,7 +119,7 @@ const Hero = () => {
           </div>
 
           {/* Card 3: Motorista Autônomo (Laranja) */}
-          <div className="group bg-card rounded-3xl p-8 shadow-lg border-2 border-accent/30 hover:border-accent hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
+          <div className="group bg-card rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-lg border-2 border-accent/30 hover:border-accent hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 md:hover:-translate-y-2">
             <div className="flex flex-col items-center text-center space-y-6">
               <div className="relative">
                 <div className="absolute inset-0 bg-accent/20 rounded-2xl blur-xl" />

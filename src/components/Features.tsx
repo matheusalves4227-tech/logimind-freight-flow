@@ -13,9 +13,9 @@ const Features = () => {
             </span>
           </h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mb-8 md:mb-12 px-4 md:px-0">
             {/* Métrica 1: Volume */}
-            <div className="bg-card rounded-2xl p-8 shadow-lg border-2 border-secondary/20 hover:border-secondary/40 transition-all">
+            <div className="bg-card rounded-xl md:rounded-2xl p-6 md:p-8 shadow-lg border-2 border-secondary/20 hover:border-secondary/40 transition-all">
               <div className="inline-flex p-3 rounded-xl bg-secondary/10 mb-4">
                 <Package className="h-8 w-8 text-secondary" />
               </div>
@@ -29,7 +29,7 @@ const Features = () => {
             </div>
 
             {/* Métrica 2: Parceiros */}
-            <div className="bg-card rounded-2xl p-8 shadow-lg border-2 border-primary/20 hover:border-primary/40 transition-all">
+            <div className="bg-card rounded-xl md:rounded-2xl p-6 md:p-8 shadow-lg border-2 border-primary/20 hover:border-primary/40 transition-all">
               <div className="inline-flex p-3 rounded-xl bg-primary/10 mb-4">
                 <Users className="h-8 w-8 text-primary" />
               </div>
@@ -43,7 +43,7 @@ const Features = () => {
             </div>
 
             {/* Métrica 3: Economia */}
-            <div className="bg-card rounded-2xl p-8 shadow-lg border-2 border-accent/20 hover:border-accent/40 transition-all">
+            <div className="bg-card rounded-xl md:rounded-2xl p-6 md:p-8 shadow-lg border-2 border-accent/20 hover:border-accent/40 transition-all">
               <div className="inline-flex p-3 rounded-xl bg-accent/10 mb-4">
                 <TrendingUp className="h-8 w-8 text-accent" />
               </div>
@@ -59,20 +59,20 @@ const Features = () => {
         </div>
 
         {/* Banner LogiMind (Integração Visual) */}
-        <div className="max-w-5xl mx-auto">
-          <div className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 rounded-3xl p-10 shadow-2xl border-2 border-primary/20">
+        <div className="max-w-5xl mx-auto px-4 md:px-0">
+          <div className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 rounded-2xl md:rounded-3xl p-6 md:p-10 shadow-2xl border-2 border-primary/20">
             {/* Background decorativo */}
             <div className="absolute inset-0 bg-gradient-hero opacity-5 -z-10" />
             <div className="absolute top-0 right-0 w-64 h-64 bg-secondary/20 rounded-full blur-3xl -z-10" />
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary/20 rounded-full blur-3xl -z-10" />
             
-            <div className="relative flex flex-col md:flex-row items-center gap-8">
+            <div className="relative flex flex-col md:flex-row items-center gap-6 md:gap-8">
               {/* Ícone LogiMind */}
               <div className="flex-shrink-0">
                 <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-hero opacity-30 rounded-2xl blur-xl animate-pulse" />
-                  <div className="relative p-8 bg-gradient-to-br from-primary to-secondary rounded-2xl shadow-2xl">
-                    <Brain className="h-16 w-16 text-primary-foreground" />
+                  <div className="absolute inset-0 bg-gradient-hero opacity-30 rounded-xl md:rounded-2xl blur-xl animate-pulse" />
+                  <div className="relative p-6 md:p-8 bg-gradient-to-br from-primary to-secondary rounded-xl md:rounded-2xl shadow-2xl">
+                    <Brain className="h-12 w-12 md:h-16 md:w-16 text-primary-foreground" />
                   </div>
                 </div>
               </div>
@@ -84,14 +84,14 @@ const Features = () => {
                   <span className="text-sm font-bold text-primary">Powered by AI</span>
                 </div>
                 
-                <h3 className="text-3xl font-bold text-foreground">
+                <h3 className="text-2xl md:text-3xl font-bold text-foreground">
                   LogiMind: A IA que Garante o{" "}
                   <span className="bg-gradient-hero bg-clip-text text-transparent">
                     Custo Total Otimizado
                   </span>
                 </h3>
                 
-                <p className="text-lg text-muted-foreground max-w-2xl">
+                <p className="text-base md:text-lg text-muted-foreground max-w-2xl">
                   Análise preditiva de risco e preço em tempo real. Transparência total na comissão, 
                   otimização de rotas de retorno e precificação dinâmica baseada em demanda.
                 </p>

@@ -317,47 +317,47 @@ const Quote = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12">
+      <div className="container mx-auto px-4 pt-20 md:pt-24 pb-8 md:pb-12">
         <Button
           variant="ghost"
           onClick={() => navigate("/")}
-          className="mb-6"
+          className="mb-4 md:mb-6"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Voltar
         </Button>
 
         <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold mb-2">
+          <div className="text-center mb-6 md:mb-8">
+            <h1 className="text-2xl md:text-3xl font-bold mb-2">
               Cotação de Frete com{" "}
               <span className="bg-gradient-hero bg-clip-text text-transparent">
                 LogiMind
               </span>
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-sm md:text-base text-muted-foreground">
               Precificação inteligente baseada em rotas e demanda
             </p>
           </div>
 
           {/* Seletor de Serviço - Antes do Stepper */}
-          <Card className="p-6 mb-6 shadow-md">
-            <h3 className="font-semibold text-lg mb-4">Escolha o tipo de serviço</h3>
+          <Card className="p-4 md:p-6 mb-4 md:mb-6 shadow-md">
+            <h3 className="font-semibold text-base md:text-lg mb-3 md:mb-4">Escolha o tipo de serviço</h3>
             
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
               <button
                 type="button"
                 onClick={() => setFormData({ ...formData, service_type: "ltl" })}
-                className={`p-6 rounded-lg border-2 transition-all text-left ${
+                className={`p-4 md:p-6 rounded-lg border-2 transition-all text-left ${
                   formData.service_type === "ltl"
                     ? "border-primary bg-primary/5"
                     : "border-border hover:border-primary/50"
                 }`}
               >
-                <div className="flex items-start gap-3 mb-3">
-                  <Package className="h-6 w-6 text-primary mt-1" />
+                <div className="flex items-start gap-2 md:gap-3 mb-2 md:mb-3">
+                  <Package className="h-5 w-5 md:h-6 md:w-6 text-primary mt-1" />
                   <div>
-                    <h4 className="font-bold text-lg">Frete Padrão (LTL)</h4>
+                    <h4 className="font-bold text-base md:text-lg">Frete Padrão (LTL)</h4>
                     <p className="text-sm text-muted-foreground mt-1">
                       Carga Fracionada
                     </p>
@@ -382,16 +382,16 @@ const Quote = () => {
               <button
                 type="button"
                 onClick={() => setFormData({ ...formData, service_type: "ftl" })}
-                className={`p-6 rounded-lg border-2 transition-all text-left ${
+                className={`p-4 md:p-6 rounded-lg border-2 transition-all text-left ${
                   formData.service_type === "ftl"
                     ? "border-accent bg-accent/5"
                     : "border-border hover:border-accent/50"
                 }`}
               >
-                <div className="flex items-start gap-3 mb-3">
-                  <Package className="h-6 w-6 text-accent mt-1" />
+                <div className="flex items-start gap-2 md:gap-3 mb-2 md:mb-3">
+                  <Package className="h-5 w-5 md:h-6 md:w-6 text-accent mt-1" />
                   <div>
-                    <h4 className="font-bold text-lg">Frete Dedicado (FTL)</h4>
+                    <h4 className="font-bold text-base md:text-lg">Frete Dedicado (FTL)</h4>
                     <p className="text-sm text-muted-foreground mt-1">
                       Veículo Exclusivo
                     </p>
@@ -434,8 +434,8 @@ const Quote = () => {
             )}
           </Card>
 
-          <Card className="p-6 mb-8 shadow-md">
-            <Stepper steps={steps} currentStep={currentStep} className="mb-8" />
+          <Card className="p-4 md:p-6 mb-6 md:mb-8 shadow-md">
+            <Stepper steps={steps} currentStep={currentStep} className="mb-6 md:mb-8" />
             
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Step 1: Localidades (Origin/Destination) */}

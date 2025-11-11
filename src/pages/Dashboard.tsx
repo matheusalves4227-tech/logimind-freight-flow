@@ -183,19 +183,19 @@ const Dashboard = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12">
+      <div className="container mx-auto px-4 pt-20 md:pt-24 pb-8 md:pb-12">
         {selectedOrderId && orderDetails ? (
           <OrderDetail order={orderDetails} onBack={handleBackToList} />
         ) : (
           <>
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold mb-2">
+            <div className="mb-6 md:mb-8">
+              <h1 className="text-2xl md:text-3xl font-bold mb-2">
                 Dashboard{" "}
                 <span className="bg-gradient-hero bg-clip-text text-transparent">
                   LogiMind
                 </span>
               </h1>
-              <p className="text-muted-foreground">
+              <p className="text-sm md:text-base text-muted-foreground">
                 Visão geral dos seus fretes e métricas de desempenho
               </p>
             </div>
