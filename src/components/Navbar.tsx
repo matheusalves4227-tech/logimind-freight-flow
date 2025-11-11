@@ -61,8 +61,9 @@ const Navbar = () => {
                   </Button>
                 </Link>
                 <Link to="/quote">
-                  <Button variant="hero" size="lg">
-                    Nova Cotação
+                  <Button variant="hero" size="lg" className="text-sm sm:text-base px-3 sm:px-6">
+                    <span className="hidden sm:inline">Nova Cotação</span>
+                    <span className="sm:hidden">Nova Cotação</span>
                   </Button>
                 </Link>
                 <Button variant="ghost" onClick={handleSignOut} className="hidden md:inline-flex">
@@ -78,8 +79,9 @@ const Navbar = () => {
                   </Button>
                 </Link>
                 <Link to="/auth">
-                  <Button variant="hero" size="lg">
-                    Começar Grátis
+                  <Button variant="hero" size="lg" className="text-sm sm:text-base px-3 sm:px-6">
+                    <span className="hidden sm:inline">Começar Grátis</span>
+                    <span className="sm:hidden">Começar</span>
                   </Button>
                 </Link>
               </>

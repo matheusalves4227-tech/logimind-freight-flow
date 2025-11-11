@@ -226,29 +226,32 @@ const Quote = () => {
     switch (routeType) {
       case "high_demand":
         return (
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary to-secondary rounded-full text-white text-sm font-medium shadow-md">
-            <Zap className="h-4 w-4" />
-            Rota de Alta Demanda - Preço Otimizado LogiMind
+          <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-gradient-to-r from-primary to-secondary rounded-full text-white text-xs sm:text-sm font-medium shadow-md">
+            <Zap className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Rota de Alta Demanda - Preço Otimizado LogiMind</span>
+            <span className="sm:hidden">Rota Padrão</span>
           </div>
         );
       case "return":
         return (
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-secondary/20 rounded-full text-secondary text-sm font-medium">
-            <TrendingUp className="h-4 w-4" />
-            Rota de Retorno - Melhor Margem
+          <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-secondary/20 rounded-full text-secondary text-xs sm:text-sm font-medium">
+            <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Rota de Retorno - Melhor Margem</span>
+            <span className="sm:hidden">Retorno</span>
           </div>
         );
       case "competitive":
         return (
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-accent/20 rounded-full text-accent text-sm font-medium">
-            <TrendingUp className="h-4 w-4" />
-            Rota Competitiva - Margem Ajustada
+          <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-accent/20 rounded-full text-accent text-xs sm:text-sm font-medium">
+            <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Rota Competitiva - Margem Ajustada</span>
+            <span className="sm:hidden">Competitivo</span>
           </div>
         );
       default:
         return (
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/20 rounded-full text-primary text-sm font-medium">
-            <TrendingUp className="h-4 w-4" />
+          <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-primary/20 rounded-full text-primary text-xs sm:text-sm font-medium">
+            <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4" />
             Rota Padrão
           </div>
         );
@@ -768,11 +771,13 @@ const Quote = () => {
                       variant="hero" 
                       size="lg" 
                       disabled={loading}
+                      className="w-full sm:w-auto"
                     >
                       {loading ? (
                         <>
                           <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                          Processando com LogiMind...
+                          <span className="hidden sm:inline">Processando com LogiMind...</span>
+                          <span className="sm:hidden">Processando...</span>
                         </>
                       ) : (
                         "Gerar Cotação"
@@ -784,34 +789,39 @@ const Quote = () => {
             </form>
           </Card>
 
-          {quotes.length > 0 && (
+              {quotes.length > 0 && (
             <div className="space-y-6">
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
+              <div className="flex flex-col gap-4 mb-6">
                 <div className="flex justify-center">
                   {getRouteTypeBadge()}
                 </div>
                 
-                <div className="flex items-center gap-3">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
                   <span className="text-sm text-muted-foreground font-medium">Ordenar por:</span>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     <Button
                       variant={sortBy === "price" ? "default" : "outline"}
                       size="sm"
                       onClick={() => setSortBy("price")}
+                      className="flex-1 sm:flex-none min-w-0"
                     >
-                      Menor Preço
+                      <span className="hidden sm:inline">Menor Preço</span>
+                      <span className="sm:hidden">Preço</span>
                     </Button>
                     <Button
                       variant={sortBy === "delivery" ? "default" : "outline"}
                       size="sm"
                       onClick={() => setSortBy("delivery")}
+                      className="flex-1 sm:flex-none min-w-0"
                     >
-                      Menor Prazo
+                      <span className="hidden sm:inline">Menor Prazo</span>
+                      <span className="sm:hidden">Prazo</span>
                     </Button>
                     <Button
                       variant={sortBy === "quality" ? "default" : "outline"}
                       size="sm"
                       onClick={() => setSortBy("quality")}
+                      className="flex-1 sm:flex-none min-w-0"
                     >
                       Qualidade
                     </Button>
