@@ -4,7 +4,7 @@
  * @returns String formatada como moeda brasileira (ex: R$ 10.350,00)
  */
 export function formatarMoeda(valor: number | undefined | null): string {
-  if (typeof valor !== 'number' || isNaN(valor)) {
+  if (valor === null || valor === undefined || typeof valor !== 'number' || isNaN(valor)) {
     return 'R$ 0,00';
   }
   
@@ -22,7 +22,7 @@ export function formatarMoeda(valor: number | undefined | null): string {
  * @returns String formatada como porcentagem (ex: 18,00%)
  */
 export function formatarPorcentagem(valor: number | undefined | null): string {
-  if (typeof valor !== 'number' || isNaN(valor)) {
+  if (valor === null || valor === undefined || typeof valor !== 'number' || isNaN(valor)) {
     return '0,00%';
   }
   
@@ -42,7 +42,7 @@ export function formatarPorcentagem(valor: number | undefined | null): string {
  * @returns String formatada (ex: 18,0%)
  */
 export function formatarPorcentagemSimples(valor: number | undefined | null): string {
-  if (typeof valor !== 'number' || isNaN(valor)) {
+  if (valor === null || valor === undefined || typeof valor !== 'number' || isNaN(valor)) {
     return '0,0%';
   }
   

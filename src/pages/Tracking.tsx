@@ -240,14 +240,20 @@ const Tracking = () => {
                     Previsão de Entrega
                   </p>
                   <p className="text-base font-bold text-accent">
-                    {new Date(trackingData.previsao_entrega).toLocaleDateString('pt-BR', {
-                      day: '2-digit',
-                      month: 'short',
-                      year: 'numeric'
-                    })} - {new Date(trackingData.previsao_entrega).toLocaleTimeString('pt-BR', {
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
+                    {trackingData.previsao_entrega ? (
+                      <>
+                        {new Date(trackingData.previsao_entrega).toLocaleDateString('pt-BR', {
+                          day: '2-digit',
+                          month: 'short',
+                          year: 'numeric'
+                        })} - {new Date(trackingData.previsao_entrega).toLocaleTimeString('pt-BR', {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </>
+                    ) : (
+                      'A definir'
+                    )}
                   </p>
                 </div>
               </div>
