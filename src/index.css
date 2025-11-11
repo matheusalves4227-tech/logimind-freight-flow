@@ -203,28 +203,89 @@ All colors MUST be HSL.
     @apply text-xs text-muted-foreground;
   }
   
-  /* Timeline de Rastreamento */
-  .timeline-vertical-line {
-    @apply absolute left-0 top-0 bottom-0 w-0.5 bg-border;
+  /* === TIMELINE DE RASTREAMENTO === */
+  
+  /* Container da Timeline */
+  .timeline-container {
+    position: relative;
+    padding: 20px 0 20px 40px;
   }
   
-  .timeline-point {
-    @apply w-4 h-4 rounded-full border-[3px] border-background z-10 transition-all;
+  /* Linha Vertical (O Eixo da Timeline) */
+  .timeline-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 15px;
+    width: 2px;
+    height: 100%;
+    background-color: hsl(var(--border-light));
   }
   
-  .timeline-point-primary {
-    @apply bg-primary shadow-lg;
-    box-shadow: 0 0 0 4px hsl(var(--primary) / 0.2);
+  /* Ponto do Evento (O Círculo) */
+  .timeline-ponto {
+    position: absolute;
+    left: 8px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 3px solid hsl(var(--background));
+    z-index: 10;
+    background-color: hsl(var(--primary));
   }
   
-  .timeline-point-success {
-    @apply bg-secondary shadow-lg;
-    box-shadow: 0 0 0 4px hsl(var(--secondary) / 0.2);
+  /* Estilos de Status Específicos */
+  .timeline-ponto.status-entregue {
+    background-color: hsl(var(--secondary));
+    box-shadow: 0 0 0 4px hsl(var(--secondary) / 0.15);
   }
   
-  .timeline-point-alert {
-    @apply bg-accent shadow-lg;
-    box-shadow: 0 0 0 4px hsl(var(--accent) / 0.2);
+  .timeline-ponto.status-critico {
+    background-color: hsl(var(--accent));
+    box-shadow: 0 0 0 4px hsl(var(--accent) / 0.15);
+  }
+  
+  .timeline-ponto.status-normal {
+    background-color: hsl(var(--primary));
+    box-shadow: 0 0 0 4px hsl(var(--primary) / 0.15);
+  }
+  
+  /* Conteúdo do Evento */
+  .timeline-conteudo {
+    margin-left: 15px;
+    padding-bottom: 20px;
+    line-height: 1.4;
+  }
+  
+  /* Destaque para Ocorrência Crítica */
+  .timeline-conteudo.alerta-critico {
+    background-color: hsl(45 100% 95%);
+    padding: 10px;
+    border-radius: 6px;
+    border-left: 4px solid hsl(var(--accent));
+    box-shadow: 0 1px 3px hsl(var(--accent) / 0.2);
+  }
+  
+  .descricao-evento {
+    font-weight: 600;
+    color: hsl(var(--neutral-dark));
+  }
+  
+  .cidade-uf {
+    font-size: 0.9em;
+    color: hsl(var(--neutral-medium));
+  }
+  
+  .data-hora {
+    display: block;
+    font-size: 0.8em;
+    color: hsl(var(--neutral-medium));
+    margin-bottom: 2px;
+  }
+  
+  .data-hora.laranja {
+    color: hsl(var(--accent-foreground));
+    font-weight: 600;
   }
   
   /* Badges personalizados */
