@@ -8,57 +8,74 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
+    /* ===== LOGIMARKET DESIGN SYSTEM ===== */
+    /* Cores de Fundo e Superfície */
     --background: 0 0% 100%;
-    --foreground: 215 25% 15%;
+    --background-light: 0 0% 97%;  /* #F7F7F7 - Fundo Geral */
+    --foreground: 0 0% 20%;  /* #333333 - Texto Principal */
 
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 15%;
+    --card-foreground: 0 0% 20%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 15%;
+    --popover-foreground: 0 0% 20%;
 
-    /* Primária (Azul #1A73E8) - Confiança/Profissionalismo - CTAs, Preço Final */
-    --primary: 217 89% 51%;
+    /* === CORES PRIMÁRIAS E AÇÃO === */
+    /* Azul Confiança #1A73E8 - CTAs, Preços Finais, Links */
+    --primary: 217 82% 51%;
     --primary-foreground: 0 0% 100%;
-
-    /* Secundária (Verde #34A853) - Sucesso/Qualidade - Ratings, Taxa de Sucesso */
-    --secondary: 142 71% 45%;
+    
+    /* Verde Qualidade #34A853 - Sucesso, Ratings, Status Entregue */
+    --secondary: 142 53% 43%;
     --secondary-foreground: 0 0% 100%;
-
-    --muted: 210 20% 96%;
-    --muted-foreground: 215 15% 45%;
-
-    /* Destaque (Laranja #FBBC05) - Velocidade/Urgência - Prazo, Alertas */
-    --accent: 45 98% 51%;
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 84% 60%;
+    
+    /* Laranja Velocidade/Alerta #FBBC05 - Prazo, Urgência, Alertas */
+    --accent: 45 97% 50%;
+    --accent-foreground: 0 0% 20%;
+    
+    /* Vermelho Erro #EA4335 - Falhas, Cancelamentos, Crítico */
+    --destructive: 4 82% 57%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 20% 90%;
-    --input: 214 20% 90%;
-    --ring: 217 89% 51%;
+    /* === CORES NEUTRAS === */
+    --neutral-dark: 0 0% 20%;      /* #333333 - Texto Principal */
+    --neutral-medium: 0 0% 40%;    /* #666666 - Detalhes, Texto Secundário */
+    --border-light: 0 0% 93%;      /* #EEEEEE - Bordas de Cards */
+    
+    --muted: 210 20% 96%;
+    --muted-foreground: 0 0% 40%;  /* Texto secundário */
+
+    --border: 0 0% 93%;
+    --input: 0 0% 93%;
+    --ring: 217 82% 51%;
 
     --radius: 0.75rem;
 
-    /* Custom design tokens - LogiMarket Design System */
-    --gradient-primary: linear-gradient(135deg, hsl(217 89% 51%), hsl(217 85% 65%));
-    --gradient-hero: linear-gradient(135deg, hsl(217 89% 51%) 0%, hsl(142 71% 45%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(45 98% 51%), hsl(45 95% 60%));
-    --gradient-success: linear-gradient(135deg, hsl(142 71% 45%), hsl(142 65% 55%));
+    /* === GRADIENTES LOGIMARKET === */
+    --gradient-primary: linear-gradient(135deg, hsl(217 82% 51%), hsl(217 85% 65%));
+    --gradient-hero: linear-gradient(135deg, hsl(217 82% 51%) 0%, hsl(142 53% 43%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(45 97% 50%), hsl(45 95% 60%));
+    --gradient-success: linear-gradient(135deg, hsl(142 53% 43%), hsl(142 65% 55%));
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(0 0% 97%));
     
-    --shadow-sm: 0 2px 8px hsl(217 89% 51% / 0.08);
-    --shadow-md: 0 4px 16px hsl(217 89% 51% / 0.12);
-    --shadow-lg: 0 8px 32px hsl(217 89% 51% / 0.16);
-    --shadow-accent: 0 4px 12px hsl(45 98% 51% / 0.25);
-    --shadow-success: 0 4px 12px hsl(142 71% 45% / 0.25);
+    /* === SOMBRAS LOGIMARKET === */
+    --shadow-card: 0 4px 15px hsl(0 0% 0% / 0.05);
+    --shadow-card-hover: 0 6px 20px hsl(0 0% 0% / 0.1);
+    --shadow-sm: 0 2px 8px hsl(217 82% 51% / 0.08);
+    --shadow-md: 0 4px 16px hsl(217 82% 51% / 0.12);
+    --shadow-lg: 0 8px 32px hsl(217 82% 51% / 0.16);
+    --shadow-accent: 0 4px 12px hsl(45 97% 50% / 0.25);
+    --shadow-success: 0 4px 12px hsl(142 53% 43% / 0.25);
     
+    /* === TRANSIÇÕES === */
     --transition-base: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-fast: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .dark {
+    /* === DARK MODE - LOGIMARKET === */
     --background: 215 30% 8%;
+    --background-light: 215 25% 12%;
     --foreground: 210 20% 95%;
 
     --card: 215 25% 12%;
@@ -67,33 +84,39 @@ All colors MUST be HSL.
     --popover: 215 25% 12%;
     --popover-foreground: 210 20% 95%;
 
-    /* Primária (Azul) - Dark Mode */
-    --primary: 217 89% 60%;
+    /* Cores Primárias - Dark Mode com maior luminosidade */
+    --primary: 217 82% 60%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secundária (Verde) - Dark Mode */
-    --secondary: 142 65% 50%;
+    --secondary: 142 53% 50%;
     --secondary-foreground: 0 0% 100%;
+
+    --accent: 45 97% 55%;
+    --accent-foreground: 215 30% 8%;
+
+    --destructive: 4 82% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Cores Neutras - Dark Mode */
+    --neutral-dark: 210 20% 95%;
+    --neutral-medium: 215 10% 60%;
+    --border-light: 215 20% 20%;
 
     --muted: 215 20% 16%;
     --muted-foreground: 215 10% 60%;
 
-    /* Destaque (Laranja) - Dark Mode */
-    --accent: 45 95% 55%;
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 80% 55%;
-    --destructive-foreground: 0 0% 100%;
-
     --border: 215 20% 20%;
     --input: 215 20% 20%;
-    --ring: 217 89% 60%;
+    --ring: 217 82% 60%;
 
+    /* Sombras Dark Mode */
+    --shadow-card: 0 4px 15px hsl(0 0% 0% / 0.4);
+    --shadow-card-hover: 0 6px 20px hsl(0 0% 0% / 0.5);
     --shadow-sm: 0 2px 8px hsl(0 0% 0% / 0.3);
     --shadow-md: 0 4px 16px hsl(0 0% 0% / 0.4);
     --shadow-lg: 0 8px 32px hsl(0 0% 0% / 0.5);
-    --shadow-accent: 0 4px 12px hsl(45 95% 55% / 0.3);
-    --shadow-success: 0 4px 12px hsl(142 65% 50% / 0.3);
+    --shadow-accent: 0 4px 12px hsl(45 97% 55% / 0.3);
+    --shadow-success: 0 4px 12px hsl(142 53% 50% / 0.3);
   }
 }
 
@@ -103,6 +126,115 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
+  }
+}
+
+@layer components {
+  /* === COMPONENTES LOGIMARKET === */
+  
+  /* Card Padrão LogiMarket - Cotação, Oportunidades, Tracking */
+  .card-logimarket {
+    @apply bg-card border border-border rounded-xl p-6 transition-all duration-300;
+    box-shadow: var(--shadow-card);
+  }
+  
+  .card-logimarket:hover {
+    box-shadow: var(--shadow-card-hover);
+    @apply border-primary;
+  }
+  
+  /* Botão Primário - Contratar / Enviar Lance */
+  .btn-primary-logimarket {
+    @apply w-full py-3.5 px-6 bg-primary text-primary-foreground font-semibold;
+    @apply rounded-lg border-none cursor-pointer transition-colors duration-200;
+  }
+  
+  .btn-primary-logimarket:hover {
+    @apply bg-primary/90;
+  }
+  
+  /* Botão Secundário - Rastreamento */
+  .btn-secondary-logimarket {
+    @apply bg-background-light text-primary border border-primary;
+    @apply py-3 px-6 rounded-lg font-semibold cursor-pointer transition-all duration-200;
+  }
+  
+  .btn-secondary-logimarket:hover {
+    @apply bg-primary/5;
+  }
+  
+  /* Tags de Status - Pílulas */
+  .tag-status {
+    @apply px-3 py-1 rounded-full text-xs font-bold uppercase inline-block;
+  }
+  
+  .tag-status-entregue {
+    @apply bg-secondary text-secondary-foreground;
+  }
+  
+  .tag-status-atraso {
+    @apply bg-accent text-neutral-dark;
+  }
+  
+  .tag-status-em-transito {
+    @apply bg-primary text-primary-foreground;
+  }
+  
+  .tag-status-cancelado {
+    @apply bg-destructive text-destructive-foreground;
+  }
+  
+  /* Hierarquia de Preço */
+  .price-display-lg {
+    @apply text-5xl font-extrabold text-primary leading-none;
+  }
+  
+  .price-display-md {
+    @apply text-3xl font-bold text-primary;
+  }
+  
+  /* Detalhes LogiMind - Preço Base, Comissão */
+  .detail-text-sm {
+    @apply text-sm text-neutral-medium;
+  }
+  
+  .detail-text-xs {
+    @apply text-xs text-muted-foreground;
+  }
+  
+  /* Timeline de Rastreamento */
+  .timeline-vertical-line {
+    @apply absolute left-0 top-0 bottom-0 w-0.5 bg-border;
+  }
+  
+  .timeline-point {
+    @apply w-4 h-4 rounded-full border-[3px] border-background z-10 transition-all;
+  }
+  
+  .timeline-point-primary {
+    @apply bg-primary shadow-lg;
+    box-shadow: 0 0 0 4px hsl(var(--primary) / 0.2);
+  }
+  
+  .timeline-point-success {
+    @apply bg-secondary shadow-lg;
+    box-shadow: 0 0 0 4px hsl(var(--secondary) / 0.2);
+  }
+  
+  .timeline-point-alert {
+    @apply bg-accent shadow-lg;
+    box-shadow: 0 0 0 4px hsl(var(--accent) / 0.2);
+  }
+  
+  /* Badges personalizados */
+  .badge-qualidade {
+    @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold;
+    @apply bg-secondary/10 text-secondary border border-secondary/20;
+  }
+  
+  .badge-prazo {
+    @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold;
+    @apply bg-accent/10 text-accent-foreground border border-accent/20;
   }
 }
