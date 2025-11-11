@@ -8,6 +8,7 @@ import Quote from "./pages/Quote";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Tracking from "./pages/Tracking";
+import DriverDashboard from "./pages/DriverDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,6 +24,7 @@ const App = () => (
           <Route path="/quote" element={<Quote />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/tracking/:trackingCode" element={<Tracking />} />
+          <Route path="/motorista/dashboard" element={<DriverDashboard />} />
           <Route path="/auth" element={<Auth />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
