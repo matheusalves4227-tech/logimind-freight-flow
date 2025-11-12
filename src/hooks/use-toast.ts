@@ -169,12 +169,14 @@ function useToast() {
   React.useEffect(() => {
     listeners.push(setState);
     return () => {
-      const index = listeners.indexOf(setState);
-      if (index > -1) {
-        listeners.splice(index, 1);
+      // Remove ALL occurrences of this listener to avoid duplicates
+      let idx = listeners.indexOf(setState);
+      while (idx > -1) {
+        listeners.splice(idx, 1);
+        idx = listeners.indexOf(setState);
       }
     };
-  }, [state]);
+  }, []);
 
   return {
     ...state,
