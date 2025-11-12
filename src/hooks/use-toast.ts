@@ -167,7 +167,10 @@ function useToast() {
   const [state, setState] = React.useState<State>(memoryState);
 
   React.useEffect(() => {
-    listeners.push(setState);
+    // Avoid duplicate subscriptions
+    if (!listeners.includes(setState)) {
+      listeners.push(setState);
+    }
     return () => {
       // Remove ALL occurrences of this listener to avoid duplicates
       let idx = listeners.indexOf(setState);
