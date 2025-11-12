@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -84,13 +84,17 @@ const AutonomousOnboarding = ({ cpf, onBack }: AutonomousOnboardingProps) => {
     { id: "MS", label: "Mato Grosso do Sul" },
   ];
 
-  const toggleRegion = (regionId: string) => {
+  const toggleRegion = useCallback((regionId: string) => {
     setSelectedRegions(prev => 
       prev.includes(regionId) 
         ? prev.filter(id => id !== regionId)
         : [...prev, regionId]
     );
-  };
+  }, []);
+
+  const handleFormChange = useCallback((field: string, value: string | boolean) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  }, []);
 
   const validateStep = (step: number) => {
     setErrors({});
@@ -291,7 +295,7 @@ const AutonomousOnboarding = ({ cpf, onBack }: AutonomousOnboardingProps) => {
                         <Label htmlFor="cnh_categoria">Categoria da CNH *</Label>
                         <Select
                           value={formData.cnh_categoria}
-                          onValueChange={(value) => setFormData({ ...formData, cnh_categoria: value })}
+                          onValueChange={(value) => handleFormChange("cnh_categoria", value)}
                         >
                           <SelectTrigger className={errors.cnh_categoria ? "border-destructive" : ""}>
                             <SelectValue placeholder="Selecione" />
@@ -382,7 +386,7 @@ const AutonomousOnboarding = ({ cpf, onBack }: AutonomousOnboardingProps) => {
                         <Label htmlFor="veiculo_tipo">Tipo de Veículo *</Label>
                         <Select
                           value={formData.veiculo_tipo}
-                          onValueChange={(value) => setFormData({ ...formData, veiculo_tipo: value })}
+                          onValueChange={(value) => handleFormChange("veiculo_tipo", value)}
                         >
                           <SelectTrigger className={errors.veiculo_tipo ? "border-destructive" : ""}>
                             <SelectValue placeholder="Selecione" />
@@ -408,7 +412,7 @@ const AutonomousOnboarding = ({ cpf, onBack }: AutonomousOnboardingProps) => {
                         <Label htmlFor="veiculo_carroceria">Tipo de Carroceria *</Label>
                         <Select
                           value={formData.veiculo_carroceria}
-                          onValueChange={(value) => setFormData({ ...formData, veiculo_carroceria: value })}
+                          onValueChange={(value) => handleFormChange("veiculo_carroceria", value)}
                         >
                           <SelectTrigger className={errors.veiculo_carroceria ? "border-destructive" : ""}>
                             <SelectValue placeholder="Selecione" />
@@ -543,7 +547,7 @@ const AutonomousOnboarding = ({ cpf, onBack }: AutonomousOnboardingProps) => {
                         <Label htmlFor="pix_key_type">Tipo de Chave PIX *</Label>
                         <Select
                           value={formData.pix_key_type}
-                          onValueChange={(value) => setFormData({ ...formData, pix_key_type: value })}
+                          onValueChange={(value) => handleFormChange("pix_key_type", value)}
                         >
                           <SelectTrigger className={errors.pix_key_type ? "border-destructive" : ""}>
                             <SelectValue placeholder="Selecione" />
