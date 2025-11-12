@@ -212,7 +212,7 @@ const AutonomousOnboarding = ({ cpf, onBack }: AutonomousOnboardingProps) => {
                         <Input
                           id="nome_completo"
                           value={formData.nome_completo}
-                          onChange={(e) => setFormData({ ...formData, nome_completo: e.target.value })}
+                          onChange={(e) => handleFormChange("nome_completo", e.target.value)}
                           className={errors.nome_completo ? "border-destructive" : ""}
                         />
                         {errors.nome_completo && (
@@ -227,7 +227,7 @@ const AutonomousOnboarding = ({ cpf, onBack }: AutonomousOnboardingProps) => {
                             id="email"
                             type="email"
                             value={formData.email}
-                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                            onChange={(e) => handleFormChange("email", e.target.value)}
                             className={errors.email ? "border-destructive" : ""}
                           />
                           {errors.email && (
@@ -242,7 +242,7 @@ const AutonomousOnboarding = ({ cpf, onBack }: AutonomousOnboardingProps) => {
                             type="tel"
                             placeholder="(11) 98888-7777"
                             value={formData.telefone}
-                            onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
+                            onChange={(e) => handleFormChange("telefone", e.target.value)}
                             className={errors.telefone ? "border-destructive" : ""}
                           />
                           {errors.telefone && (
@@ -260,7 +260,7 @@ const AutonomousOnboarding = ({ cpf, onBack }: AutonomousOnboardingProps) => {
                             type="tel"
                             placeholder="(11) 98888-7777"
                             value={formData.whatsapp}
-                            onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
+                            onChange={(e) => handleFormChange("whatsapp", e.target.value)}
                           />
                         </div>
                       </div>
@@ -280,7 +280,7 @@ const AutonomousOnboarding = ({ cpf, onBack }: AutonomousOnboardingProps) => {
                           placeholder="00000000000"
                           maxLength={11}
                           value={formData.cnh_numero}
-                          onChange={(e) => setFormData({ ...formData, cnh_numero: e.target.value.replace(/\D/g, "") })}
+                          onChange={(e) => handleFormChange("cnh_numero", e.target.value.replace(/\D/g, ""))}
                           className={errors.cnh_numero ? "border-destructive" : ""}
                         />
                         {errors.cnh_numero && (
@@ -294,7 +294,7 @@ const AutonomousOnboarding = ({ cpf, onBack }: AutonomousOnboardingProps) => {
                       <div className="space-y-2">
                         <Label htmlFor="cnh_categoria">Categoria da CNH *</Label>
                         <Select
-                          value={formData.cnh_categoria}
+                          value={formData.cnh_categoria || undefined}
                           onValueChange={(value) => handleFormChange("cnh_categoria", value)}
                         >
                           <SelectTrigger className={errors.cnh_categoria ? "border-destructive" : ""}>
@@ -317,7 +317,7 @@ const AutonomousOnboarding = ({ cpf, onBack }: AutonomousOnboardingProps) => {
                         <Input
                           id="rntrc"
                           value={formData.rntrc}
-                          onChange={(e) => setFormData({ ...formData, rntrc: e.target.value })}
+                          onChange={(e) => handleFormChange("rntrc", e.target.value)}
                           className={errors.rntrc ? "border-destructive" : ""}
                         />
                         {errors.rntrc && (
@@ -371,7 +371,7 @@ const AutonomousOnboarding = ({ cpf, onBack }: AutonomousOnboardingProps) => {
                           placeholder="ABC-1D23"
                           maxLength={8}
                           value={formData.veiculo_placa}
-                          onChange={(e) => setFormData({ ...formData, veiculo_placa: e.target.value.toUpperCase() })}
+                          onChange={(e) => handleFormChange("veiculo_placa", e.target.value.toUpperCase())}
                           className={errors.veiculo_placa ? "border-destructive" : ""}
                         />
                         {errors.veiculo_placa && (
@@ -385,7 +385,7 @@ const AutonomousOnboarding = ({ cpf, onBack }: AutonomousOnboardingProps) => {
                       <div className="space-y-2">
                         <Label htmlFor="veiculo_tipo">Tipo de Veículo *</Label>
                         <Select
-                          value={formData.veiculo_tipo}
+                          value={formData.veiculo_tipo || undefined}
                           onValueChange={(value) => handleFormChange("veiculo_tipo", value)}
                         >
                           <SelectTrigger className={errors.veiculo_tipo ? "border-destructive" : ""}>
@@ -411,7 +411,7 @@ const AutonomousOnboarding = ({ cpf, onBack }: AutonomousOnboardingProps) => {
                       <div className="space-y-2">
                         <Label htmlFor="veiculo_carroceria">Tipo de Carroceria *</Label>
                         <Select
-                          value={formData.veiculo_carroceria}
+                          value={formData.veiculo_carroceria || undefined}
                           onValueChange={(value) => handleFormChange("veiculo_carroceria", value)}
                         >
                           <SelectTrigger className={errors.veiculo_carroceria ? "border-destructive" : ""}>
@@ -442,7 +442,7 @@ const AutonomousOnboarding = ({ cpf, onBack }: AutonomousOnboardingProps) => {
                           type="number"
                           placeholder="Ex: 5000"
                           value={formData.veiculo_capacidade_kg}
-                          onChange={(e) => setFormData({ ...formData, veiculo_capacidade_kg: e.target.value })}
+                          onChange={(e) => handleFormChange("veiculo_capacidade_kg", e.target.value)}
                           className={errors.veiculo_capacidade_kg ? "border-destructive" : ""}
                         />
                         {errors.veiculo_capacidade_kg && (
@@ -473,8 +473,7 @@ const AutonomousOnboarding = ({ cpf, onBack }: AutonomousOnboardingProps) => {
                       {regioes.map((regiao) => (
                         <div
                           key={regiao.id}
-                          onClick={() => toggleRegion(regiao.id)}
-                          className={`flex items-center gap-2 p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                          className={`flex items-center gap-2 p-3 rounded-lg border-2 transition-all ${
                             selectedRegions.includes(regiao.id)
                               ? "border-accent bg-accent/10"
                               : "border-border hover:border-accent/50"
@@ -546,7 +545,7 @@ const AutonomousOnboarding = ({ cpf, onBack }: AutonomousOnboardingProps) => {
                       <div className="space-y-2">
                         <Label htmlFor="pix_key_type">Tipo de Chave PIX *</Label>
                         <Select
-                          value={formData.pix_key_type}
+                          value={formData.pix_key_type || undefined}
                           onValueChange={(value) => handleFormChange("pix_key_type", value)}
                         >
                           <SelectTrigger className={errors.pix_key_type ? "border-destructive" : ""}>
@@ -571,7 +570,7 @@ const AutonomousOnboarding = ({ cpf, onBack }: AutonomousOnboardingProps) => {
                           id="pix_key"
                           placeholder="Digite sua chave PIX"
                           value={formData.pix_key}
-                          onChange={(e) => setFormData({ ...formData, pix_key: e.target.value })}
+                          onChange={(e) => handleFormChange("pix_key", e.target.value)}
                           className={errors.pix_key ? "border-destructive" : ""}
                         />
                         {errors.pix_key && (
@@ -619,9 +618,9 @@ const AutonomousOnboarding = ({ cpf, onBack }: AutonomousOnboardingProps) => {
                       <Checkbox
                         id="aceite_termos"
                         checked={formData.aceite_termos}
-                        onCheckedChange={(checked) => 
-                          setFormData({ ...formData, aceite_termos: checked as boolean })
-                        }
+                         onCheckedChange={(checked) => 
+                           handleFormChange("aceite_termos", Boolean(checked))
+                         }
                         className={errors.aceite_termos ? "border-destructive" : ""}
                       />
                       <div className="space-y-1">
