@@ -328,10 +328,21 @@ const Quote = () => {
 
       toast.success("Redirecionando para pagamento seguro...", { id: 'payment-redirect' });
 
-      // PASSO 3: Redirecionar para Stripe Checkout - IMEDIATAMENTE
-      // Não limpar o estado para manter o loading durante o redirect
-      window.location.href = checkoutData.url;
-
+      // PASSO 3: Redirecionar para Stripe Checkout - abrir em nova aba para evitar bloqueio no preview
+      // Mantemos o loading até o usuário voltar
+      const win = window.open(checkoutData.url, '_blank', 'noopener,noreferrer');
+      if (!win) {
+        // Fallback: tentar navegar a janela superior ou atual
+        try {
+          if (window.top) {
+            window.top.location.href = checkoutData.url;
+          } else {
+            window.location.assign(checkoutData.url);
+          }
+        } catch {
+          window.location.assign(checkoutData.url);
+        }
+      }
     } catch (error) {
       console.error('Unexpected error:', error);
       toast.error("Erro inesperado ao contratar frete", { id: 'contract-freight' });
