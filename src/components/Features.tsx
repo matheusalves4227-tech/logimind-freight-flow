@@ -2,7 +2,7 @@ import { TrendingUp, Package, Users, Brain } from "lucide-react";
 
 const Features = () => {
   return (
-    <section id="features" className="py-20 bg-muted/30">
+    <section id="features" className="py-20 bg-background-secondary">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Bloco de Dados Chave (Prova de Escala) */}
         <div className="text-center max-w-4xl mx-auto mb-16">

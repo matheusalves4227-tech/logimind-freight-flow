@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Truck, Building2, User, TrendingUp, BarChart3, Map } from "lucide-react";
+import heroIllustration from "@/assets/hero-logistics-illustration.png";
 
 const Hero = () => {
   const navigate = useNavigate();
@@ -11,23 +12,36 @@ const Hero = () => {
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5 -z-10" />
       
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header Section */}
-        <div className="text-center max-w-4xl mx-auto mb-16">
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-6">
-            Sua Logística Inteligente.{" "}
-            <span className="text-primary">
-              Seu Frete Otimizado.
-            </span>
-          </h1>
-          <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">
-            Conectando embarcadores, transportadoras e motoristas autônomos através de tecnologia inteligente e precificação dinâmica.
-          </p>
+        {/* Header Section with Illustration */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center max-w-7xl mx-auto mb-16">
+          {/* Text Content */}
+          <div className="text-center lg:text-left">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-6">
+              Sua Logística Inteligente.{" "}
+              <span className="text-primary">
+                Seu Frete Otimizado.
+              </span>
+            </h1>
+            <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto lg:mx-0">
+              Conectando embarcadores, transportadoras e motoristas autônomos através de tecnologia inteligente e precificação dinâmica.
+            </p>
+          </div>
+          
+          {/* Illustration */}
+          <div className="relative animate-fade-in">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 rounded-3xl blur-3xl animate-pulse-slow" />
+            <img 
+              src={heroIllustration} 
+              alt="Ilustração de Logística Inteligente" 
+              className="relative w-full h-auto rounded-2xl"
+            />
+          </div>
         </div>
 
         {/* 3 Cards de Direcionamento Triplo com Hierarquia */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto mb-12 md:mb-20 px-4 md:px-0 items-stretch">
           {/* Card 1: Embarcador (DESTAQUE PRINCIPAL) */}
-          <div className="group bg-card rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-xl border-2 border-primary hover:border-primary hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 md:hover:scale-105 relative">
+          <div className="group bg-card rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-xl border-2 border-primary hover:border-primary hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 md:hover:scale-[1.08] relative animate-fade-in hover:animate-pulse-subtle">
             {/* Badge de Destaque */}
             <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
               <span className="inline-flex items-center gap-1 px-3 py-1 bg-primary text-primary-foreground text-xs font-bold rounded-full shadow-lg">
