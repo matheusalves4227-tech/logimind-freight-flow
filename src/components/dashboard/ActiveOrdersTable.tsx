@@ -27,11 +27,13 @@ export interface Order {
   final_price: number;
   estimated_delivery: string;
   created_at: string;
+  payment_status?: string;
 }
 
 interface ActiveOrdersTableProps {
   orders: Order[];
   onViewDetails: (orderId: string) => void;
+  onRetryPayment?: (orderId: string) => void;
 }
 
 const statusConfig = {
@@ -41,7 +43,7 @@ const statusConfig = {
   incident: { label: "Ocorrência", color: "bg-destructive text-destructive-foreground" },
 };
 
-export const ActiveOrdersTable = ({ orders, onViewDetails }: ActiveOrdersTableProps) => {
+export const ActiveOrdersTable = ({ orders, onViewDetails, onRetryPayment }: ActiveOrdersTableProps) => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -156,26 +158,44 @@ export const ActiveOrdersTable = ({ orders, onViewDetails }: ActiveOrdersTablePr
                     </span>
                   </TableCell>
                   <TableCell className="text-right">
-                    {order.tracking_code ? (
-                      <Button
-                        variant="default"
-                        size="sm"
-                        onClick={() => navigate(`/tracking/${order.tracking_code}`)}
-                        className="gap-2"
-                      >
-                        <MapPin className="h-4 w-4" />
-                        Rastrear
-                      </Button>
-                    ) : (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onViewDetails(order.id)}
-                      >
-                        <Eye className="h-4 w-4 mr-2" />
-                        Ver Detalhes
-                      </Button>
-                    )}
+                    <div className="flex gap-2 justify-end">
+                      {/* Botão Pagar Agora para pedidos com pagamento pendente */}
+                      {(order.payment_status === 'pending' || order.payment_status === 'processing') && onRetryPayment && (
+                        <Button
+                          variant="default"
+                          size="sm"
+                          onClick={() => onRetryPayment(order.id)}
+                          className="gap-2"
+                        >
+                          Pagar agora
+                        </Button>
+                      )}
+                      
+                      {/* Botão Rastrear para pedidos com código de rastreamento */}
+                      {order.tracking_code && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => navigate(`/tracking/${order.tracking_code}`)}
+                          className="gap-2"
+                        >
+                          <MapPin className="h-4 w-4" />
+                          Rastrear
+                        </Button>
+                      )}
+                      
+                      {/* Botão Ver Detalhes para pedidos sem tracking */}
+                      {!order.tracking_code && !(order.payment_status === 'pending' || order.payment_status === 'processing') && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => onViewDetails(order.id)}
+                        >
+                          <Eye className="h-4 w-4 mr-2" />
+                          Ver Detalhes
+                        </Button>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
