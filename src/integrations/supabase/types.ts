@@ -21,12 +21,18 @@ export type Database = {
           created_at: string
           delivery_days: number
           destination_region: string
+          destination_state: string | null
+          fixed_cost: number | null
           id: string
           is_active: boolean
+          max_distance_km: number | null
           max_weight_kg: number
+          min_distance_km: number | null
           min_weight_kg: number
           origin_region: string
+          origin_state: string | null
           price_per_kg: number
+          rate_per_km: number | null
           updated_at: string
         }
         Insert: {
@@ -35,12 +41,18 @@ export type Database = {
           created_at?: string
           delivery_days: number
           destination_region: string
+          destination_state?: string | null
+          fixed_cost?: number | null
           id?: string
           is_active?: boolean
+          max_distance_km?: number | null
           max_weight_kg: number
+          min_distance_km?: number | null
           min_weight_kg?: number
           origin_region: string
+          origin_state?: string | null
           price_per_kg?: number
+          rate_per_km?: number | null
           updated_at?: string
         }
         Update: {
@@ -49,12 +61,18 @@ export type Database = {
           created_at?: string
           delivery_days?: number
           destination_region?: string
+          destination_state?: string | null
+          fixed_cost?: number | null
           id?: string
           is_active?: boolean
+          max_distance_km?: number | null
           max_weight_kg?: number
+          min_distance_km?: number | null
           min_weight_kg?: number
           origin_region?: string
+          origin_state?: string | null
           price_per_kg?: number
+          rate_per_km?: number | null
           updated_at?: string
         }
         Relationships: [
@@ -70,6 +88,8 @@ export type Database = {
       carriers: {
         Row: {
           avg_quality_rating: number | null
+          base_rate_per_kg: number | null
+          base_rate_per_km: number | null
           carrier_size: string | null
           commercial_notes: string | null
           contact_email: string | null
@@ -77,6 +97,8 @@ export type Database = {
           contact_phone: string | null
           contact_whatsapp: string | null
           coverage_area: string | null
+          coverage_states: string[] | null
+          coverage_type: string | null
           created_at: string | null
           damage_rate: number | null
           id: string
@@ -89,6 +111,8 @@ export type Database = {
         }
         Insert: {
           avg_quality_rating?: number | null
+          base_rate_per_kg?: number | null
+          base_rate_per_km?: number | null
           carrier_size?: string | null
           commercial_notes?: string | null
           contact_email?: string | null
@@ -96,6 +120,8 @@ export type Database = {
           contact_phone?: string | null
           contact_whatsapp?: string | null
           coverage_area?: string | null
+          coverage_states?: string[] | null
+          coverage_type?: string | null
           created_at?: string | null
           damage_rate?: number | null
           id?: string
@@ -108,6 +134,8 @@ export type Database = {
         }
         Update: {
           avg_quality_rating?: number | null
+          base_rate_per_kg?: number | null
+          base_rate_per_km?: number | null
           carrier_size?: string | null
           commercial_notes?: string | null
           contact_email?: string | null
@@ -115,6 +143,8 @@ export type Database = {
           contact_phone?: string | null
           contact_whatsapp?: string | null
           coverage_area?: string | null
+          coverage_states?: string[] | null
+          coverage_type?: string | null
           created_at?: string | null
           damage_rate?: number | null
           id?: string
