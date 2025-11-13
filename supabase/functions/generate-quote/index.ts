@@ -17,7 +17,7 @@ const QuoteRequestSchema = z.object({
   destination_cep: z.string().regex(/^\d{5}-?\d{3}$/, 'CEP deve ter 8 dígitos'),
   destination_number: z.string().min(1).max(20),
   destination_type: z.enum(['commercial', 'residential']),
-  weight_kg: z.number().positive().max(50000, 'Peso máximo: 50.000 kg'),
+  weight_kg: z.number().positive().max(200000, 'Peso máximo: 200.000 kg'),
   height_cm: z.number().positive().max(1000).optional(),
   width_cm: z.number().positive().max(1000).optional(),
   length_cm: z.number().positive().max(2000).optional(),
