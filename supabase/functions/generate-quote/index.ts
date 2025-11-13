@@ -38,9 +38,19 @@ const TOLERANCIA_PRECO = 1.03; // 3% acima do preço de mercado
 // Em rotas de alta liquidez/competição, reduz comissão para garantir melhor preço final
 const INTERVALO_AJUSTE_DEMANDA = COMISSAO_PADRAO - COMISSAO_MINIMA; // 0.05 (5%)
 
+// ============================================================================
 // LogiGuard Pro - Serviço de Segurança e Rastreamento Premium
-const LOGIGUARD_MARKUP = 0.25; // 25% de markup sobre o custo base
-const LOGIGUARD_VALOR_LIMITE = 50000.00; // R$ 50.000,00 - Limite para recomendar
+// ============================================================================
+// VALORES BASEADOS EM PESQUISA DE MERCADO BRASILEIRO (Jan 2025)
+// Fontes: Seguradoras, Gerenciadoras de Risco, Empresas de Rastreamento
+//
+// 1. SEGURO DE CARGA: 0.15% a 1.5% do valor da mercadoria (varia por risco)
+// 2. GRIS (Gerenciamento de Risco): 0.1% a 0.5% do valor da carga
+// 3. RASTREAMENTO 24/7: R$ 80 a R$ 150 por frete (caminhões/frotas)
+// ============================================================================
+
+const LOGIGUARD_MARKUP = 0.25; // 25% de markup LogiMarket sobre custo do parceiro
+const LOGIGUARD_VALOR_LIMITE = 50000.00; // R$ 50.000,00 - Limite para oferecer serviço
 const LOGIGUARD_RISCO_LIMITE = 0.65; // 65% - Fator de risco mínimo para oferecer
 const LOGIGUARD_RECOMENDACAO_VALOR = 100000.00; // R$ 100k para recomendação ativa
 const LOGIGUARD_RECOMENDACAO_RISCO = 0.80; // 80% de risco para recomendação ativa
@@ -94,7 +104,8 @@ interface ProcessedQuote {
 }
 
 /**
- * Calcula o serviço LogiGuard Pro com base no valor da carga e risco da rota
+ * Calcula o serviço LogiGuard Pro com PREÇOS REAIS DE MERCADO
+ * Baseado em pesquisa de mercado brasileiro (Jan 2025)
  * 
  * @param cargoValue - Valor declarado da carga
  * @param riskFactor - Fator de risco da rota (0.0 a 1.0)
@@ -115,24 +126,59 @@ function calcularLogiGuardPro(cargoValue: number | undefined, riskFactor: number
     return undefined;
   }
   
-  // Calcula o custo base do serviço (variável por valor e risco)
-  // Fórmula: R$ 10 base + (0.02% do valor da carga) + (fator de risco × R$ 5)
-  const baseCost = parseFloat((10 + (cargoValue * 0.0002) + (riskFactor * 5)).toFixed(2));
+  // ===================================================================
+  // CÁLCULO BASEADO EM PREÇOS REAIS DE MERCADO BRASILEIRO
+  // ===================================================================
   
-  // Calcula o markup LogiMarket (25%)
+  // 1. SEGURO DE CARGA (Ad Valorem - % do valor da mercadoria)
+  // Baixo risco (0.0-0.4): 0.15% do valor
+  // Risco médio (0.4-0.7): 0.50% do valor
+  // Alto risco (0.7-1.0): 1.00% do valor
+  let taxaSeguro = 0.0015; // 0.15% padrão
+  if (riskFactor >= 0.7) {
+    taxaSeguro = 0.01; // 1.00%
+  } else if (riskFactor >= 0.4) {
+    taxaSeguro = 0.005; // 0.50%
+  }
+  const custoSeguro = cargoValue * taxaSeguro;
+  
+  // 2. GRIS (Gerenciamento de Risco e Segurança - % do valor)
+  // Baixo risco: 0.10% | Médio: 0.25% | Alto: 0.50%
+  let taxaGRIS = 0.001; // 0.10% padrão
+  if (riskFactor >= 0.7) {
+    taxaGRIS = 0.005; // 0.50%
+  } else if (riskFactor >= 0.4) {
+    taxaGRIS = 0.0025; // 0.25%
+  }
+  const custoGRIS = cargoValue * taxaGRIS;
+  
+  // 3. RASTREAMENTO 24/7 + CENTRAL DE MONITORAMENTO (valor fixo por frete)
+  // Valor fixo por frete: R$ 100 a R$ 150 (caminhões/frotas)
+  let custoRastreamento = 100;
+  if (riskFactor >= 0.7) {
+    custoRastreamento = 150; // Monitoramento intensivo para alto risco
+  } else if (riskFactor >= 0.4) {
+    custoRastreamento = 125; // Monitoramento padrão
+  }
+  
+  // CUSTO TOTAL DO PARCEIRO (antes do markup LogiMarket)
+  const baseCost = parseFloat((custoSeguro + custoGRIS + custoRastreamento).toFixed(2));
+  
+  // PREÇO FINAL com markup de 25% LogiMarket
   const markupValue = parseFloat((baseCost * LOGIGUARD_MARKUP).toFixed(2));
-  
-  // Preço total do LogiGuard Pro
   const totalPrice = parseFloat((baseCost + markupValue).toFixed(2));
   
   // Determina se deve recomendar ativamente (selo RECOMENDADO)
   const recommended = cargoValue > LOGIGUARD_RECOMENDACAO_VALOR && riskFactor > LOGIGUARD_RECOMENDACAO_RISCO;
   
   console.log(
-    `[LogiGuard Pro] Cargo Value: R$ ${cargoValue.toFixed(2)} | ` +
-    `Risk Factor: ${(riskFactor * 100).toFixed(0)}% | ` +
+    `[LogiGuard Pro - Market Pricing] Cargo Value: R$ ${cargoValue.toFixed(2)} | ` +
+    `Risk: ${(riskFactor * 100).toFixed(0)}% | ` +
+    `Seguro: R$ ${custoSeguro.toFixed(2)} (${(taxaSeguro * 100).toFixed(2)}%) | ` +
+    `GRIS: R$ ${custoGRIS.toFixed(2)} (${(taxaGRIS * 100).toFixed(2)}%) | ` +
+    `Rastreamento: R$ ${custoRastreamento.toFixed(2)} | ` +
     `Base Cost: R$ ${baseCost} | ` +
-    `Markup (25%): R$ ${markupValue} | ` +
+    `Markup (+25%): R$ ${markupValue} | ` +
     `Total: R$ ${totalPrice} | ` +
     `Recommended: ${recommended ? 'YES' : 'NO'}`
   );
