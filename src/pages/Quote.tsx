@@ -266,6 +266,7 @@ const Quote = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         toast.error("Você precisa estar logado para contratar um frete");
+        setContractingCarrierId(null);
         navigate("/auth");
         return;
       }
@@ -300,6 +301,7 @@ const Quote = () => {
       if (orderError) {
         console.error('Error creating order:', orderError);
         toast.error("Erro ao criar pedido. Tente novamente.", { id: 'contract-freight' });
+        setContractingCarrierId(null);
         return;
       }
 
@@ -318,6 +320,7 @@ const Quote = () => {
       if (checkoutError || !checkoutData?.url) {
         console.error('Error creating checkout session:', checkoutError);
         toast.error("Erro ao iniciar pagamento. Tente novamente.", { id: 'payment-redirect' });
+        setContractingCarrierId(null);
         // Redirecionar para dashboard onde o usuário pode tentar pagar novamente
         setTimeout(() => navigate('/dashboard'), 2000);
         return;
@@ -325,15 +328,13 @@ const Quote = () => {
 
       toast.success("Redirecionando para pagamento seguro...", { id: 'payment-redirect' });
 
-      // PASSO 3: Redirecionar para Stripe Checkout
-      setTimeout(() => {
-        window.location.href = checkoutData.url;
-      }, 1000);
+      // PASSO 3: Redirecionar para Stripe Checkout - IMEDIATAMENTE
+      // Não limpar o estado para manter o loading durante o redirect
+      window.location.href = checkoutData.url;
 
     } catch (error) {
       console.error('Unexpected error:', error);
       toast.error("Erro inesperado ao contratar frete", { id: 'contract-freight' });
-    } finally {
       setContractingCarrierId(null);
     }
   };
