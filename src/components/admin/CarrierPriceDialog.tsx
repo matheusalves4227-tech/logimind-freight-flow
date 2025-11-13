@@ -5,10 +5,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { useToast } from '@/hooks/use-toast';
-import { Plus, Trash2, Pencil } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Pencil, Trash2, Plus, ArrowLeft } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+
+const BRAZILIAN_STATES = [
+  'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO',
+  'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI',
+  'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
+];
 
 interface Carrier {
   id: string;
@@ -17,14 +24,22 @@ interface Carrier {
 
 interface PriceEntry {
   id: string;
+  carrier_id: string;
   origin_region: string;
   destination_region: string;
+  origin_state: string | null;
+  destination_state: string | null;
+  min_distance_km: number | null;
+  max_distance_km: number | null;
   min_weight_kg: number;
   max_weight_kg: number;
   base_price: number;
   price_per_kg: number;
+  rate_per_km: number | null;
+  fixed_cost: number | null;
   delivery_days: number;
   is_active: boolean;
+  created_at?: string;
 }
 
 interface CarrierPriceDialogProps {
@@ -42,11 +57,17 @@ export function CarrierPriceDialog({ open, onOpenChange, carrier }: CarrierPrice
   const [formData, setFormData] = useState({
     origin_region: '',
     destination_region: '',
-    min_weight_kg: 0,
-    max_weight_kg: 1000,
-    base_price: 0,
-    price_per_kg: 0,
-    delivery_days: 3,
+    origin_state: '',
+    destination_state: '',
+    min_distance_km: '',
+    max_distance_km: '',
+    min_weight_kg: '',
+    max_weight_kg: '',
+    base_price: '',
+    price_per_kg: '',
+    rate_per_km: '',
+    fixed_cost: '',
+    delivery_days: '',
     is_active: true,
   });
 
@@ -65,7 +86,7 @@ export function CarrierPriceDialog({ open, onOpenChange, carrier }: CarrierPrice
         .order('origin_region');
 
       if (error) throw error;
-      setPrices(data || []);
+      setPrices((data || []) as unknown as PriceEntry[]);
     } catch (error) {
       console.error('Erro ao buscar preços:', error);
       toast({
@@ -81,15 +102,28 @@ export function CarrierPriceDialog({ open, onOpenChange, carrier }: CarrierPrice
     setLoading(true);
 
     try {
-      const dataToSave = {
-        ...formData,
+      const dataToSubmit = {
         carrier_id: carrier.id,
+        origin_region: formData.origin_state || formData.origin_region,
+        destination_region: formData.destination_state || formData.destination_region,
+        origin_state: formData.origin_state || null,
+        destination_state: formData.destination_state || null,
+        min_distance_km: formData.min_distance_km ? parseFloat(formData.min_distance_km) : null,
+        max_distance_km: formData.max_distance_km ? parseFloat(formData.max_distance_km) : null,
+        min_weight_kg: parseFloat(formData.min_weight_kg),
+        max_weight_kg: parseFloat(formData.max_weight_kg),
+        base_price: parseFloat(formData.base_price),
+        price_per_kg: parseFloat(formData.price_per_kg),
+        rate_per_km: formData.rate_per_km ? parseFloat(formData.rate_per_km) : null,
+        fixed_cost: formData.fixed_cost ? parseFloat(formData.fixed_cost) : null,
+        delivery_days: parseInt(formData.delivery_days),
+        is_active: formData.is_active,
       };
 
       if (editingPrice) {
         const { error } = await supabase
           .from('carrier_price_table')
-          .update(dataToSave)
+          .update(dataToSubmit)
           .eq('id', editingPrice.id);
 
         if (error) throw error;
@@ -101,7 +135,7 @@ export function CarrierPriceDialog({ open, onOpenChange, carrier }: CarrierPrice
       } else {
         const { error } = await supabase
           .from('carrier_price_table')
-          .insert([dataToSave]);
+          .insert([dataToSubmit]);
 
         if (error) throw error;
 
@@ -158,11 +192,17 @@ export function CarrierPriceDialog({ open, onOpenChange, carrier }: CarrierPrice
     setFormData({
       origin_region: price.origin_region,
       destination_region: price.destination_region,
-      min_weight_kg: price.min_weight_kg,
-      max_weight_kg: price.max_weight_kg,
-      base_price: price.base_price,
-      price_per_kg: price.price_per_kg,
-      delivery_days: price.delivery_days,
+      origin_state: price.origin_state || '',
+      destination_state: price.destination_state || '',
+      min_distance_km: price.min_distance_km?.toString() || '',
+      max_distance_km: price.max_distance_km?.toString() || '',
+      min_weight_kg: price.min_weight_kg.toString(),
+      max_weight_kg: price.max_weight_kg.toString(),
+      base_price: price.base_price.toString(),
+      price_per_kg: price.price_per_kg.toString(),
+      rate_per_km: price.rate_per_km?.toString() || '',
+      fixed_cost: price.fixed_cost?.toString() || '',
+      delivery_days: price.delivery_days.toString(),
       is_active: price.is_active,
     });
     setShowForm(true);
@@ -172,17 +212,23 @@ export function CarrierPriceDialog({ open, onOpenChange, carrier }: CarrierPrice
     setFormData({
       origin_region: '',
       destination_region: '',
-      min_weight_kg: 0,
-      max_weight_kg: 1000,
-      base_price: 0,
-      price_per_kg: 0,
-      delivery_days: 3,
+      origin_state: '',
+      destination_state: '',
+      min_distance_km: '',
+      max_distance_km: '',
+      min_weight_kg: '',
+      max_weight_kg: '',
+      base_price: '',
+      price_per_kg: '',
+      rate_per_km: '',
+      fixed_cost: '',
+      delivery_days: '',
       is_active: true,
     });
+    setEditingPrice(null);
   };
 
   const handleNewPrice = () => {
-    setEditingPrice(null);
     resetForm();
     setShowForm(true);
   };
@@ -191,156 +237,256 @@ export function CarrierPriceDialog({ open, onOpenChange, carrier }: CarrierPrice
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Tabela de Preços - {carrier.name}</DialogTitle>
+          <DialogTitle>
+            Tabela de Preços - {carrier.name}
+          </DialogTitle>
           <DialogDescription>
-            Gerencie os preços por rota desta transportadora
+            Configure preços por estado, distância e peso
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
-          {!showForm ? (
-            <>
+        {!showForm ? (
+          <div className="space-y-4">
+            <div className="flex justify-end">
               <Button onClick={handleNewPrice} className="gap-2">
                 <Plus className="h-4 w-4" />
-                Adicionar Preço
+                Novo Preço
               </Button>
+            </div>
 
-              {prices.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <p>Nenhum preço cadastrado ainda.</p>
-                  <p className="text-sm mt-2">Adicione preços para começar a cotar com esta transportadora.</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {prices.map((price) => (
-                    <Card key={price.id} className="border-border/50">
-                      <CardContent className="pt-4">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1 space-y-1">
-                            <div className="flex items-center gap-2">
-                              <Badge variant={price.is_active ? 'default' : 'secondary'}>
-                                {price.is_active ? 'Ativo' : 'Inativo'}
-                              </Badge>
-                              <span className="font-semibold text-sm">
-                                {price.origin_region} → {price.destination_region}
-                              </span>
-                            </div>
-                            <div className="grid grid-cols-3 gap-x-4 text-sm text-muted-foreground">
-                              <p><strong>Peso:</strong> {price.min_weight_kg}kg - {price.max_weight_kg}kg</p>
-                              <p><strong>Base:</strong> R$ {price.base_price.toFixed(2)}</p>
-                              <p><strong>+ R$/kg:</strong> R$ {price.price_per_kg.toFixed(2)}</p>
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                              <strong>Prazo:</strong> {price.delivery_days} dias úteis
-                            </p>
-                          </div>
-                          <div className="flex gap-2 ml-4">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleEdit(price)}
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleDelete(price.id)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
+            {prices.length === 0 ? (
+              <Card className="p-8 text-center">
+                <p className="text-muted-foreground">
+                  Nenhum preço cadastrado ainda.
+                  <br />
+                  Clique em "Novo Preço" para começar.
+                </p>
+              </Card>
+            ) : (
+              <div className="grid gap-4">
+                {prices.map((price) => (
+                  <Card key={price.id} className="p-4">
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-2 flex-1">
+                        <div className="flex items-center gap-2">
+                          <Badge variant={price.is_active ? 'default' : 'secondary'}>
+                            {price.is_active ? 'Ativo' : 'Inativo'}
+                          </Badge>
                         </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </>
-          ) : (
+                        <p className="text-sm">
+                          <strong>Rota:</strong> {price.origin_state || price.origin_region} → {price.destination_state || price.destination_region}
+                        </p>
+                        {(price.min_distance_km || price.max_distance_km) && (
+                          <p className="text-sm">
+                            <strong>Distância:</strong> {price.min_distance_km || 0}km - {price.max_distance_km || '∞'}km
+                          </p>
+                        )}
+                        <p className="text-sm">
+                          <strong>Peso:</strong> {price.min_weight_kg}kg - {price.max_weight_kg}kg
+                        </p>
+                        <div className="grid grid-cols-2 gap-2 text-sm">
+                          <p><strong>Preço Base:</strong> R$ {price.base_price.toFixed(2)}</p>
+                          <p><strong>Por KG:</strong> R$ {price.price_per_kg.toFixed(2)}</p>
+                          {price.rate_per_km && (
+                            <p><strong>Por KM:</strong> R$ {price.rate_per_km.toFixed(2)}</p>
+                          )}
+                          {price.fixed_cost && (
+                            <p><strong>Custo Fixo:</strong> R$ {price.fixed_cost.toFixed(2)}</p>
+                          )}
+                        </div>
+                        <p className="text-sm">
+                          <strong>Prazo:</strong> {price.delivery_days} dias
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEdit(price)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDelete(price.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setShowForm(false);
+                resetForm();
+              }}
+              className="gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Voltar à Lista
+            </Button>
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="origin_region">Região Origem (CEP/Estado) *</Label>
+                  <Label htmlFor="origin_state">Estado Origem *</Label>
+                  <Select
+                    value={formData.origin_state}
+                    onValueChange={(value) => setFormData({ ...formData, origin_state: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o estado" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {BRAZILIAN_STATES.map(state => (
+                        <SelectItem key={state} value={state}>{state}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="destination_state">Estado Destino *</Label>
+                  <Select
+                    value={formData.destination_state}
+                    onValueChange={(value) => setFormData({ ...formData, destination_state: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o estado" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {BRAZILIAN_STATES.map(state => (
+                        <SelectItem key={state} value={state}>{state}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="min_distance_km">Distância Mínima (KM)</Label>
                   <Input
-                    id="origin_region"
-                    value={formData.origin_region}
-                    onChange={(e) => setFormData({ ...formData, origin_region: e.target.value })}
-                    required
-                    placeholder="Ex: SP ou 01000-000"
+                    id="min_distance_km"
+                    type="number"
+                    step="0.1"
+                    value={formData.min_distance_km}
+                    onChange={(e) => setFormData({ ...formData, min_distance_km: e.target.value })}
+                    placeholder="Ex: 0"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="destination_region">Região Destino *</Label>
+                  <Label htmlFor="max_distance_km">Distância Máxima (KM)</Label>
                   <Input
-                    id="destination_region"
-                    value={formData.destination_region}
-                    onChange={(e) => setFormData({ ...formData, destination_region: e.target.value })}
-                    required
-                    placeholder="Ex: RJ ou 20000-000"
+                    id="max_distance_km"
+                    type="number"
+                    step="0.1"
+                    value={formData.max_distance_km}
+                    onChange={(e) => setFormData({ ...formData, max_distance_km: e.target.value })}
+                    placeholder="Ex: 500"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="min_weight_kg">Peso Mínimo (kg) *</Label>
+                  <Label htmlFor="min_weight_kg">Peso Mínimo (KG) *</Label>
                   <Input
                     id="min_weight_kg"
                     type="number"
-                    step="0.01"
+                    step="0.1"
                     value={formData.min_weight_kg}
-                    onChange={(e) => setFormData({ ...formData, min_weight_kg: parseFloat(e.target.value) })}
+                    onChange={(e) => setFormData({ ...formData, min_weight_kg: e.target.value })}
                     required
+                    placeholder="Ex: 0"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="max_weight_kg">Peso Máximo (kg) *</Label>
+                  <Label htmlFor="max_weight_kg">Peso Máximo (KG) *</Label>
                   <Input
                     id="max_weight_kg"
                     type="number"
-                    step="0.01"
+                    step="0.1"
                     value={formData.max_weight_kg}
-                    onChange={(e) => setFormData({ ...formData, max_weight_kg: parseFloat(e.target.value) })}
+                    onChange={(e) => setFormData({ ...formData, max_weight_kg: e.target.value })}
                     required
+                    placeholder="Ex: 1000"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="base_price">Preço Base (R$) *</Label>
+                  <Label htmlFor="rate_per_km">Taxa por KM (R$)</Label>
                   <Input
-                    id="base_price"
+                    id="rate_per_km"
                     type="number"
                     step="0.01"
-                    value={formData.base_price}
-                    onChange={(e) => setFormData({ ...formData, base_price: parseFloat(e.target.value) })}
-                    required
+                    value={formData.rate_per_km}
+                    onChange={(e) => setFormData({ ...formData, rate_per_km: e.target.value })}
+                    placeholder="Ex: 1.50"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="price_per_kg">Adicional por kg (R$)</Label>
+                  <Label htmlFor="fixed_cost">Custo Fixo (R$)</Label>
+                  <Input
+                    id="fixed_cost"
+                    type="number"
+                    step="0.01"
+                    value={formData.fixed_cost}
+                    onChange={(e) => setFormData({ ...formData, fixed_cost: e.target.value })}
+                    placeholder="Ex: 50.00"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="price_per_kg">Preço por KG (R$)</Label>
                   <Input
                     id="price_per_kg"
                     type="number"
                     step="0.01"
                     value={formData.price_per_kg}
-                    onChange={(e) => setFormData({ ...formData, price_per_kg: parseFloat(e.target.value) })}
+                    onChange={(e) => setFormData({ ...formData, price_per_kg: e.target.value })}
+                    required
+                    placeholder="Ex: 0.80"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="base_price">Preço Base Total (R$)</Label>
+                  <Input
+                    id="base_price"
+                    type="number"
+                    step="0.01"
+                    value={formData.base_price}
+                    onChange={(e) => setFormData({ ...formData, base_price: e.target.value })}
+                    required
+                    placeholder="Ex: 150.00"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="delivery_days">Prazo (dias úteis) *</Label>
+                  <Label htmlFor="delivery_days">Prazo de Entrega (dias úteis)</Label>
                   <Input
                     id="delivery_days"
                     type="number"
                     value={formData.delivery_days}
-                    onChange={(e) => setFormData({ ...formData, delivery_days: parseInt(e.target.value) })}
+                    onChange={(e) => setFormData({ ...formData, delivery_days: e.target.value })}
                     required
+                    placeholder="Ex: 5"
                   />
                 </div>
               </div>
@@ -360,7 +506,6 @@ export function CarrierPriceDialog({ open, onOpenChange, carrier }: CarrierPrice
                   variant="outline"
                   onClick={() => {
                     setShowForm(false);
-                    setEditingPrice(null);
                     resetForm();
                   }}
                   disabled={loading}
@@ -372,8 +517,8 @@ export function CarrierPriceDialog({ open, onOpenChange, carrier }: CarrierPrice
                 </Button>
               </div>
             </form>
-          )}
-        </div>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
