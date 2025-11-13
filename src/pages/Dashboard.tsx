@@ -73,6 +73,7 @@ const Dashboard = () => {
         final_price: parseFloat(order.final_price.toString()),
         estimated_delivery: order.estimated_delivery,
         created_at: order.created_at,
+        payment_status: order.status_pagamento,
       })) || [];
 
       setOrders(mappedOrders);
@@ -166,6 +167,59 @@ const Dashboard = () => {
     setOrderDetails(null);
   };
 
+  const handleRetryPayment = async (orderId: string) => {
+    try {
+      toast.loading("Preparando pagamento...", { id: 'retry-payment' });
+
+      // Verificar autenticação
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error("Você precisa estar logado", { id: 'retry-payment' });
+        navigate("/auth");
+        return;
+      }
+
+      // Criar nova sessão de checkout
+      const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke(
+        'create-checkout-session',
+        {
+          body: { order_id: orderId }
+        }
+      );
+
+      if (checkoutError) {
+        console.error('Checkout error:', checkoutError);
+        toast.error("Erro ao criar sessão de pagamento", { id: 'retry-payment' });
+        return;
+      }
+
+      if (!checkoutData?.url) {
+        toast.error("URL de pagamento não recebida", { id: 'retry-payment' });
+        return;
+      }
+
+      toast.success("Redirecionando para pagamento...", { id: 'retry-payment' });
+
+      // Redirecionar para Stripe Checkout
+      const win = window.open(checkoutData.url, '_blank', 'noopener,noreferrer');
+      if (!win) {
+        // Fallback: tentar navegar a janela superior ou atual
+        try {
+          if (window.top) {
+            window.top.location.href = checkoutData.url;
+          } else {
+            window.location.assign(checkoutData.url);
+          }
+        } catch {
+          window.location.assign(checkoutData.url);
+        }
+      }
+    } catch (error) {
+      console.error('Unexpected error retrying payment:', error);
+      toast.error("Erro inesperado ao tentar pagamento", { id: 'retry-payment' });
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -205,6 +259,7 @@ const Dashboard = () => {
             <ActiveOrdersTable 
               orders={orders} 
               onViewDetails={handleViewDetails}
+              onRetryPayment={handleRetryPayment}
             />
           </>
         )}
