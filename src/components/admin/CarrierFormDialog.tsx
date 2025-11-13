@@ -6,7 +6,25 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
+
+// Estados brasileiros
+const BRAZILIAN_STATES = [
+  'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG',
+  'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
+];
+
+// Especialidades de carga
+const CARGO_SPECIALTIES = [
+  { id: 'refrigerado', label: 'Carga Refrigerada' },
+  { id: 'perigoso', label: 'Carga Perigosa' },
+  { id: 'fragil', label: 'Carga Frágil' },
+  { id: 'granel', label: 'Granel (Sólido/Líquido)' },
+  { id: 'alto_valor', label: 'Alto Valor' },
+  { id: 'volumoso', label: 'Volumoso/Superdimensionado' }
+];
 
 interface Carrier {
   id: string;
@@ -17,6 +35,11 @@ interface Carrier {
   contact_whatsapp: string | null;
   is_active: boolean;
   commercial_notes: string | null;
+  coverage_states: string[] | null;
+  coverage_type: 'estadual' | 'regional' | 'nacional' | null;
+  specialties: string[] | null;
+  base_rate_per_km: number | null;
+  base_rate_per_kg: number | null;
 }
 
 interface CarrierFormDialogProps {
@@ -37,6 +60,11 @@ export function CarrierFormDialog({ open, onOpenChange, carrier, onSuccess }: Ca
     contact_whatsapp: '',
     commercial_notes: '',
     is_active: true,
+    coverage_states: [] as string[],
+    coverage_type: 'regional' as 'estadual' | 'regional' | 'nacional',
+    specialties: [] as string[],
+    base_rate_per_km: '',
+    base_rate_per_kg: '',
   });
 
   useEffect(() => {
@@ -49,6 +77,11 @@ export function CarrierFormDialog({ open, onOpenChange, carrier, onSuccess }: Ca
         contact_whatsapp: carrier.contact_whatsapp || '',
         commercial_notes: carrier.commercial_notes || '',
         is_active: carrier.is_active,
+        coverage_states: carrier.coverage_states || [],
+        coverage_type: carrier.coverage_type || 'regional',
+        specialties: carrier.specialties || [],
+        base_rate_per_km: carrier.base_rate_per_km?.toString() || '',
+        base_rate_per_kg: carrier.base_rate_per_kg?.toString() || '',
       });
     } else {
       setFormData({
@@ -59,6 +92,11 @@ export function CarrierFormDialog({ open, onOpenChange, carrier, onSuccess }: Ca
         contact_whatsapp: '',
         commercial_notes: '',
         is_active: true,
+        coverage_states: [],
+        coverage_type: 'regional',
+        specialties: [],
+        base_rate_per_km: '',
+        base_rate_per_kg: '',
       });
     }
   }, [carrier, open]);
@@ -68,11 +106,18 @@ export function CarrierFormDialog({ open, onOpenChange, carrier, onSuccess }: Ca
     setLoading(true);
 
     try {
+      // Preparar dados para envio (converter strings vazias em null para números)
+      const dataToSubmit = {
+        ...formData,
+        base_rate_per_km: formData.base_rate_per_km ? parseFloat(formData.base_rate_per_km) : null,
+        base_rate_per_kg: formData.base_rate_per_kg ? parseFloat(formData.base_rate_per_kg) : null,
+      };
+
       if (carrier) {
         // Update
         const { error } = await supabase
           .from('carriers')
-          .update(formData)
+          .update(dataToSubmit)
           .eq('id', carrier.id);
 
         if (error) throw error;
@@ -85,7 +130,7 @@ export function CarrierFormDialog({ open, onOpenChange, carrier, onSuccess }: Ca
         // Insert
         const { error } = await supabase
           .from('carriers')
-          .insert([formData]);
+          .insert([dataToSubmit]);
 
         if (error) throw error;
 
@@ -106,6 +151,24 @@ export function CarrierFormDialog({ open, onOpenChange, carrier, onSuccess }: Ca
     } finally {
       setLoading(false);
     }
+  };
+
+  const toggleState = (state: string) => {
+    setFormData(prev => ({
+      ...prev,
+      coverage_states: prev.coverage_states.includes(state)
+        ? prev.coverage_states.filter(s => s !== state)
+        : [...prev.coverage_states, state]
+    }));
+  };
+
+  const toggleSpecialty = (specialtyId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      specialties: prev.specialties.includes(specialtyId)
+        ? prev.specialties.filter(s => s !== specialtyId)
+        : [...prev.specialties, specialtyId]
+    }));
   };
 
   return (
@@ -188,7 +251,109 @@ export function CarrierFormDialog({ open, onOpenChange, carrier, onSuccess }: Ca
             />
           </div>
 
-          <div className="flex items-center space-x-2">
+          {/* NOVA SEÇÃO: Cobertura e Rotas */}
+          <div className="border-t pt-4 space-y-4">
+            <h3 className="font-semibold text-lg">Cobertura e Rotas de Atuação</h3>
+            
+            <div className="space-y-2">
+              <Label htmlFor="coverage_type">Tipo de Cobertura *</Label>
+              <Select 
+                value={formData.coverage_type} 
+                onValueChange={(value: 'estadual' | 'regional' | 'nacional') => 
+                  setFormData({ ...formData, coverage_type: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="estadual">Estadual (1 estado)</SelectItem>
+                  <SelectItem value="regional">Regional (Vários estados)</SelectItem>
+                  <SelectItem value="nacional">Nacional (Todo Brasil)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Estados de Atuação * (selecione os estados onde opera)</Label>
+              <div className="grid grid-cols-7 gap-2 p-3 border rounded-md max-h-48 overflow-y-auto">
+                {BRAZILIAN_STATES.map(state => (
+                  <div key={state} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`state-${state}`}
+                      checked={formData.coverage_states.includes(state)}
+                      onCheckedChange={() => toggleState(state)}
+                    />
+                    <Label 
+                      htmlFor={`state-${state}`} 
+                      className="text-sm font-normal cursor-pointer"
+                    >
+                      {state}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {formData.coverage_states.length} estado(s) selecionado(s)
+              </p>
+            </div>
+          </div>
+
+          {/* NOVA SEÇÃO: Especialidades e Precificação */}
+          <div className="border-t pt-4 space-y-4">
+            <h3 className="font-semibold text-lg">Especialidades e Precificação Base</h3>
+            
+            <div className="space-y-2">
+              <Label>Especialidades de Carga (opcional)</Label>
+              <div className="space-y-2 p-3 border rounded-md">
+                {CARGO_SPECIALTIES.map(specialty => (
+                  <div key={specialty.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`specialty-${specialty.id}`}
+                      checked={formData.specialties.includes(specialty.id)}
+                      onCheckedChange={() => toggleSpecialty(specialty.id)}
+                    />
+                    <Label 
+                      htmlFor={`specialty-${specialty.id}`} 
+                      className="text-sm font-normal cursor-pointer"
+                    >
+                      {specialty.label}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="base_rate_per_km">Taxa Base por KM (R$)</Label>
+                <Input
+                  id="base_rate_per_km"
+                  type="number"
+                  step="0.01"
+                  value={formData.base_rate_per_km}
+                  onChange={(e) => setFormData({ ...formData, base_rate_per_km: e.target.value })}
+                  placeholder="Ex: 2.50"
+                />
+                <p className="text-xs text-muted-foreground">Tarifa média por km rodado</p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="base_rate_per_kg">Taxa Base por KG (R$)</Label>
+                <Input
+                  id="base_rate_per_kg"
+                  type="number"
+                  step="0.0001"
+                  value={formData.base_rate_per_kg}
+                  onChange={(e) => setFormData({ ...formData, base_rate_per_kg: e.target.value })}
+                  placeholder="Ex: 0.85"
+                />
+                <p className="text-xs text-muted-foreground">Tarifa média por kg de carga</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-2 border-t pt-4">
             <Switch
               id="is_active"
               checked={formData.is_active}
