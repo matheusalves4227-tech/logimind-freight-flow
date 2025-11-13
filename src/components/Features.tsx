@@ -42,13 +42,18 @@ const Features = () => {
               </div>
             </div>
 
-            {/* Métrica 3: Economia */}
-            <div className="bg-card rounded-xl md:rounded-2xl p-6 md:p-8 shadow-lg border-2 border-accent/20 hover:border-accent/40 transition-all">
-              <div className="inline-flex p-3 rounded-xl bg-accent/10 mb-4">
-                <TrendingUp className="h-8 w-8 text-accent" />
+            {/* Métrica 3: Economia (DESTAQUE) */}
+            <div className="bg-card rounded-xl md:rounded-2xl p-6 md:p-8 shadow-xl border-2 border-primary hover:border-primary hover:shadow-2xl transition-all relative md:transform md:scale-105">
+              <div className="absolute -top-2 -right-2 z-10">
+                <span className="inline-flex items-center gap-1 px-2 py-1 bg-primary text-primary-foreground text-[10px] font-bold rounded-full shadow-lg animate-pulse">
+                  🎯 Destaque
+                </span>
               </div>
-              <div className="text-4xl font-bold text-accent mb-2">42%</div>
-              <div className="text-lg font-semibold text-foreground mb-1">
+              <div className="inline-flex p-4 rounded-xl bg-primary/10 mb-4">
+                <TrendingUp className="h-10 w-10 text-primary" />
+              </div>
+              <div className="text-5xl md:text-6xl font-black text-primary mb-2">42%</div>
+              <div className="text-xl font-bold text-foreground mb-1">
                 Redução de Custo
               </div>
               <div className="text-sm text-muted-foreground">

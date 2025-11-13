@@ -15,7 +15,7 @@ const Hero = () => {
         <div className="text-center max-w-4xl mx-auto mb-16">
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-6">
             Sua Logística Inteligente.{" "}
-            <span className="bg-gradient-hero bg-clip-text text-transparent">
+            <span className="text-primary">
               Seu Frete Otimizado.
             </span>
           </h1>
@@ -24,15 +24,22 @@ const Hero = () => {
           </p>
         </div>
 
-        {/* 3 Cards de Direcionamento Triplo */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto mb-12 md:mb-20 px-4 md:px-0">
-          {/* Card 1: Embarcador (Verde) */}
-          <div className="group bg-card rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-lg border-2 border-secondary/30 hover:border-secondary hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 md:hover:-translate-y-2">
+        {/* 3 Cards de Direcionamento Triplo com Hierarquia */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto mb-12 md:mb-20 px-4 md:px-0 items-stretch">
+          {/* Card 1: Embarcador (DESTAQUE PRINCIPAL) */}
+          <div className="group bg-card rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-xl border-2 border-primary hover:border-primary hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 md:hover:scale-105 relative">
+            {/* Badge de Destaque */}
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
+              <span className="inline-flex items-center gap-1 px-3 py-1 bg-primary text-primary-foreground text-xs font-bold rounded-full shadow-lg">
+                ⭐ Mais Popular
+              </span>
+            </div>
+            
             <div className="flex flex-col items-center text-center space-y-6">
               <div className="relative">
-                <div className="absolute inset-0 bg-secondary/20 rounded-2xl blur-xl" />
-                <div className="relative p-6 bg-gradient-to-br from-secondary to-secondary/80 rounded-2xl">
-                  <Truck className="h-12 w-12 text-secondary-foreground" />
+                <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl" />
+                <div className="relative p-6 bg-gradient-to-br from-primary to-primary/80 rounded-2xl">
+                  <Truck className="h-12 w-12 text-primary-foreground" />
                 </div>
               </div>
               
@@ -45,40 +52,40 @@ const Hero = () => {
                 </p>
               </div>
 
-              <div className="flex items-center gap-2 text-sm font-medium text-secondary">
+              <div className="flex items-center gap-2 text-sm font-medium text-primary">
                 <BarChart3 className="h-4 w-4" />
                 <span>Powered by LogiMind</span>
               </div>
 
               <Button 
-                variant="default"
+                variant="hero"
                 size="lg" 
-                className="w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground shadow-lg hover:shadow-xl transition-all"
+                className="w-full shadow-lg hover:shadow-xl"
                 onClick={() => navigate("/quote")}
               >
-                Começar a Cotar Agora
+                Cote e Economize Agora
               </Button>
 
               <div className="pt-4 space-y-1 text-xs text-muted-foreground border-t border-border w-full">
                 <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-secondary" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary" />
                   <span>Compare 500+ transportadoras</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-secondary" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary" />
                   <span>Resultado em 3 segundos</span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Card 2: Transportadora (Azul) */}
-          <div className="group bg-card rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-lg border-2 border-primary/30 hover:border-primary hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 md:hover:-translate-y-2">
+          {/* Card 2: Transportadora */}
+          <div className="group bg-card rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-lg border-2 border-border hover:border-primary/50 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
             <div className="flex flex-col items-center text-center space-y-6">
               <div className="relative">
-                <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl" />
-                <div className="relative p-6 bg-gradient-to-br from-primary to-primary/80 rounded-2xl">
-                  <Building2 className="h-12 w-12 text-primary-foreground" />
+                <div className="absolute inset-0 bg-secondary/20 rounded-2xl blur-xl" />
+                <div className="relative p-6 bg-gradient-to-br from-secondary to-secondary/80 rounded-2xl">
+                  <Building2 className="h-12 w-12 text-secondary-foreground" />
                 </div>
               </div>
               
@@ -91,7 +98,7 @@ const Hero = () => {
                 </p>
               </div>
 
-              <div className="flex items-center gap-2 text-sm font-medium text-primary">
+              <div className="flex items-center gap-2 text-sm font-medium text-secondary">
                 <TrendingUp className="h-4 w-4" />
                 <span>Volume + Clientes</span>
               </div>
@@ -99,27 +106,27 @@ const Hero = () => {
               <Button 
                 variant="default"
                 size="lg" 
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all"
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-md hover:shadow-lg transition-all"
                 onClick={() => navigate("/parceiro/cadastro")}
               >
-                Cadastrar Minha Frota
+                Oferecer Fretes
               </Button>
 
               <div className="pt-4 space-y-1 text-xs text-muted-foreground border-t border-border w-full">
                 <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-secondary" />
                   <span>Otimização de rotas de retorno</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-secondary" />
                   <span>Pagamento garantido em D+2</span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Card 3: Motorista Autônomo (Laranja) */}
-          <div className="group bg-card rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-lg border-2 border-accent/30 hover:border-accent hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 md:hover:-translate-y-2">
+          {/* Card 3: Motorista Autônomo */}
+          <div className="group bg-card rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-lg border-2 border-border hover:border-primary/50 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
             <div className="flex flex-col items-center text-center space-y-6">
               <div className="relative">
                 <div className="absolute inset-0 bg-accent/20 rounded-2xl blur-xl" />
@@ -145,7 +152,7 @@ const Hero = () => {
               <Button 
                 variant="default"
                 size="lg" 
-                className="w-full bg-accent hover:bg-accent/90 text-accent-foreground shadow-lg hover:shadow-xl transition-all"
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-md hover:shadow-lg transition-all"
                 onClick={() => navigate("/parceiro/cadastro")}
               >
                 Ver Fretes Disponíveis
