@@ -356,9 +356,86 @@ function verificarAreaRestrita(cep: string): boolean {
 }
 
 /**
- * Gera cotações mockadas baseadas nos dados das transportadoras
+ * Busca cotações reais da tabela carrier_price_table
+ * Mapeia CEPs para regiões e busca preços cadastrados
+ */
+async function buscarCotacoesReais(
+  supabaseClient: any,
+  carriers: any[], 
+  originCep: string,
+  destinationCep: string,
+  weight_kg: number
+): Promise<CarrierQuote[]> {
+  // Mapear CEP para região (primeiros 5 dígitos)
+  const originRegion = originCep.replace(/\D/g, "").substring(0, 5);
+  const destinationRegion = destinationCep.replace(/\D/g, "").substring(0, 5);
+  
+  console.log(`[Pricing] Searching prices: Origin=${originRegion}, Dest=${destinationRegion}, Weight=${weight_kg}kg`);
+  
+  // Buscar preços cadastrados para essa rota
+  const { data: priceData, error: priceError } = await supabaseClient
+    .from('carrier_price_table')
+    .select('*')
+    .eq('origin_region', originRegion)
+    .eq('destination_region', destinationRegion)
+    .lte('min_weight_kg', weight_kg)
+    .gte('max_weight_kg', weight_kg)
+    .eq('is_active', true);
+  
+  if (priceError) {
+    console.error('[Pricing Error]', priceError);
+    // Fallback para preço mockado se houver erro
+    return gerarCotacoesMockadas(carriers, weight_kg);
+  }
+  
+  if (!priceData || priceData.length === 0) {
+    console.log('[Pricing] No prices found for this route/weight. Using fallback calculation.');
+    // Fallback: usa cálculo simples se não houver preços cadastrados
+    return gerarCotacoesMockadas(carriers, weight_kg);
+  }
+  
+  console.log(`[Pricing] Found ${priceData.length} price entries for this route`);
+  
+  // Construir cotações baseadas nos preços reais cadastrados
+  const quotes: CarrierQuote[] = [];
+  
+  for (const price of priceData) {
+    // Encontrar dados da transportadora correspondente
+    const carrier = carriers.find(c => c.id === price.carrier_id);
+    if (!carrier) continue;
+    
+    // Calcular preço: base_price + (peso × price_per_kg)
+    const basePrice = parseFloat(price.base_price);
+    const pricePerKg = parseFloat(price.price_per_kg);
+    const totalPrice = basePrice + (weight_kg * pricePerKg);
+    
+    quotes.push({
+      carrier_id: carrier.id,
+      carrier_name: carrier.name,
+      carrier_size: carrier.carrier_size,
+      specialties: carrier.specialties,
+      base_price: parseFloat(totalPrice.toFixed(2)),
+      delivery_days: price.delivery_days,
+      quality_index: carrier.avg_quality_rating,
+    });
+    
+    console.log(
+      `[Price] ${carrier.name}: ` +
+      `Base=${basePrice} + (${weight_kg}kg × ${pricePerKg}) = R$ ${totalPrice.toFixed(2)} | ` +
+      `Delivery: ${price.delivery_days} days`
+    );
+  }
+  
+  return quotes;
+}
+
+/**
+ * Gera cotações mockadas baseadas nos dados das transportadoras (FALLBACK)
+ * Usado quando não há preços cadastrados na carrier_price_table
  */
 function gerarCotacoesMockadas(carriers: any[], weight_kg: number): CarrierQuote[] {
+  console.log('[Fallback] Using calculated prices (no price table data)');
+  
   // Base price calculation: R$ 0.50 per kg + base fee
   const baseFeePerKg = 0.50;
   const baseOperationalFee = 50;
@@ -476,8 +553,14 @@ serve(async (req) => {
     
     console.log(`Route data - Adjustment Factor: ${routeAdjustmentFactor}, Demand Level: ${demandLevel}, Risk Factor: ${riskFactor}`);
 
-    // 3. Generate mock quotes from carriers
-    const cotacoesBrutas = gerarCotacoesMockadas(carriers, quoteRequest.weight_kg);
+    // 3. Buscar cotações reais da tabela carrier_price_table (com fallback para cálculo)
+    const cotacoesBrutas = await buscarCotacoesReais(
+      supabaseClient,
+      carriers, 
+      quoteRequest.origin_cep,
+      quoteRequest.destination_cep,
+      quoteRequest.weight_kg
+    );
 
     // 4. Apply LogiMind strategy based on route characteristics
     let cotacoesComRotas: ProcessedQuote[];
