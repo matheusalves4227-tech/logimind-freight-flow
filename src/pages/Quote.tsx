@@ -270,8 +270,10 @@ const Quote = () => {
         return;
       }
 
-      // Chamar edge function para criar pedido
-      const { data, error } = await supabase.functions.invoke('create-order', {
+      // PASSO 1: Criar pedido no sistema
+      toast.loading("Criando pedido...", { id: 'contract-freight' });
+      
+      const { data: orderData, error: orderError } = await supabase.functions.invoke('create-order', {
         body: {
           carrier_id: quote.carrier_id,
           carrier_name: quote.carrier_name,
@@ -295,22 +297,42 @@ const Quote = () => {
         }
       });
 
-      if (error) {
-        console.error('Error creating order:', error);
-        toast.error("Erro ao contratar frete. Tente novamente.");
+      if (orderError) {
+        console.error('Error creating order:', orderError);
+        toast.error("Erro ao criar pedido. Tente novamente.", { id: 'contract-freight' });
         return;
       }
 
-      toast.success(`Frete contratado! Código: ${data.tracking_code}`);
-      
-      // Redirecionar para página de rastreamento
+      toast.success(`Pedido criado! Código: ${orderData.tracking_code}`, { id: 'contract-freight' });
+
+      // PASSO 2: Criar sessão de pagamento no Stripe
+      toast.loading("Redirecionando para pagamento...", { id: 'payment-redirect' });
+
+      const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke(
+        'create-checkout-session',
+        {
+          body: { order_id: orderData.order_id }
+        }
+      );
+
+      if (checkoutError || !checkoutData?.url) {
+        console.error('Error creating checkout session:', checkoutError);
+        toast.error("Erro ao iniciar pagamento. Tente novamente.", { id: 'payment-redirect' });
+        // Redirecionar para dashboard onde o usuário pode tentar pagar novamente
+        setTimeout(() => navigate('/dashboard'), 2000);
+        return;
+      }
+
+      toast.success("Redirecionando para pagamento seguro...", { id: 'payment-redirect' });
+
+      // PASSO 3: Redirecionar para Stripe Checkout
       setTimeout(() => {
-        navigate(`/tracking/${data.tracking_code}`);
-      }, 1500);
+        window.location.href = checkoutData.url;
+      }, 1000);
 
     } catch (error) {
       console.error('Unexpected error:', error);
-      toast.error("Erro inesperado ao contratar frete");
+      toast.error("Erro inesperado ao contratar frete", { id: 'contract-freight' });
     } finally {
       setContractingCarrierId(null);
     }
