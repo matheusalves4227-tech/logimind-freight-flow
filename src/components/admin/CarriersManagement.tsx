@@ -17,6 +17,11 @@ interface Carrier {
   contact_whatsapp: string | null;
   is_active: boolean;
   commercial_notes: string | null;
+  coverage_states: string[] | null;
+  coverage_type: 'estadual' | 'regional' | 'nacional' | null;
+  specialties: string[] | null;
+  base_rate_per_km: number | null;
+  base_rate_per_kg: number | null;
 }
 
 export function CarriersManagement() {
@@ -39,7 +44,7 @@ export function CarriersManagement() {
         .order('name');
 
       if (error) throw error;
-      setCarriers(data || []);
+      setCarriers((data || []) as unknown as Carrier[]);
     } catch (error) {
       console.error('Erro ao buscar transportadoras:', error);
       toast({
