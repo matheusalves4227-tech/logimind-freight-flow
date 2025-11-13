@@ -5,11 +5,12 @@ import Navbar from '@/components/Navbar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { FileText, Package, AlertCircle, Clock, TrendingUp } from 'lucide-react';
+import { FileText, Package, AlertCircle, Clock, TrendingUp, Truck } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { PendingQuotesTable } from '@/components/admin/PendingQuotesTable';
 import { PendingOrdersTable } from '@/components/admin/PendingOrdersTable';
 import { LogiMindKPIs } from '@/components/admin/LogiMindKPIs';
+import { CarriersManagement } from '@/components/admin/CarriersManagement';
 
 interface StatsData {
   pendingQuotes: number;
@@ -194,8 +195,12 @@ const AdminOrders = () => {
         </div>
 
         {/* Tabs de Conteúdo */}
-        <Tabs defaultValue="kpis" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 max-w-2xl">
+        <Tabs defaultValue="carriers" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4 max-w-3xl">
+            <TabsTrigger value="carriers" className="gap-2">
+              <Truck className="h-4 w-4" />
+              Transportadoras
+            </TabsTrigger>
             <TabsTrigger value="kpis" className="gap-2">
               <TrendingUp className="h-4 w-4" />
               KPIs LogiMind
@@ -219,6 +224,10 @@ const AdminOrders = () => {
               )}
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="carriers">
+            <CarriersManagement />
+          </TabsContent>
 
           <TabsContent value="kpis">
             <LogiMindKPIs />

@@ -14,6 +14,59 @@ export type Database = {
   }
   public: {
     Tables: {
+      carrier_price_table: {
+        Row: {
+          base_price: number
+          carrier_id: string
+          created_at: string
+          delivery_days: number
+          destination_region: string
+          id: string
+          is_active: boolean
+          max_weight_kg: number
+          min_weight_kg: number
+          origin_region: string
+          price_per_kg: number
+          updated_at: string
+        }
+        Insert: {
+          base_price: number
+          carrier_id: string
+          created_at?: string
+          delivery_days: number
+          destination_region: string
+          id?: string
+          is_active?: boolean
+          max_weight_kg: number
+          min_weight_kg?: number
+          origin_region: string
+          price_per_kg?: number
+          updated_at?: string
+        }
+        Update: {
+          base_price?: number
+          carrier_id?: string
+          created_at?: string
+          delivery_days?: number
+          destination_region?: string
+          id?: string
+          is_active?: boolean
+          max_weight_kg?: number
+          min_weight_kg?: number
+          origin_region?: string
+          price_per_kg?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "carrier_price_table_carrier_id_fkey"
+            columns: ["carrier_id"]
+            isOneToOne: false
+            referencedRelation: "carriers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       carriers: {
         Row: {
           avg_quality_rating: number | null
