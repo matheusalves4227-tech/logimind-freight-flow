@@ -13,6 +13,38 @@ export default {
       },
     },
     extend: {
+      fontSize: {
+        xs: ["var(--font-size-xs)", { lineHeight: "1.5" }],
+        sm: ["var(--font-size-sm)", { lineHeight: "1.5" }],
+        base: ["var(--font-size-base)", { lineHeight: "1.5" }],
+        lg: ["var(--font-size-lg)", { lineHeight: "1.5" }],
+        xl: ["var(--font-size-xl)", { lineHeight: "1.4" }],
+        "2xl": ["var(--font-size-2xl)", { lineHeight: "1.3" }],
+        "3xl": ["var(--font-size-3xl)", { lineHeight: "1.2" }],
+        "4xl": ["var(--font-size-4xl)", { lineHeight: "1.1" }],
+      },
+      fontWeight: {
+        normal: "var(--font-weight-normal)",
+        medium: "var(--font-weight-medium)",
+        semibold: "var(--font-weight-semibold)",
+        bold: "var(--font-weight-bold)",
+        extrabold: "var(--font-weight-extrabold)",
+      },
+      spacing: {
+        xs: "var(--spacing-xs)",
+        sm: "var(--spacing-sm)",
+        md: "var(--spacing-md)",
+        lg: "var(--spacing-lg)",
+        xl: "var(--spacing-xl)",
+        "2xl": "var(--spacing-2xl)",
+      },
+      borderRadius: {
+        sm: "var(--radius-sm)",
+        DEFAULT: "var(--radius)",
+        lg: "var(--radius-lg)",
+        xl: "var(--radius-xl)",
+        full: "var(--radius-full)",
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

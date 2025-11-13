@@ -796,35 +796,51 @@ const Quote = () => {
                   {getRouteTypeBadge()}
                 </div>
                 
-                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-                  <span className="text-sm text-muted-foreground font-medium">Ordenar por:</span>
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      variant={sortBy === "price" ? "default" : "outline"}
-                      size="sm"
+                {/* Segmented Control de Ordenação - Melhorado */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-center gap-3">
+                  <span className="text-sm text-muted-foreground font-semibold">Ordenar por:</span>
+                  <div className="inline-flex p-1 bg-muted/50 rounded-lg border border-border shadow-sm">
+                    <button
                       onClick={() => setSortBy("price")}
-                      className="flex-1 sm:flex-none min-w-0"
+                      className={`px-4 sm:px-6 py-2.5 rounded-md text-sm font-semibold transition-all duration-200 ${
+                        sortBy === "price"
+                          ? "bg-primary text-primary-foreground shadow-md"
+                          : "text-muted-foreground hover:text-foreground hover:bg-background/50"
+                      }`}
                     >
-                      <span className="hidden sm:inline">Menor Preço</span>
-                      <span className="sm:hidden">Preço</span>
-                    </Button>
-                    <Button
-                      variant={sortBy === "delivery" ? "default" : "outline"}
-                      size="sm"
+                      <span className="flex items-center gap-2">
+                        <DollarSign className="h-4 w-4" />
+                        <span className="hidden sm:inline">Menor Preço</span>
+                        <span className="sm:hidden">Preço</span>
+                      </span>
+                    </button>
+                    <button
                       onClick={() => setSortBy("delivery")}
-                      className="flex-1 sm:flex-none min-w-0"
+                      className={`px-4 sm:px-6 py-2.5 rounded-md text-sm font-semibold transition-all duration-200 ${
+                        sortBy === "delivery"
+                          ? "bg-accent text-accent-foreground shadow-md"
+                          : "text-muted-foreground hover:text-foreground hover:bg-background/50"
+                      }`}
                     >
-                      <span className="hidden sm:inline">Menor Prazo</span>
-                      <span className="sm:hidden">Prazo</span>
-                    </Button>
-                    <Button
-                      variant={sortBy === "quality" ? "default" : "outline"}
-                      size="sm"
+                      <span className="flex items-center gap-2">
+                        <Clock className="h-4 w-4" />
+                        <span className="hidden sm:inline">Menor Prazo</span>
+                        <span className="sm:hidden">Prazo</span>
+                      </span>
+                    </button>
+                    <button
                       onClick={() => setSortBy("quality")}
-                      className="flex-1 sm:flex-none min-w-0"
+                      className={`px-4 sm:px-6 py-2.5 rounded-md text-sm font-semibold transition-all duration-200 ${
+                        sortBy === "quality"
+                          ? "bg-secondary text-secondary-foreground shadow-md"
+                          : "text-muted-foreground hover:text-foreground hover:bg-background/50"
+                      }`}
                     >
-                      Qualidade
-                    </Button>
+                      <span className="flex items-center gap-2">
+                        <span className="text-base">★</span>
+                        Qualidade
+                      </span>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -843,130 +859,140 @@ const Quote = () => {
                 </div>
               )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
                 {getSortedQuotes().map((quote, index) => {
                   const isBestPrice = index === 0 && sortBy === "price";
                   const isFastest = index === 0 && sortBy === "delivery";
+                  const isBestQuality = index === 0 && sortBy === "quality";
                   
                   return (
-                    <Card 
+                    <div 
                       key={quote.carrier_id}
-                      className="relative overflow-hidden hover:shadow-xl transition-all duration-300 border border-border flex flex-col rounded-xl animate-fade-in bg-card h-full"
+                      className="card-quote animate-fade-in"
                       style={{ animationDelay: `${index * 50}ms` }}
                     >
                       {/* Ribbon lateral de destaque */}
-                      {(isBestPrice || isFastest) && (
-                        <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${
-                          isBestPrice ? "bg-secondary" : "bg-accent"
+                      {(isBestPrice || isFastest || isBestQuality) && (
+                        <div className={`absolute left-0 top-0 bottom-0 w-1 ${
+                          isBestPrice ? "bg-primary" : isFastest ? "bg-accent" : "bg-secondary"
                         }`} />
                       )}
 
-                      <div className="p-4 flex flex-col h-full">
-                        {/* Header compacto com nome e rating */}
-                        <div className="flex items-center justify-between mb-3 pb-3 border-b border-border/50">
-                          <div className="flex-1 min-w-0 mr-2">
-                            <h3 className="text-base font-bold mb-1 truncate flex items-center gap-2">
-                              {quote.carrier_name}
+                      <div className="flex flex-col h-full">
+                        {/* Header com nome, tipo e rating */}
+                        <div className="flex items-start justify-between mb-4 pb-3 border-b-2 border-border/30">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Truck className="h-4 w-4 text-primary flex-shrink-0" />
+                              <h3 className="font-bold text-base truncate">
+                                {quote.carrier_name}
+                              </h3>
+                            </div>
+                            <div className="flex items-center gap-2 flex-wrap">
                               {formData.service_type === "ltl" ? (
-                                <span className="text-[10px] px-1.5 py-0.5 bg-primary/10 text-primary rounded font-medium">
-                                  LTL
+                                <span className="text-[10px] px-2 py-0.5 bg-primary/10 text-primary rounded-full font-semibold">
+                                  FRETE LTL
                                 </span>
                               ) : (
-                                <span className="text-[10px] px-1.5 py-0.5 bg-accent/10 text-accent rounded font-medium">
-                                  FTL
+                                <span className="text-[10px] px-2 py-0.5 bg-accent/10 text-accent rounded-full font-semibold">
+                                  FRETE FTL
                                 </span>
                               )}
-                            </h3>
-                            {quote.carrier_size && (
-                              <p className="text-[10px] text-muted-foreground truncate">
-                                {quote.carrier_size === 'large' && '🏢 Frota Grande'}
-                                {quote.carrier_size === 'medium' && '🏢 Médio Porte'}
-                                {quote.carrier_size === 'small' && '🏢 PME'}
-                              </p>
-                            )}
+                              {quote.carrier_size && (
+                                <span className="text-[10px] text-muted-foreground">
+                                  {quote.carrier_size === 'large' && '🏢 Grande'}
+                                  {quote.carrier_size === 'medium' && '🏢 Média'}
+                                  {quote.carrier_size === 'small' && '🏢 PME'}
+                                </span>
+                              )}
+                            </div>
                           </div>
-                          <div className="flex items-center gap-1 bg-secondary/10 px-2 py-1 rounded-full flex-shrink-0">
-                            <span className="text-[10px] text-secondary">★</span>
-                            <span className="text-xs font-bold text-secondary">
+                          <div className="flex items-center gap-1 bg-secondary/10 px-2.5 py-1 rounded-full flex-shrink-0 ml-2">
+                            <span className="text-xs text-secondary">★</span>
+                            <span className="text-sm font-bold text-secondary">
                               {quote.quality_index.toFixed(1)}
                             </span>
                           </div>
                         </div>
 
-                        {/* Badge de Destaque - Compacto */}
-                        {(isBestPrice || isFastest || routeType === "high_demand") && (
-                          <div className="mb-2">
-                            <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-semibold ${
-                              routeType === "high_demand" && isBestPrice
-                                ? "bg-gradient-to-r from-primary/15 to-secondary/15 text-primary border border-primary/30" 
-                                : isBestPrice 
-                                ? "bg-secondary/10 text-secondary border border-secondary/20" 
-                                : "bg-accent/10 text-accent border border-accent/20"
+                        {/* Badge de Destaque */}
+                        {(isBestPrice || isFastest || isBestQuality) && (
+                          <div className="mb-3">
+                            <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm ${
+                              isBestPrice 
+                                ? "bg-primary text-primary-foreground" 
+                                : isFastest
+                                ? "bg-accent text-accent-foreground"
+                                : "bg-secondary text-secondary-foreground"
                             }`}>
-                              <span className="text-xs">
-                                {routeType === "high_demand" && isBestPrice ? "🏆" : isBestPrice ? "💰" : "⚡"}
+                              <span>
+                                {isBestPrice ? "💰" : isFastest ? "⚡" : "🏆"}
                               </span>
-                              {routeType === "high_demand" && isBestPrice ? "Melhor Preço" : isBestPrice ? "Melhor Preço" : "Mais Rápido"}
+                              {isBestPrice ? "Melhor Preço" : isFastest ? "Mais Rápido" : "Melhor Qualidade"}
                             </div>
                           </div>
                         )}
 
-                        {/* Preço Final - Destaque Máximo com altura fixa */}
-                        <div className="text-center py-3 mb-3 bg-primary/5 rounded-lg border border-primary/10" style={{ minHeight: '85px' }}>
-                          <p className="text-[9px] text-muted-foreground mb-1 uppercase tracking-wider">
-                            Preço Final
+                        {/* Preço Final - Destaque Máximo com altura padronizada */}
+                        <div className="text-center py-4 mb-4 bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl border-2 border-primary/20" style={{ minHeight: '100px' }}>
+                          <p className="text-[10px] text-muted-foreground mb-1.5 uppercase tracking-widest font-semibold">
+                            Preço Total
                           </p>
-                          <div className="text-3xl font-black text-primary leading-none mb-1">
+                          <div className="price-display-lg mb-1 justify-center">
                             {formatarMoeda(quote.final_price)}
                           </div>
                           {routeType === "high_demand" && isBestPrice && (
-                            <p className="text-[9px] text-secondary font-semibold">
-                              -4% vs. Mercado 🎯
-                            </p>
+                            <div className="flex items-center justify-center gap-1 mt-1">
+                              <span className="text-xs text-secondary font-bold">
+                                Economia de 4% 🎯
+                              </span>
+                            </div>
                           )}
                         </div>
 
-                        {/* Prazo - Compacto */}
-                        <div className="flex items-center gap-2 p-2 bg-gradient-to-r from-accent/5 to-accent/10 rounded-md border border-accent/20 mb-3">
-                          <Clock className="h-4 w-4 text-accent flex-shrink-0" />
+                        {/* Prazo de Entrega - Destacado */}
+                        <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-accent/10 to-accent/5 rounded-lg border border-accent/30 mb-4">
+                          <div className="flex-shrink-0 w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center">
+                            <Clock className="h-5 w-5 text-accent" />
+                          </div>
                           <div className="flex-1">
-                            <p className="text-[9px] text-accent/70 uppercase tracking-wide">Entrega</p>
-                            <p className="text-sm font-bold text-accent leading-tight">
-                              {quote.delivery_days} {quote.delivery_days === 1 ? 'dia' : 'dias'} úteis
+                            <p className="text-[10px] text-accent/80 uppercase tracking-wide font-semibold mb-0.5">Prazo de Entrega</p>
+                            <p className="text-base font-bold text-accent leading-tight">
+                              {quote.delivery_days} {quote.delivery_days === 1 ? 'dia útil' : 'dias úteis'}
                             </p>
                           </div>
                         </div>
 
-                        {/* Detalhes LogiMind - Discreto */}
-                        <div className="bg-muted/20 rounded-md p-2 mb-3 text-[10px]">
-                          <p className="text-[8px] uppercase tracking-wide text-muted-foreground font-medium mb-1.5 flex items-center gap-1">
-                            <Info className="h-2.5 w-2.5" />
-                            Detalhes
+                        {/* Detalhes LogiMind - Compacto e Discreto */}
+                        <div className="bg-muted/30 rounded-lg p-3 mb-3 border border-border">
+                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-2 flex items-center gap-1.5">
+                            <Info className="h-3 w-3" />
+                            Composição do Preço
                           </p>
                           
-                          <div className="space-y-1">
+                          <div className="space-y-1.5 text-xs">
                             <div className="flex justify-between items-center">
-                              <span className="text-muted-foreground">Base:</span>
-                              <span className="font-medium">{formatarMoeda(quote.base_price)}</span>
+                              <span className="text-muted-foreground">Preço Base:</span>
+                              <span className="font-semibold">{formatarMoeda(quote.base_price)}</span>
                             </div>
                             <div className="flex justify-between items-center">
-                              <span className="text-muted-foreground">Comissão:</span>
-                              <div className="flex items-center gap-1">
-                                <span className="font-medium text-primary">
+                              <span className="text-muted-foreground">Comissão LogiMarket:</span>
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-semibold text-primary">
                                   {formatarPorcentagemSimples(quote.commission_applied)}
                                 </span>
                                 {(quote.adjustment_reason === 'HIGH_DEMAND_ROUTE' || quote.adjustment_reason === 'COMPETITION') && (
                                   <TooltipProvider>
                                     <Tooltip>
                                       <TooltipTrigger>
-                                        <Info className="h-2.5 w-2.5 text-primary" />
+                                        <Info className="h-3 w-3 text-primary cursor-help" />
                                       </TooltipTrigger>
-                                      <TooltipContent className="max-w-[200px] text-xs">
+                                      <TooltipContent className="max-w-[220px] text-xs">
                                         {quote.adjustment_reason === 'HIGH_DEMAND_ROUTE' && (
-                                          <p>Rota de alta demanda - comissão reduzida para melhor preço</p>
+                                          <p>✨ Rota de alta demanda - comissão reduzida para garantir o melhor preço do mercado</p>
                                         )}
                                         {quote.adjustment_reason === 'COMPETITION' && (
-                                          <p>Preço ajustado para competitividade de mercado</p>
+                                          <p>🎯 Preço ajustado dinamicamente para competitividade máxima</p>
                                         )}
                                       </TooltipContent>
                                     </Tooltip>
@@ -989,29 +1015,29 @@ const Quote = () => {
 
                         {/* LogiGuard Pro - Compacto */}
                         {quote.logiguard_pro?.available && (
-                          <div className={`mb-3 p-2 rounded-md border text-[10px] ${
+                          <div className={`mb-4 p-3 rounded-lg border-2 ${
                             quote.logiguard_pro.recommended 
-                              ? 'bg-accent/5 border-accent/30' 
+                              ? 'bg-accent/10 border-accent' 
                               : 'bg-muted/20 border-border'
                           }`}>
-                            <div className="flex items-center justify-between mb-1">
-                              <div className="flex items-center gap-1">
-                                <span className="text-xs">🛡️</span>
-                                <span className="font-bold text-[10px]">LogiGuard Pro</span>
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center gap-2">
+                                <span className="text-base">🛡️</span>
+                                <span className="font-bold text-xs">LogiGuard Pro</span>
                                 {quote.logiguard_pro.recommended && (
-                                  <span className="text-[8px] px-1 py-0.5 bg-accent/20 text-accent rounded font-bold">
-                                    RECOMENDADO
+                                  <span className="text-[9px] px-1.5 py-0.5 bg-accent text-accent-foreground rounded-full font-bold uppercase">
+                                    Recomendado
                                   </span>
                                 )}
                               </div>
-                              <span className="font-bold text-accent text-xs">
+                              <span className="font-bold text-accent text-sm">
                                 +{formatarMoeda(quote.logiguard_pro.total_price)}
                               </span>
                             </div>
-                            <p className="text-[9px] text-muted-foreground mb-1.5 leading-tight">
-                              Rastreamento 24/7 + Escolta Digital
+                            <p className="text-[10px] text-muted-foreground mb-2 leading-relaxed">
+                              📡 Rastreamento 24/7 + 🚨 Escolta Digital
                             </p>
-                            <label className="flex items-center gap-2 cursor-pointer hover:bg-background/50 p-1 rounded">
+                            <label className="flex items-center gap-2 cursor-pointer hover:bg-background/50 p-1.5 rounded transition-colors">
                               <input
                                 type="checkbox"
                                 checked={selectedLogiGuard[quote.carrier_id] || false}
@@ -1019,32 +1045,35 @@ const Quote = () => {
                                   ...selectedLogiGuard,
                                   [quote.carrier_id]: e.target.checked
                                 })}
-                                className="w-3 h-3 text-accent rounded"
+                                className="w-4 h-4 text-accent rounded border-accent/30"
                               />
-                              <span className="text-[9px] font-medium">Adicionar ao frete</span>
+                              <span className="text-[10px] font-semibold">Adicionar proteção extra</span>
                             </label>
                           </div>
                         )}
 
-                        {/* Botão Contratar - Fixo no bottom */}
+                        {/* Botão Contratar - Fixo no bottom com destaque */}
                         <Button 
                           variant="hero" 
                           size="lg" 
-                          className="w-full mt-auto"
+                          className="w-full mt-auto shadow-lg hover:shadow-xl"
                           onClick={() => handleContractFreight(quote)}
                           disabled={contractingCarrierId !== null}
                         >
                           {contractingCarrierId === quote.carrier_id ? (
                             <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Contratando...
+                              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                              Processando...
                             </>
                           ) : (
-                            "Contratar Frete"
+                            <>
+                              <Truck className="mr-2 h-5 w-5" />
+                              Contratar Frete
+                            </>
                           )}
                         </Button>
                       </div>
-                    </Card>
+                    </div>
                   );
                 })}
               </div>
