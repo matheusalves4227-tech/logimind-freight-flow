@@ -126,7 +126,7 @@ const AdminOrders = () => {
             <h1 className="text-3xl font-bold text-foreground">Gestão de Pedidos e Cotações</h1>
           </div>
           <p className="text-muted-foreground">
-            Controle de cotações e pedidos solicitados pelos clientes
+            Painel de operação manual - Intermediação entre clientes e transportadoras parceiras
           </p>
         </div>
 
@@ -152,10 +152,10 @@ const AdminOrders = () => {
                 <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center">
                   <AlertCircle className="h-6 w-6 text-destructive" />
                 </div>
-                <div>
-                  <p className="text-sm text-muted-foreground font-medium">Pedidos s/ Motorista</p>
-                  <p className="text-3xl font-bold text-destructive">{stats.pendingOrders}</p>
-                </div>
+          <div>
+            <p className="text-sm text-muted-foreground font-medium">Pendentes de Contato</p>
+            <p className="text-3xl font-bold text-destructive">{stats.pendingOrders}</p>
+          </div>
               </div>
             </CardContent>
           </Card>

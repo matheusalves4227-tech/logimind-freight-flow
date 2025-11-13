@@ -116,19 +116,19 @@ export const PendingOrdersTable = ({ onUpdate }: PendingOrdersTableProps) => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <AlertCircle className="h-5 w-5" />
-          Pedidos Pendentes de Motorista
+          Pedidos Pendentes de Contato com Transportadora
         </CardTitle>
         <CardDescription>
-          Pedidos contratados que ainda não foram atribuídos a um motorista
+          Pedidos contratados aguardando contato manual com a transportadora escolhida pelo cliente
         </CardDescription>
       </CardHeader>
       <CardContent>
         {orders.length === 0 ? (
           <div className="text-center py-12">
             <Package className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-            <p className="text-muted-foreground">Nenhum pedido pendente de motorista</p>
+            <p className="text-muted-foreground">Nenhum pedido pendente de contato</p>
             <p className="text-sm text-muted-foreground mt-2">
-              Todos os pedidos foram atribuídos a motoristas
+              Todos os pedidos foram processados e entraram em operação
             </p>
           </div>
         ) : (

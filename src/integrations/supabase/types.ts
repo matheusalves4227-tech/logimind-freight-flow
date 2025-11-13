@@ -18,6 +18,11 @@ export type Database = {
         Row: {
           avg_quality_rating: number | null
           carrier_size: string | null
+          commercial_notes: string | null
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          contact_whatsapp: string | null
           coverage_area: string | null
           created_at: string | null
           damage_rate: number | null
@@ -32,6 +37,11 @@ export type Database = {
         Insert: {
           avg_quality_rating?: number | null
           carrier_size?: string | null
+          commercial_notes?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          contact_whatsapp?: string | null
           coverage_area?: string | null
           created_at?: string | null
           damage_rate?: number | null
@@ -46,6 +56,11 @@ export type Database = {
         Update: {
           avg_quality_rating?: number | null
           carrier_size?: string | null
+          commercial_notes?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          contact_whatsapp?: string | null
           coverage_area?: string | null
           created_at?: string | null
           damage_rate?: number | null
@@ -501,6 +516,7 @@ export type Database = {
           id: string
           last_location_update: string | null
           length_cm: number | null
+          operational_notes: string | null
           origin_address: string
           origin_cep: string
           quote_id: string | null
@@ -540,6 +556,7 @@ export type Database = {
           id?: string
           last_location_update?: string | null
           length_cm?: number | null
+          operational_notes?: string | null
           origin_address: string
           origin_cep: string
           quote_id?: string | null
@@ -579,6 +596,7 @@ export type Database = {
           id?: string
           last_location_update?: string | null
           length_cm?: number | null
+          operational_notes?: string | null
           origin_address?: string
           origin_cep?: string
           quote_id?: string | null

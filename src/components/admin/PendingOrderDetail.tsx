@@ -61,13 +61,39 @@ export const PendingOrderDetail = ({ order, open, onOpenChange, onUpdate }: Pend
   const [approvalNotes, setApprovalNotes] = useState('');
   const [rejectionReason, setRejectionReason] = useState('');
   const [driverInstructions, setDriverInstructions] = useState('');
+  const [operationalNotes, setOperationalNotes] = useState('');
   const [processing, setProcessing] = useState(false);
   const [userDetails, setUserDetails] = useState<any>(null);
+  const [carrierDetails, setCarrierDetails] = useState<any>(null);
 
-  // Buscar detalhes do usuário quando o modal abrir
+  // Buscar detalhes do usuário e transportadora quando o modal abrir
   useEffect(() => {
-    if (order?.user_id && open) {
-      const fetchUserDetails = async () => {
+    if (order && open) {
+      const fetchDetails = async () => {
+        // Buscar dados da transportadora escolhida
+        if (order.carrier_name) {
+          const { data: carrier, error } = await supabase
+            .from('carriers')
+            .select('id, name, contact_name, contact_phone, contact_email, contact_whatsapp, commercial_notes')
+            .eq('name', order.carrier_name)
+            .single();
+
+          if (!error && carrier) {
+            setCarrierDetails(carrier);
+          }
+        }
+
+        // Buscar notas operacionais existentes do pedido
+        const { data: orderData } = await supabase
+          .from('orders')
+          .select('operational_notes')
+          .eq('id', order.id)
+          .single();
+
+        if (orderData?.operational_notes) {
+          setOperationalNotes(orderData.operational_notes);
+        }
+        
         // Buscar email do auth.users via RPC ou usar os dados do order
         // Como não temos acesso direto a auth.users, vamos usar uma abordagem alternativa
         const { data: { user } } = await supabase.auth.getUser();
@@ -81,9 +107,9 @@ export const PendingOrderDetail = ({ order, open, onOpenChange, onUpdate }: Pend
           cpf: 'Não disponível'
         });
       };
-      fetchUserDetails();
+      fetchDetails();
     }
-  }, [order?.user_id, open]);
+  }, [order, open]);
 
   if (!order) return null;
 
@@ -103,6 +129,7 @@ export const PendingOrderDetail = ({ order, open, onOpenChange, onUpdate }: Pend
         .from('orders')
         .update({
           status: 'confirmed',
+          operational_notes: operationalNotes,
           updated_at: new Date().toISOString(),
         })
         .eq('id', order.id);
@@ -111,7 +138,7 @@ export const PendingOrderDetail = ({ order, open, onOpenChange, onUpdate }: Pend
 
       toast({
         title: 'Pedido Aprovado',
-        description: 'O pedido foi aprovado e está pronto para atribuição de motorista',
+        description: 'O pedido foi aprovado e está pronto para operação',
       });
 
       onUpdate();
@@ -178,10 +205,10 @@ export const PendingOrderDetail = ({ order, open, onOpenChange, onUpdate }: Pend
         <DialogHeader>
           <DialogTitle className="text-2xl flex items-center gap-2">
             <Package className="h-6 w-6 text-primary" />
-            Detalhes do Pedido Pendente
+            Detalhes do Pedido - Operação Manual
           </DialogTitle>
           <DialogDescription>
-            Ficha completa para validação, preparação e execução do frete
+            Ficha completa para contato com transportadora e gestão manual do frete
           </DialogDescription>
         </DialogHeader>
 
@@ -334,7 +361,132 @@ export const PendingOrderDetail = ({ order, open, onOpenChange, onUpdate }: Pend
             </Card>
           )}
 
-          {/* 4. DETALHES FINANCEIROS */}
+          {/* 4. DADOS COMERCIAIS DA TRANSPORTADORA */}
+          {order.carrier_name && (
+            <Card className="border-primary/20 bg-primary/5">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Phone className="h-5 w-5 text-primary" />
+                  Transportadora Escolhida - Dados para Contato
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="bg-background rounded-lg p-4 border-2 border-primary/30">
+                  <h3 className="font-bold text-xl text-primary mb-4">{order.carrier_name}</h3>
+                  
+                  {carrierDetails ? (
+                    <>
+                      <div className="grid md:grid-cols-2 gap-4 mb-4">
+                        {carrierDetails.contact_name && (
+                          <div>
+                            <p className="text-sm text-muted-foreground">Contato Comercial</p>
+                            <p className="font-semibold">{carrierDetails.contact_name}</p>
+                          </div>
+                        )}
+                        
+                        {carrierDetails.contact_phone && (
+                          <div className="flex items-center gap-2">
+                            <Phone className="h-4 w-4 text-muted-foreground" />
+                            <div>
+                              <p className="text-sm text-muted-foreground">Telefone</p>
+                              <p className="font-medium">{carrierDetails.contact_phone}</p>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {carrierDetails.contact_whatsapp && (
+                          <div className="flex items-center gap-2">
+                            <Phone className="h-4 w-4 text-secondary" />
+                            <div>
+                              <p className="text-sm text-muted-foreground">WhatsApp</p>
+                              <p className="font-medium">{carrierDetails.contact_whatsapp}</p>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {carrierDetails.contact_email && (
+                          <div className="flex items-center gap-2">
+                            <Mail className="h-4 w-4 text-muted-foreground" />
+                            <div>
+                              <p className="text-sm text-muted-foreground">Email</p>
+                              <p className="font-medium">{carrierDetails.contact_email}</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {carrierDetails.commercial_notes && (
+                        <div className="bg-muted/50 rounded p-3 mb-4">
+                          <p className="text-xs text-muted-foreground font-medium mb-1">Notas de Parceria:</p>
+                          <p className="text-sm">{carrierDetails.commercial_notes}</p>
+                        </div>
+                      )}
+
+                      <div className="flex gap-2">
+                        {carrierDetails.contact_phone && (
+                          <Button variant="default" size="sm" className="gap-2" asChild>
+                            <a href={`tel:${carrierDetails.contact_phone}`}>
+                              <Phone className="h-4 w-4" />
+                              Ligar Agora
+                            </a>
+                          </Button>
+                        )}
+                        {carrierDetails.contact_whatsapp && (
+                          <Button variant="secondary" size="sm" className="gap-2" asChild>
+                            <a 
+                              href={`https://wa.me/${carrierDetails.contact_whatsapp.replace(/\D/g, '')}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <Phone className="h-4 w-4" />
+                              WhatsApp
+                            </a>
+                          </Button>
+                        )}
+                        {carrierDetails.contact_email && (
+                          <Button variant="outline" size="sm" className="gap-2" asChild>
+                            <a href={`mailto:${carrierDetails.contact_email}`}>
+                              <Mail className="h-4 w-4" />
+                              Email
+                            </a>
+                          </Button>
+                        )}
+                      </div>
+                    </>
+                  ) : (
+                    <div className="text-center py-4">
+                      <AlertCircle className="h-8 w-8 text-muted-foreground/50 mx-auto mb-2" />
+                      <p className="text-sm text-muted-foreground">
+                        Dados comerciais não cadastrados para esta transportadora
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Cadastre os dados de contato em Gestão de Transportadoras
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                <Separator />
+
+                <div className="space-y-2">
+                  <Label htmlFor="operational-notes">Notas de Contato com a Transportadora</Label>
+                  <Textarea
+                    id="operational-notes"
+                    placeholder="Registre aqui suas conversas: data/hora do contato, pessoa que atendeu, confirmação de disponibilidade, preço negociado, prazo acordado, etc."
+                    value={operationalNotes}
+                    onChange={(e) => setOperationalNotes(e.target.value)}
+                    rows={5}
+                    className="font-mono text-sm"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    💡 Dica: Registre todos os contatos para histórico e auditoria
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* 5. DETALHES FINANCEIROS */}
           <Card>
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
@@ -367,7 +519,7 @@ export const PendingOrderDetail = ({ order, open, onOpenChange, onUpdate }: Pend
             </CardContent>
           </Card>
 
-          {/* 5. DOCUMENTAÇÃO E PREPARAÇÃO */}
+          {/* 6. DOCUMENTAÇÃO E PREPARAÇÃO */}
           <Card>
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
@@ -417,7 +569,7 @@ export const PendingOrderDetail = ({ order, open, onOpenChange, onUpdate }: Pend
             </CardContent>
           </Card>
 
-          {/* 6. AÇÕES DO ADMINISTRADOR */}
+          {/* 7. AÇÕES DO ADMINISTRADOR */}
           <Card>
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
@@ -457,7 +609,7 @@ export const PendingOrderDetail = ({ order, open, onOpenChange, onUpdate }: Pend
                   className="gap-2 flex-1 min-w-[200px]"
                 >
                   <CheckCircle className="h-4 w-4" />
-                  {processing ? 'Processando...' : 'Aprovar Pedido'}
+                  {processing ? 'Processando...' : 'Confirmar Contato Feito'}
                 </Button>
 
                 <Button
