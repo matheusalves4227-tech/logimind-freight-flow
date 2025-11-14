@@ -175,15 +175,47 @@ const Dashboard = () => {
     setOrderDetails(null);
   };
 
+  const parsePaymentError = (error: any): string => {
+    // Extrair mensagem de erro da resposta
+    const errorMessage = error?.message || error?.error?.message || error?.toString() || '';
+    
+    // Mapear erros comuns para mensagens user-friendly
+    if (errorMessage.includes('Order not found')) {
+      return "Pedido não encontrado. Por favor, atualize a página.";
+    }
+    if (errorMessage.includes('unauthorized') || errorMessage.includes('not authorized')) {
+      return "Você não tem permissão para pagar este pedido.";
+    }
+    if (errorMessage.includes('already paid')) {
+      return "Este pedido já foi pago.";
+    }
+    if (errorMessage.includes('User not authenticated')) {
+      return "Sessão expirada. Faça login novamente.";
+    }
+    if (errorMessage.includes('Invalid order status')) {
+      return "Status do pedido não permite pagamento.";
+    }
+    
+    // Mensagem genérica para erros desconhecidos
+    return "Erro ao processar pagamento. Tente novamente ou contate o suporte.";
+  };
+
   const handleRetryPayment = async (orderId: string) => {
     try {
       toast.loading("Preparando pagamento...", { id: 'retry-payment' });
 
-      // Verificar autenticação
+      // Verificar autenticação antes de fazer qualquer chamada
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        toast.error("Você precisa estar logado", { id: 'retry-payment' });
+        toast.error("Sessão expirada. Faça login novamente.", { id: 'retry-payment' });
         navigate("/auth");
+        return;
+      }
+
+      // Validar que o pedido existe e pertence ao usuário
+      const order = orders.find(o => o.id === orderId);
+      if (!order) {
+        toast.error("Pedido não encontrado.", { id: 'retry-payment' });
         return;
       }
 
@@ -197,12 +229,13 @@ const Dashboard = () => {
 
       if (checkoutError) {
         console.error('Checkout error:', checkoutError);
-        toast.error("Erro ao criar sessão de pagamento", { id: 'retry-payment' });
+        const errorMessage = parsePaymentError(checkoutError);
+        toast.error(errorMessage, { id: 'retry-payment' });
         return;
       }
 
       if (!checkoutData?.url) {
-        toast.error("URL de pagamento não recebida", { id: 'retry-payment' });
+        toast.error("URL de pagamento não recebida. Tente novamente.", { id: 'retry-payment' });
         return;
       }
 
@@ -222,9 +255,10 @@ const Dashboard = () => {
           window.location.assign(checkoutData.url);
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Unexpected error retrying payment:', error);
-      toast.error("Erro inesperado ao tentar pagamento", { id: 'retry-payment' });
+      const errorMessage = parsePaymentError(error);
+      toast.error(errorMessage, { id: 'retry-payment' });
     }
   };
 

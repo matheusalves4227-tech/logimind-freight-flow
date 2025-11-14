@@ -4,7 +4,13 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Eye, MapPin } from "lucide-react";
+import { Search, Eye, MapPin, Loader2, CheckCircle2 } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   Table,
   TableBody,
@@ -43,10 +49,18 @@ const statusConfig = {
   incident: { label: "Ocorrência", color: "bg-destructive text-destructive-foreground" },
 };
 
+const paymentStatusConfig = {
+  paid: { label: "Pago", color: "bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20" },
+  pending: { label: "Pendente", color: "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-500/20" },
+  processing: { label: "Processando", color: "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20" },
+  failed: { label: "Falhou", color: "bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20" },
+};
+
 export const ActiveOrdersTable = ({ orders, onViewDetails, onRetryPayment }: ActiveOrdersTableProps) => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [loadingOrderId, setLoadingOrderId] = useState<string | null>(null);
 
   const filteredOrders = orders.filter(order => {
     const matchesSearch = 
@@ -65,6 +79,33 @@ export const ActiveOrdersTable = ({ orders, onViewDetails, onRetryPayment }: Act
     const now = new Date();
     const daysUntil = Math.ceil((delivery.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
     return daysUntil <= 2 && daysUntil >= 0;
+  };
+
+  const canRetryPayment = (order: Order) => {
+    // Pode tentar pagamento apenas se:
+    // 1. Pagamento está pendente ou processando
+    // 2. Pedido não foi entregue
+    // 3. Pedido não tem ocorrência
+    const validPaymentStatus = order.payment_status === 'pending' || order.payment_status === 'processing';
+    const validOrderStatus = order.status !== 'delivered' && order.status !== 'incident';
+    return validPaymentStatus && validOrderStatus;
+  };
+
+  const getPaymentDisabledReason = (order: Order) => {
+    if (order.payment_status === 'paid') return "Pedido já foi pago";
+    if (order.status === 'delivered') return "Pedido já foi entregue";
+    if (order.status === 'incident') return "Pedido tem ocorrência";
+    return "";
+  };
+
+  const handlePaymentClick = async (orderId: string) => {
+    if (!onRetryPayment) return;
+    setLoadingOrderId(orderId);
+    try {
+      await onRetryPayment(orderId);
+    } finally {
+      setLoadingOrderId(null);
+    }
   };
 
   return (
@@ -103,6 +144,7 @@ export const ActiveOrdersTable = ({ orders, onViewDetails, onRetryPayment }: Act
             <TableRow>
               <TableHead>ID do Frete</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Status Pagamento</TableHead>
               <TableHead>Transportador</TableHead>
               <TableHead>Rota</TableHead>
               <TableHead>Preço Final</TableHead>
@@ -126,6 +168,15 @@ export const ActiveOrdersTable = ({ orders, onViewDetails, onRetryPayment }: Act
                   <TableCell>
                     <Badge className={statusConfig[order.status].color}>
                       {statusConfig[order.status].label}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge 
+                      variant="outline" 
+                      className={paymentStatusConfig[order.payment_status as keyof typeof paymentStatusConfig]?.color || ""}
+                    >
+                      {order.payment_status === 'paid' && <CheckCircle2 className="h-3 w-3 mr-1" />}
+                      {paymentStatusConfig[order.payment_status as keyof typeof paymentStatusConfig]?.label || order.payment_status}
                     </Badge>
                   </TableCell>
                   <TableCell>
@@ -159,42 +210,67 @@ export const ActiveOrdersTable = ({ orders, onViewDetails, onRetryPayment }: Act
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex gap-2 justify-end">
-                      {/* Botão Pagar Agora para pedidos com pagamento pendente */}
-                      {(order.payment_status === 'pending' || order.payment_status === 'processing') && onRetryPayment && (
-                        <Button
-                          variant="default"
-                          size="sm"
-                          onClick={() => onRetryPayment(order.id)}
-                          className="gap-2"
-                        >
-                          Pagar agora
-                        </Button>
-                      )}
+                      <TooltipProvider>
+                        {/* Botão Pagar Agora com validações */}
+                        {onRetryPayment && (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span>
+                                <Button
+                                  variant={order.payment_status === 'paid' ? "secondary" : "default"}
+                                  size="sm"
+                                  onClick={() => handlePaymentClick(order.id)}
+                                  disabled={!canRetryPayment(order) || loadingOrderId === order.id}
+                                  className="gap-2"
+                                >
+                                  {loadingOrderId === order.id ? (
+                                    <>
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                      Processando...
+                                    </>
+                                  ) : order.payment_status === 'paid' ? (
+                                    <>
+                                      <CheckCircle2 className="h-4 w-4" />
+                                      Pago ✓
+                                    </>
+                                  ) : (
+                                    'Pagar agora'
+                                  )}
+                                </Button>
+                              </span>
+                            </TooltipTrigger>
+                            {!canRetryPayment(order) && (
+                              <TooltipContent>
+                                <p>{getPaymentDisabledReason(order)}</p>
+                              </TooltipContent>
+                            )}
+                          </Tooltip>
+                        )}
                       
-                      {/* Botão Rastrear para pedidos com código de rastreamento */}
-                      {order.tracking_code && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => navigate(`/tracking/${order.tracking_code}`)}
-                          className="gap-2"
-                        >
-                          <MapPin className="h-4 w-4" />
-                          Rastrear
-                        </Button>
-                      )}
-                      
-                      {/* Botão Ver Detalhes para pedidos sem tracking */}
-                      {!order.tracking_code && !(order.payment_status === 'pending' || order.payment_status === 'processing') && (
+                        {/* Botão Rastrear para pedidos com código de rastreamento */}
+                        {order.tracking_code && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => navigate(`/tracking/${order.tracking_code}`)}
+                            className="gap-2"
+                          >
+                            <MapPin className="h-4 w-4" />
+                            Rastrear
+                          </Button>
+                        )}
+                        
+                        {/* Botão Ver Detalhes sempre visível */}
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => onViewDetails(order.id)}
+                          className="gap-2"
                         >
-                          <Eye className="h-4 w-4 mr-2" />
+                          <Eye className="h-4 w-4" />
                           Ver Detalhes
                         </Button>
-                      )}
+                      </TooltipProvider>
                     </div>
                   </TableCell>
                 </TableRow>
