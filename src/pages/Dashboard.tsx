@@ -95,70 +95,87 @@ const Dashboard = () => {
 
   const handleViewDetails = async (orderId: string) => {
     try {
-      // Buscar detalhes completos do pedido
-      const { data: quote, error } = await supabase
-        .from('quotes')
-        .select(`
-          *,
-          quote_items (
-            *,
-            carriers (
-              name,
-              carrier_size
-            )
-          )
-        `)
+      // Buscar detalhes do pedido diretamente da tabela orders
+      const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .select('*')
         .eq('id', orderId)
         .single();
 
-      if (error) throw error;
+      if (orderError) throw orderError;
+      if (!order) throw new Error("Pedido não encontrado");
 
-      const selectedItem = quote.quote_items?.find((item: any) => item.selected) || quote.quote_items?.[0];
-      const carrier = selectedItem?.carriers;
+      // Se houver quote_id, buscar detalhes da cotação também
+      let quoteData = null;
+      if (order.quote_id) {
+        const { data: quote } = await supabase
+          .from('quotes')
+          .select(`
+            *,
+            quote_items (
+              *,
+              carriers (
+                name,
+                carrier_size
+              )
+            )
+          `)
+          .eq('id', order.quote_id)
+          .maybeSingle();
+        
+        quoteData = quote;
+      }
 
-      // Criar timeline mock
+      // Criar timeline baseada no status do pedido
       const mockTimeline = [
         {
-          date: quote.created_at,
-          status: "Cotação Realizada",
-          description: "Cotação criada no sistema LogiMarket"
+          date: order.created_at,
+          status: "Pedido Criado",
+          description: "Pedido registrado no sistema LogiMarket"
         },
-        {
-          date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-          status: "Coleta Realizada",
-          description: "Carga coletada no endereço de origem"
-        },
-        {
-          date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-          status: "Em Transferência",
-          description: "Mercadoria em trânsito para o centro de distribuição"
-        },
+        ...(order.status !== 'pending' ? [{
+          date: new Date(new Date(order.created_at).getTime() + 1 * 60 * 60 * 1000).toISOString(),
+          status: "Coleta Agendada",
+          description: "Coleta programada com a transportadora"
+        }] : []),
+        ...(order.status === 'in_transit' || order.status === 'delivered' ? [{
+          date: new Date(new Date(order.created_at).getTime() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+          status: "Em Trânsito",
+          description: "Mercadoria em rota para o destino"
+        }] : []),
+        ...(order.status === 'delivered' ? [{
+          date: order.actual_delivery || new Date().toISOString(),
+          status: "Entregue",
+          description: "Carga entregue no destino"
+        }] : []),
       ];
 
       const details: OrderDetails = {
-        id: quote.id,
-        quote_id: quote.id,
-        status: "in_transit",
-        carrier_name: carrier?.name || "Transportadora Mock",
-        carrier_type: Math.random() > 0.7 ? "autonomous" : "carrier",
-        vehicle_type: Math.random() > 0.7 ? "Caminhão Toco" : undefined,
+        id: order.id,
+        quote_id: order.quote_id || order.id,
+        status: order.status === 'in_transit' ? 'in_transit' : 
+                order.status === 'delivered' ? 'delivered' : 
+                order.status === 'incident' ? 'incident' : 'in_transit',
+        carrier_name: order.carrier_name,
+        carrier_type: order.service_type === 'ftl' ? "autonomous" : "carrier",
+        vehicle_type: order.vehicle_type || undefined,
         origin: {
-          cep: quote.origin_cep,
-          address: "Rua Exemplo, 123",
-          city: "São Paulo - SP"
+          cep: order.origin_cep,
+          address: order.origin_address,
+          city: order.origin_address.split(' - ').slice(-2).join(' - ')
         },
         destination: {
-          cep: quote.destination_cep,
-          address: "Av. Teste, 456",
-          city: "Rio de Janeiro - RJ"
+          cep: order.destination_cep,
+          address: order.destination_address,
+          city: order.destination_address.split(' - ').slice(-2).join(' - ')
         },
-        base_price: selectedItem?.base_price || 0,
-        commission_applied: selectedItem?.commission_applied || 0.10,
-        adjustment_reason: Math.random() > 0.5 ? "COMPETITION" : "ROUTE_OPTIMIZED",
-        final_price: selectedItem?.final_price || 0,
-        weight_kg: quote.weight_kg,
-        estimated_delivery: new Date(Date.now() + (selectedItem?.delivery_days || 5) * 24 * 60 * 60 * 1000).toISOString(),
-        created_at: quote.created_at,
+        base_price: parseFloat(order.base_price.toString()),
+        commission_applied: parseFloat(order.commission_applied.toString()),
+        adjustment_reason: "COMPETITION",
+        final_price: parseFloat(order.final_price.toString()),
+        weight_kg: parseFloat(order.weight_kg.toString()),
+        estimated_delivery: order.estimated_delivery,
+        created_at: order.created_at,
         timeline: mockTimeline,
       };
 
