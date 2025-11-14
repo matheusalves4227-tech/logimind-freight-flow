@@ -10,7 +10,7 @@ import { ArrowLeft, Package, MapPin, Loader2, TrendingUp, Info, Lightbulb, Truck
 import Navbar from "@/components/Navbar";
 import { Stepper } from "@/components/ui/stepper";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { formatarMoeda, formatarPorcentagemSimples } from "@/lib/formatters";
+import { formatarMoeda, formatarPorcentagemSimples, formatarPeso, removerFormatacaoPeso, formatarValorMonetario, removerFormatacaoMonetaria } from "@/lib/formatters";
 
 interface QuoteResult {
   carrier_id: string;
@@ -638,11 +638,14 @@ const Quote = () => {
                     </Label>
                     <Input
                       id="weight_kg"
-                      type="number"
-                      step="0.01"
-                      placeholder="0.00"
-                      value={formData.weight_kg}
-                      onChange={(e) => setFormData({ ...formData, weight_kg: e.target.value })}
+                      type="text"
+                      placeholder="0"
+                      value={formData.weight_kg ? formatarPeso(formData.weight_kg) : ''}
+                      onChange={(e) => {
+                        const valorFormatado = formatarPeso(e.target.value);
+                        const valorNumerico = removerFormatacaoPeso(valorFormatado);
+                        setFormData({ ...formData, weight_kg: valorNumerico });
+                      }}
                       required
                     />
                   </div>
@@ -719,11 +722,14 @@ const Quote = () => {
                     </p>
                     <Input
                       id="cargo_value"
-                      type="number"
-                      step="0.01"
+                      type="text"
                       placeholder="0,00"
-                      value={formData.cargo_value}
-                      onChange={(e) => setFormData({ ...formData, cargo_value: e.target.value })}
+                      value={formData.cargo_value ? formatarValorMonetario(formData.cargo_value) : ''}
+                      onChange={(e) => {
+                        const valorFormatado = formatarValorMonetario(e.target.value);
+                        const valorNumerico = removerFormatacaoMonetaria(valorFormatado);
+                        setFormData({ ...formData, cargo_value: valorNumerico });
+                      }}
                     />
                   </div>
 
