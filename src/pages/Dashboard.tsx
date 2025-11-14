@@ -42,9 +42,17 @@ const Dashboard = () => {
       setLoading(true);
       
       // Buscar pedidos reais da tabela orders
+      // Garantir que buscamos apenas pedidos do usuário logado
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user?.id) {
+        throw new Error("Sessão inválida");
+      }
+      const userId = session.user.id;
+
       const { data: realOrders, error: ordersError } = await supabase
         .from('orders')
         .select('*')
+        .eq('user_id', userId)
         .order('created_at', { ascending: false })
         .limit(20);
 
