@@ -242,11 +242,11 @@ All colors MUST be HSL.
   
   /* Hierarquia de Preço */
   .price-display-lg {
-    font-size: var(--font-size-4xl);
-    font-weight: var(--font-weight-extrabold);
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
     color: hsl(var(--primary));
-    line-height: 1;
-    min-height: 2.5rem;
+    line-height: 1.2;
+    min-height: 2rem;
     display: flex;
     align-items: center;
   }
