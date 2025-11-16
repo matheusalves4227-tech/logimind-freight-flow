@@ -24,7 +24,6 @@ interface RankingDisplayProps {
 }
 
 export const RankingDisplay = ({ type, limit = 10 }: RankingDisplayProps) => {
-  console.log("RankingDisplay rendered with type:", type, "limit:", limit);
   const [loading, setLoading] = useState(true);
   const [rankings, setRankings] = useState<RankingItem[]>([]);
 
@@ -33,7 +32,7 @@ export const RankingDisplay = ({ type, limit = 10 }: RankingDisplayProps) => {
   }, [type, limit]);
 
   const fetchRankings = async () => {
-    console.log("Fetching rankings for type:", type);
+    setLoading(true);
     try {
       if (type === "driver") {
         const { data: scores, error } = await supabase
@@ -51,7 +50,10 @@ export const RankingDisplay = ({ type, limit = 10 }: RankingDisplayProps) => {
           .order("overall_score", { ascending: false })
           .limit(limit);
 
-        if (error) throw error;
+        if (error) {
+          console.error("Error fetching driver rankings:", error);
+          throw error;
+        }
 
         const formattedRankings: RankingItem[] = scores?.map((score: any, index: number) => ({
           id: score.driver_id,
@@ -83,7 +85,10 @@ export const RankingDisplay = ({ type, limit = 10 }: RankingDisplayProps) => {
           .order("overall_score", { ascending: false })
           .limit(limit);
 
-        if (error) throw error;
+        if (error) {
+          console.error("Error fetching carrier rankings:", error);
+          throw error;
+        }
 
         const formattedRankings: RankingItem[] = scores?.map((score: any, index: number) => ({
           id: score.carrier_id,
