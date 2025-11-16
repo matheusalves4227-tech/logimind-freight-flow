@@ -13,6 +13,7 @@ import Navbar from "@/components/Navbar";
 import { Stepper } from "@/components/ui/stepper";
 import { supabase } from "@/integrations/supabase/client";
 import { validateCPF } from "@/lib/validators";
+import { ProfilePhotoUpload } from "@/components/driver/ProfilePhotoUpload";
 
 // Schema de validação com Zod
 const step1Schema = z.object({
@@ -51,6 +52,7 @@ const AutonomousOnboarding = ({ cpf, onBack }: AutonomousOnboardingProps) => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedRegions, setSelectedRegions] = useState<string[]>([]);
+  const [profilePhotoUrl, setProfilePhotoUrl] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     nome_completo: "",
     email: "",
@@ -201,6 +203,7 @@ const AutonomousOnboarding = ({ cpf, onBack }: AutonomousOnboardingProps) => {
           address_state: "SP",
           pix_key_type: formData.pix_key_type,
           pix_key: formData.pix_key,
+          foto_perfil_url: profilePhotoUrl,
           status: "pending"
         })
         .select()
@@ -359,6 +362,19 @@ const AutonomousOnboarding = ({ cpf, onBack }: AutonomousOnboardingProps) => {
                         </div>
                       </div>
                     </div>
+                  </div>
+
+                  <div className="space-y-4 pt-4 border-t">
+                    <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">
+                      Foto de Perfil
+                    </h4>
+                    <p className="text-sm text-muted-foreground">
+                      Adicione uma foto de perfil para facilitar sua identificação
+                    </p>
+                    <ProfilePhotoUpload
+                      currentPhotoUrl={profilePhotoUrl}
+                      onUploadComplete={(url) => setProfilePhotoUrl(url)}
+                    />
                   </div>
 
                   <div className="space-y-4 pt-4 border-t">
