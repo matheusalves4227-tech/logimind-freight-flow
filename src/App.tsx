@@ -12,6 +12,7 @@ import Tracking from "./pages/Tracking";
 import DriverDashboard from "./pages/DriverDashboard";
 import AdminDrivers from "./pages/AdminDrivers";
 import AdminOrders from "./pages/AdminOrders";
+import AdminB2BCalculator from "./pages/AdminB2BCalculator";
 import PartnerOnboarding from "./pages/PartnerOnboarding";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import AguardandoAprovacao from "./pages/AguardandoAprovacao";
@@ -34,6 +35,7 @@ const App = () => (
           <Route path="/motorista/dashboard" element={<DriverDashboard />} />
           <Route path="/admin/motoristas" element={<AdminDrivers />} />
           <Route path="/admin/pedidos" element={<AdminOrders />} />
+          <Route path="/admin/calculadora-b2b" element={<AdminB2BCalculator />} />
           <Route path="/parceiro/cadastro" element={<PartnerOnboarding />} />
           <Route path="/aguardando-aprovacao" element={<AguardandoAprovacao />} />
           <Route path="/payment-success" element={<PaymentSuccess />} />
