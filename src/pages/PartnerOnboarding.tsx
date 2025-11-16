@@ -5,9 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, Building2, Truck } from "lucide-react";
+import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import B2BOnboarding from "@/components/partner/B2BOnboarding";
 import AutonomousOnboarding from "@/components/partner/AutonomousOnboarding";
+import { validateCPF, validateCNPJ } from "@/lib/validators";
 
 type PartnerType = "b2b" | "autonomous" | null;
 
@@ -21,8 +23,16 @@ const PartnerOnboarding = () => {
     
     // CNPJ tem 14 dígitos, CPF tem 11
     if (cleanValue.length === 14) {
+      if (!validateCNPJ(cleanValue)) {
+        toast.error("CNPJ inválido. Verifique os dígitos verificadores.");
+        return;
+      }
       setPartnerType("b2b");
     } else if (cleanValue.length === 11) {
+      if (!validateCPF(cleanValue)) {
+        toast.error("CPF inválido. Verifique os dígitos verificadores.");
+        return;
+      }
       setPartnerType("autonomous");
     }
   };
