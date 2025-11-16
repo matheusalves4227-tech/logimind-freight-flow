@@ -15,11 +15,13 @@ import {
   MapPin, 
   Info,
   Loader2,
-  AlertTriangle
+  AlertTriangle,
+  Radio
 } from 'lucide-react';
 import { TrackingMap } from '@/components/tracking/TrackingMap';
 import { TrackingTimeline } from '@/components/tracking/TrackingTimeline';
 import { formatarMoeda, formatarPorcentagemSimples } from '@/lib/formatters';
+import { useRealtimeTracking } from '@/hooks/useRealtimeTracking';
 import {
   Tooltip,
   TooltipContent,
@@ -65,7 +67,64 @@ const Tracking = () => {
   const [loading, setLoading] = useState(true);
   const [trackingData, setTrackingData] = useState<TrackingData | null>(null);
   const [orderData, setOrderData] = useState<OrderData | null>(null);
+  const [orderId, setOrderId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Hook de Realtime tracking
+  const { isConnected } = useRealtimeTracking({
+    orderId,
+    onEventUpdate: (event) => {
+      console.log('🔔 Novo evento recebido via Realtime:', event);
+      toast.success('Novo evento de rastreamento!', {
+        description: event.event_description
+      });
+      
+      // Atualizar dados do tracking
+      setTrackingData(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          historico_eventos: [
+            {
+              data_hora: event.event_timestamp,
+              codigo_evento: event.event_code,
+              descricao_amigavel: event.event_description,
+              cidade_uf: event.city && event.state ? `${event.city} - ${event.state}` : 'N/A',
+              ocorrencia_critica: event.is_critical
+            },
+            ...prev.historico_eventos
+          ]
+        };
+      });
+    },
+    onLocationUpdate: (location) => {
+      console.log('📍 Localização atualizada via Realtime:', location);
+      
+      if (location.current_latitude && location.current_longitude) {
+        toast.info('Localização atualizada!', {
+          description: 'O veículo mudou de posição'
+        });
+        
+        // Atualizar localização no tracking
+        setTrackingData(prev => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            localizacao_atual: {
+              lat: location.current_latitude!,
+              lng: location.current_longitude!,
+              ultima_atualizacao: location.last_location_update || new Date().toISOString()
+            }
+          };
+        });
+      }
+
+      // Atualizar status do pedido
+      if (location.status && orderData) {
+        setOrderData(prev => prev ? { ...prev, status: location.status } : prev);
+      }
+    }
+  });
 
   useEffect(() => {
     if (trackingCode) {
@@ -95,6 +154,9 @@ const Tracking = () => {
         ...order,
         service_type: order.service_type as 'ltl' | 'ftl'
       });
+
+      // Armazenar order_id para Realtime
+      setOrderId(order.id);
 
       // Chamar edge function de tracking
       const { data, error: trackingError } = await supabase.functions.invoke(
@@ -216,9 +278,26 @@ const Tracking = () => {
             
             {/* Status Geral */}
             <Card className="p-4">
-              <h3 className="text-xs uppercase tracking-wide text-muted-foreground mb-3 font-semibold">
-                Status Geral
-              </h3>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-xs uppercase tracking-wide text-muted-foreground font-semibold">
+                  Status Geral
+                </h3>
+                {isConnected && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300 flex items-center gap-1">
+                          <Radio className="h-3 w-3 animate-pulse" />
+                          <span className="hidden sm:inline">Ao vivo</span>
+                        </Badge>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Rastreamento em tempo real ativo</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+              </div>
               <div className="space-y-3">
                 {getStatusBadge(trackingData.status_principal)}
                 
