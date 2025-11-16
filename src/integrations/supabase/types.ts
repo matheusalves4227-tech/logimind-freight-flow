@@ -224,6 +224,59 @@ export type Database = {
         }
         Relationships: []
       }
+      carrier_performance_scores: {
+        Row: {
+          average_rating: number | null
+          carrier_id: string
+          created_at: string
+          damage_rate_score: number | null
+          id: string
+          last_calculated_at: string | null
+          on_time_delivery_score: number | null
+          overall_score: number
+          review_score: number | null
+          total_deliveries: number | null
+          total_reviews: number | null
+          updated_at: string
+        }
+        Insert: {
+          average_rating?: number | null
+          carrier_id: string
+          created_at?: string
+          damage_rate_score?: number | null
+          id?: string
+          last_calculated_at?: string | null
+          on_time_delivery_score?: number | null
+          overall_score?: number
+          review_score?: number | null
+          total_deliveries?: number | null
+          total_reviews?: number | null
+          updated_at?: string
+        }
+        Update: {
+          average_rating?: number | null
+          carrier_id?: string
+          created_at?: string
+          damage_rate_score?: number | null
+          id?: string
+          last_calculated_at?: string | null
+          on_time_delivery_score?: number | null
+          overall_score?: number
+          review_score?: number | null
+          total_deliveries?: number | null
+          total_reviews?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "carrier_performance_scores_carrier_id_fkey"
+            columns: ["carrier_id"]
+            isOneToOne: true
+            referencedRelation: "carriers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       carrier_price_table: {
         Row: {
           base_price: number
@@ -291,6 +344,73 @@ export type Database = {
             columns: ["carrier_id"]
             isOneToOne: false
             referencedRelation: "carriers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      carrier_reviews: {
+        Row: {
+          carrier_id: string
+          comment: string | null
+          created_at: string
+          delivery_time_rating: number | null
+          id: string
+          order_id: string
+          price_rating: number | null
+          rating: number
+          reviewer_user_id: string
+          service_quality_rating: number | null
+          support_rating: number | null
+          updated_at: string
+        }
+        Insert: {
+          carrier_id: string
+          comment?: string | null
+          created_at?: string
+          delivery_time_rating?: number | null
+          id?: string
+          order_id: string
+          price_rating?: number | null
+          rating: number
+          reviewer_user_id: string
+          service_quality_rating?: number | null
+          support_rating?: number | null
+          updated_at?: string
+        }
+        Update: {
+          carrier_id?: string
+          comment?: string | null
+          created_at?: string
+          delivery_time_rating?: number | null
+          id?: string
+          order_id?: string
+          price_rating?: number | null
+          rating?: number
+          reviewer_user_id?: string
+          service_quality_rating?: number | null
+          support_rating?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "carrier_reviews_carrier_id_fkey"
+            columns: ["carrier_id"]
+            isOneToOne: false
+            referencedRelation: "carriers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "carrier_reviews_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "carrier_reviews_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "vw_pedidos_para_repasse"
             referencedColumns: ["id"]
           },
         ]
@@ -541,6 +661,69 @@ export type Database = {
           },
         ]
       }
+      driver_performance_scores: {
+        Row: {
+          acceptance_rate_score: number | null
+          average_rating: number | null
+          completion_rate_score: number | null
+          created_at: string
+          driver_id: string
+          id: string
+          last_calculated_at: string | null
+          on_time_delivery_score: number | null
+          overall_score: number
+          review_score: number | null
+          total_deliveries: number | null
+          total_reviews: number | null
+          updated_at: string
+        }
+        Insert: {
+          acceptance_rate_score?: number | null
+          average_rating?: number | null
+          completion_rate_score?: number | null
+          created_at?: string
+          driver_id: string
+          id?: string
+          last_calculated_at?: string | null
+          on_time_delivery_score?: number | null
+          overall_score?: number
+          review_score?: number | null
+          total_deliveries?: number | null
+          total_reviews?: number | null
+          updated_at?: string
+        }
+        Update: {
+          acceptance_rate_score?: number | null
+          average_rating?: number | null
+          completion_rate_score?: number | null
+          created_at?: string
+          driver_id?: string
+          id?: string
+          last_calculated_at?: string | null
+          on_time_delivery_score?: number | null
+          overall_score?: number
+          review_score?: number | null
+          total_deliveries?: number | null
+          total_reviews?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_performance_scores_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: true
+            referencedRelation: "driver_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "driver_performance_scores_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: true
+            referencedRelation: "vw_pedidos_para_repasse"
+            referencedColumns: ["driver_profile_id"]
+          },
+        ]
+      }
       driver_profiles: {
         Row: {
           address_cep: string
@@ -636,6 +819,80 @@ export type Database = {
           whatsapp?: string | null
         }
         Relationships: []
+      }
+      driver_reviews: {
+        Row: {
+          comment: string | null
+          communication_rating: number | null
+          created_at: string
+          driver_id: string
+          id: string
+          order_id: string
+          professionalism_rating: number | null
+          punctuality_rating: number | null
+          rating: number
+          reviewer_user_id: string
+          updated_at: string
+          vehicle_condition_rating: number | null
+        }
+        Insert: {
+          comment?: string | null
+          communication_rating?: number | null
+          created_at?: string
+          driver_id: string
+          id?: string
+          order_id: string
+          professionalism_rating?: number | null
+          punctuality_rating?: number | null
+          rating: number
+          reviewer_user_id: string
+          updated_at?: string
+          vehicle_condition_rating?: number | null
+        }
+        Update: {
+          comment?: string | null
+          communication_rating?: number | null
+          created_at?: string
+          driver_id?: string
+          id?: string
+          order_id?: string
+          professionalism_rating?: number | null
+          punctuality_rating?: number | null
+          rating?: number
+          reviewer_user_id?: string
+          updated_at?: string
+          vehicle_condition_rating?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_reviews_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "driver_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "driver_reviews_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "vw_pedidos_para_repasse"
+            referencedColumns: ["driver_profile_id"]
+          },
+          {
+            foreignKeyName: "driver_reviews_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "driver_reviews_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "vw_pedidos_para_repasse"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       driver_vehicles: {
         Row: {

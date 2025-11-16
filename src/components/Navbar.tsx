@@ -54,6 +54,9 @@ const Navbar = () => {
             <Link to="/#how-it-works" className="text-foreground hover:text-primary transition-colors">
               Como Funciona
             </Link>
+            <Link to="/ranking" className="text-foreground hover:text-primary transition-colors">
+              Ranking
+            </Link>
             <Link to="/parceiro/cadastro" className="text-foreground hover:text-primary transition-colors">
               Seja um Parceiro
             </Link>
@@ -115,6 +118,15 @@ const Navbar = () => {
                   >
                     <Home className="h-5 w-5" />
                     Início
+                  </Button>
+
+                  <Button
+                    variant="ghost"
+                    className="justify-start gap-3 text-base"
+                    onClick={() => handleNavigation("/ranking")}
+                  >
+                    <Users className="h-5 w-5" />
+                    Ranking
                   </Button>
                   
                   {user ? (
