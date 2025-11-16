@@ -249,7 +249,7 @@ export const DriverOpportunities = ({ driverProfile }: DriverOpportunitiesProps)
                   </div>
                   {opp.is_premium && (
                     <p className="text-xs text-muted-foreground mt-2">
-                      <span className="text-secondary font-semibold">{opp.commission_total_percent}%</span> Comissão LogiMind (Rota de Retorno)
+                      <span className="text-secondary font-semibold">{opp.commission_total_percent}%</span> Taxa de Serviço (Rota de Retorno Otimizada)
                     </p>
                   )}
                 </div>

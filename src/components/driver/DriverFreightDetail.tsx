@@ -101,7 +101,7 @@ export const DriverFreightDetail = ({ opportunity }: DriverFreightDetailProps) =
         </CardContent>
       </Card>
 
-      {/* Detalhe da Comissão - Transparência Total */}
+      {/* Detalhamento Financeiro - Transparência Total */}
       {opportunity.is_premium && (
         <Card className="bg-primary/5 border-primary/20">
           <CardContent className="pt-6 pb-6">
@@ -110,24 +110,28 @@ export const DriverFreightDetail = ({ opportunity }: DriverFreightDetailProps) =
                 <Info className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                 <div className="flex-1">
                   <p className="font-semibold text-primary mb-2">
-                    Detalhamento da Comissão LogiMind
+                    Composição do Seu Pagamento
                   </p>
                   
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Comissão Padrão (10%):</span>
-                      <span className="font-semibold">{formatarMoeda(opportunity.commission_standard)}</span>
+                      <span className="text-muted-foreground">Valor Bruto da Corrida:</span>
+                      <span className="font-semibold">{formatarMoeda(opportunity.driver_receives + opportunity.commission_standard + opportunity.commission_adjustment)}</span>
                     </div>
-                    <div className="flex justify-between text-secondary">
-                      <span className="font-medium">+ Ajuste LogiMind ({formatarPorcentagemSimples(opportunity.commission_adjustment / opportunity.driver_receives * 100)}):</span>
-                      <span className="font-bold">+{formatarMoeda(opportunity.commission_adjustment)}</span>
+                    <div className="flex justify-between text-muted-foreground">
+                      <span>Taxa de Serviço LogiMind ({formatarPorcentagemSimples(opportunity.commission_total_percent)}):</span>
+                      <span>-{formatarMoeda(opportunity.commission_standard + opportunity.commission_adjustment)}</span>
                     </div>
                     <div className="h-px bg-border my-2"></div>
                     <div className="flex justify-between text-base">
-                      <span className="font-semibold">Comissão Total ({formatarPorcentagemSimples(opportunity.commission_total_percent)}):</span>
-                      <span className="font-bold">{formatarMoeda(opportunity.commission_standard + opportunity.commission_adjustment)}</span>
+                      <span className="font-semibold text-secondary">Você Recebe (Líquido):</span>
+                      <span className="font-bold text-secondary">{formatarMoeda(opportunity.driver_receives)}</span>
                     </div>
                   </div>
+                  
+                  <p className="text-xs text-muted-foreground mt-3 pt-3 border-t border-border">
+                    💡 <strong>Taxa de Serviço inclui:</strong> Geração de demanda, plataforma tecnológica, rastreamento em tempo real, suporte operacional e otimização de rotas pelo LogiMind AI.
+                  </p>
                 </div>
               </div>
             </div>

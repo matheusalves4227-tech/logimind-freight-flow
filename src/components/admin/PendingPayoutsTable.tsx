@@ -218,7 +218,7 @@ export const PendingPayoutsTable = () => {
                             {formatCurrency(payout.valor_repasse_liquido)}
                           </span>
                           <span className="text-xs text-muted-foreground">
-                            Comissão: {formatCurrency(payout.comissao_logimarket_val)}
+                            Taxa de Serviço: {formatCurrency(payout.comissao_logimarket_val)}
                           </span>
                         </div>
                       </TableCell>

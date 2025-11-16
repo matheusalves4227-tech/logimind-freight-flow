@@ -175,7 +175,7 @@ export const PaymentTestPanel = () => {
                         </p>
                       </div>
                       <div>
-                        <p className="text-muted-foreground">Comissão LogiMarket</p>
+                        <p className="text-muted-foreground">Taxa de Serviço</p>
                         <p className="font-bold text-lg text-accent">
                           {formatCurrency(result.data.comissao_logimarket)}
                         </p>
