@@ -18,6 +18,7 @@ import AdminB2BCalculator from "./pages/AdminB2BCalculator";
 import PartnerOnboarding from "./pages/PartnerOnboarding";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import AguardandoAprovacao from "./pages/AguardandoAprovacao";
+import Ranking from "./pages/Ranking";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -43,6 +44,7 @@ const App = () => (
           <Route path="/parceiro/cadastro" element={<PartnerOnboarding />} />
           <Route path="/aguardando-aprovacao" element={<AguardandoAprovacao />} />
           <Route path="/payment-success" element={<PaymentSuccess />} />
+          <Route path="/ranking" element={<Ranking />} />
           <Route path="/auth" element={<Auth />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
