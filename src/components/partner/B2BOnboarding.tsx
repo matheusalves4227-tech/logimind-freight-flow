@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Building2, Upload, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
+import { supabase } from "@/integrations/supabase/client";
 
 interface B2BOnboardingProps {
   cnpj: string;
@@ -30,9 +31,71 @@ const B2BOnboarding = ({ cnpj, onBack }: B2BOnboardingProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Simulação de envio
-    toast.success("Cadastro recebido! Entraremos em contato em até 24h para validação.");
-    setTimeout(() => navigate("/"), 2000);
+    try {
+      toast.loading("Criando sua conta...");
+
+      // 1. Criar conta de usuário
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: Math.random().toString(36).slice(-12) + "A1!", // Senha temporária
+        options: {
+          data: {
+            company_name: formData.razao_social,
+          },
+          emailRedirectTo: `${window.location.origin}/aguardando-aprovacao`,
+        }
+      });
+
+      if (authError) throw authError;
+      if (!authData.user) throw new Error("Falha ao criar usuário");
+
+      // 2. Criar perfil da transportadora B2B
+      const rotas = formData.rotas_principais.split(",").map(r => r.trim());
+      const veiculos = formData.tipos_veiculos.split(",").map(v => v.trim());
+
+      const { error: carrierError } = await supabase
+        .from("b2b_carriers")
+        .insert({
+          user_id: authData.user.id,
+          cnpj: cnpj.replace(/\D/g, ""),
+          razao_social: formData.razao_social,
+          nome_fantasia: formData.razao_social,
+          email: formData.email,
+          telefone: formData.telefone,
+          address_cep: "00000-000", // Placeholder - pode ser coletado em etapa futura
+          address_street: "A definir",
+          address_number: "S/N",
+          address_neighborhood: "A definir",
+          address_city: "A definir",
+          address_state: "SP",
+          fleet_size: formData.capacidade_mensal ? parseInt(formData.capacidade_mensal) : null,
+          coverage_regions: rotas,
+          vehicle_types: veiculos,
+          status: "pending"
+        });
+
+      if (carrierError) throw carrierError;
+
+      // 3. Atribuir role de user (depois será promovido a carrier se aprovado)
+      const { error: roleError } = await supabase
+        .from("user_roles")
+        .insert({
+          user_id: authData.user.id,
+          role: "user"
+        });
+
+      if (roleError) throw roleError;
+
+      toast.dismiss();
+      toast.success("Cadastro recebido! Entraremos em contato em até 24h para validação.");
+      
+      // Redirecionar para página de aguardando aprovação
+      setTimeout(() => navigate("/aguardando-aprovacao"), 2000);
+    } catch (error: any) {
+      toast.dismiss();
+      console.error("Erro no cadastro:", error);
+      toast.error(error.message || "Erro ao enviar cadastro. Tente novamente.");
+    }
   };
 
   return (
