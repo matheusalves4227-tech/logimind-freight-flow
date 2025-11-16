@@ -24,14 +24,16 @@ interface RankingDisplayProps {
 }
 
 export const RankingDisplay = ({ type, limit = 10 }: RankingDisplayProps) => {
+  console.log("RankingDisplay rendered with type:", type, "limit:", limit);
   const [loading, setLoading] = useState(true);
   const [rankings, setRankings] = useState<RankingItem[]>([]);
 
   useEffect(() => {
     fetchRankings();
-  }, [type]);
+  }, [type, limit]);
 
   const fetchRankings = async () => {
+    console.log("Fetching rankings for type:", type);
     try {
       if (type === "driver") {
         const { data: scores, error } = await supabase
