@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
@@ -8,12 +8,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Building2, ArrowLeft, Package, Truck, MapPin, Calendar, Shield, DollarSign } from "lucide-react";
+import { Building2, ArrowLeft, Package, Truck, MapPin, Calendar, Shield, DollarSign, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const B2BQuote = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
   
   const [formData, setFormData] = useState({
     // Dados da Empresa
@@ -58,19 +60,100 @@ const B2BQuote = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     
-    toast({
-      title: "Cotação B2B Enviada!",
-      description: "Nossa equipe comercial entrará em contato em até 24h com uma proposta personalizada.",
-    });
-    
-    // Aqui você implementaria o envio para o backend
-    console.log("Cotação B2B:", formData);
+    try {
+      // Verificar se o usuário está autenticado
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError || !user) {
+        // Se não estiver autenticado, salvar no localStorage e redirecionar para auth
+        localStorage.setItem('pendingB2BQuote', JSON.stringify(formData));
+        toast({
+          title: "Faça login para continuar",
+          description: "Você será redirecionado para fazer login e depois poderá enviar sua cotação.",
+          variant: "default",
+        });
+        navigate("/auth");
+        return;
+      }
+      
+      // Inserir a cotação no banco de dados
+      const { error: insertError } = await supabase
+        .from('b2b_quotes')
+        .insert({
+          user_id: user.id,
+          razao_social: formData.razao_social,
+          cnpj: formData.cnpj,
+          email: formData.email,
+          telefone: formData.telefone,
+          contato_responsavel: formData.contato_responsavel,
+          volume_mensal_estimado: parseInt(formData.volume_mensal_estimado),
+          frequencia_envios: formData.frequencia_envios,
+          rotas_origem: formData.rotas_origem,
+          rotas_destino: formData.rotas_destino,
+          tipo_carga: formData.tipo_carga,
+          peso_medio_kg: parseFloat(formData.peso_medio_kg),
+          valor_medio_carga: formData.valor_medio_carga ? parseFloat(formData.valor_medio_carga) : null,
+          necessita_seguro: formData.necessita_seguro,
+          carga_perigosa: formData.carga_perigosa,
+          carga_fragil: formData.carga_fragil,
+          sla_desejado: formData.sla_desejado,
+          prazo_entrega_dias: formData.prazo_entrega_dias ? parseInt(formData.prazo_entrega_dias) : null,
+          aceita_rota_retorno: formData.aceita_rota_retorno,
+          flexibilidade_horario: formData.flexibilidade_horario,
+          pedagios_cliente: formData.pedagios_cliente,
+          armazenagem_cliente: formData.armazenagem_cliente,
+          logistica_reversa: formData.logistica_reversa,
+          observacoes: formData.observacoes || null,
+          status: 'pending'
+        });
+      
+      if (insertError) {
+        throw insertError;
+      }
+      
+      toast({
+        title: "Cotação B2B Enviada com Sucesso!",
+        description: "Nossa equipe comercial entrará em contato em até 24h com uma proposta personalizada.",
+      });
+      
+      // Limpar o formulário e redirecionar
+      navigate("/dashboard");
+      
+    } catch (error) {
+      console.error("Erro ao enviar cotação B2B:", error);
+      toast({
+        title: "Erro ao enviar cotação",
+        description: "Ocorreu um erro ao processar sua solicitação. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
+
+  // Recuperar dados salvos no localStorage se o usuário voltar do login
+  useEffect(() => {
+    const pendingQuote = localStorage.getItem('pendingB2BQuote');
+    if (pendingQuote) {
+      try {
+        const savedData = JSON.parse(pendingQuote);
+        setFormData(savedData);
+        localStorage.removeItem('pendingB2BQuote');
+        toast({
+          title: "Dados recuperados",
+          description: "Continue preenchendo sua cotação B2B de onde parou.",
+        });
+      } catch (error) {
+        console.error("Erro ao recuperar dados salvos:", error);
+      }
+    }
+  }, [toast]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -522,8 +605,20 @@ const B2BQuote = () => {
 
           {/* Submit Button */}
           <div className="flex justify-center pt-4">
-            <Button type="submit" size="lg" className="min-w-[300px]">
-              Enviar Solicitação de Cotação B2B
+            <Button 
+              type="submit" 
+              size="lg" 
+              className="min-w-[300px]"
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Enviando...
+                </>
+              ) : (
+                "Enviar Solicitação de Cotação B2B"
+              )}
             </Button>
           </div>
         </form>

@@ -101,6 +101,129 @@ export type Database = {
         }
         Relationships: []
       }
+      b2b_quotes: {
+        Row: {
+          aceita_rota_retorno: boolean | null
+          armazenagem_cliente: boolean | null
+          carga_fragil: boolean | null
+          carga_perigosa: boolean | null
+          cnpj: string
+          contato_responsavel: string
+          contrato_aprovado_em: string | null
+          contrato_aprovado_por: string | null
+          contrato_data_fim: string | null
+          contrato_data_inicio: string | null
+          contrato_valor_mensal: number | null
+          created_at: string
+          email: string
+          flexibilidade_horario: boolean | null
+          frequencia_envios: string
+          id: string
+          logistica_reversa: boolean | null
+          necessita_seguro: boolean | null
+          observacoes: string | null
+          pedagios_cliente: boolean | null
+          peso_medio_kg: number
+          prazo_entrega_dias: number | null
+          proposta_desconto_percentual: number | null
+          proposta_enviada_em: string | null
+          proposta_enviada_por: string | null
+          proposta_observacoes: string | null
+          proposta_valor_mensal: number | null
+          razao_social: string
+          rotas_destino: string
+          rotas_origem: string
+          sla_desejado: string
+          status: string
+          telefone: string
+          tipo_carga: string
+          updated_at: string
+          user_id: string
+          valor_medio_carga: number | null
+          volume_mensal_estimado: number
+        }
+        Insert: {
+          aceita_rota_retorno?: boolean | null
+          armazenagem_cliente?: boolean | null
+          carga_fragil?: boolean | null
+          carga_perigosa?: boolean | null
+          cnpj: string
+          contato_responsavel: string
+          contrato_aprovado_em?: string | null
+          contrato_aprovado_por?: string | null
+          contrato_data_fim?: string | null
+          contrato_data_inicio?: string | null
+          contrato_valor_mensal?: number | null
+          created_at?: string
+          email: string
+          flexibilidade_horario?: boolean | null
+          frequencia_envios: string
+          id?: string
+          logistica_reversa?: boolean | null
+          necessita_seguro?: boolean | null
+          observacoes?: string | null
+          pedagios_cliente?: boolean | null
+          peso_medio_kg: number
+          prazo_entrega_dias?: number | null
+          proposta_desconto_percentual?: number | null
+          proposta_enviada_em?: string | null
+          proposta_enviada_por?: string | null
+          proposta_observacoes?: string | null
+          proposta_valor_mensal?: number | null
+          razao_social: string
+          rotas_destino: string
+          rotas_origem: string
+          sla_desejado: string
+          status?: string
+          telefone: string
+          tipo_carga: string
+          updated_at?: string
+          user_id: string
+          valor_medio_carga?: number | null
+          volume_mensal_estimado: number
+        }
+        Update: {
+          aceita_rota_retorno?: boolean | null
+          armazenagem_cliente?: boolean | null
+          carga_fragil?: boolean | null
+          carga_perigosa?: boolean | null
+          cnpj?: string
+          contato_responsavel?: string
+          contrato_aprovado_em?: string | null
+          contrato_aprovado_por?: string | null
+          contrato_data_fim?: string | null
+          contrato_data_inicio?: string | null
+          contrato_valor_mensal?: number | null
+          created_at?: string
+          email?: string
+          flexibilidade_horario?: boolean | null
+          frequencia_envios?: string
+          id?: string
+          logistica_reversa?: boolean | null
+          necessita_seguro?: boolean | null
+          observacoes?: string | null
+          pedagios_cliente?: boolean | null
+          peso_medio_kg?: number
+          prazo_entrega_dias?: number | null
+          proposta_desconto_percentual?: number | null
+          proposta_enviada_em?: string | null
+          proposta_enviada_por?: string | null
+          proposta_observacoes?: string | null
+          proposta_valor_mensal?: number | null
+          razao_social?: string
+          rotas_destino?: string
+          rotas_origem?: string
+          sla_desejado?: string
+          status?: string
+          telefone?: string
+          tipo_carga?: string
+          updated_at?: string
+          user_id?: string
+          valor_medio_carga?: number | null
+          volume_mensal_estimado?: number
+        }
+        Relationships: []
+      }
       carrier_price_table: {
         Row: {
           base_price: number
