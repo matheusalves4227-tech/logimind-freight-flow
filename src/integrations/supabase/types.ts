@@ -14,6 +14,93 @@ export type Database = {
   }
   public: {
     Tables: {
+      b2b_carriers: {
+        Row: {
+          address_cep: string
+          address_city: string
+          address_complement: string | null
+          address_neighborhood: string
+          address_number: string
+          address_state: string
+          address_street: string
+          approval_notes: string | null
+          approved_at: string | null
+          approved_by: string | null
+          avg_monthly_capacity: number | null
+          cnpj: string
+          coverage_regions: string[] | null
+          created_at: string
+          email: string
+          fleet_size: number | null
+          id: string
+          nome_fantasia: string | null
+          razao_social: string
+          rejected_reason: string | null
+          status: string
+          telefone: string
+          updated_at: string
+          user_id: string
+          vehicle_types: string[] | null
+          whatsapp: string | null
+        }
+        Insert: {
+          address_cep: string
+          address_city: string
+          address_complement?: string | null
+          address_neighborhood: string
+          address_number: string
+          address_state: string
+          address_street: string
+          approval_notes?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          avg_monthly_capacity?: number | null
+          cnpj: string
+          coverage_regions?: string[] | null
+          created_at?: string
+          email: string
+          fleet_size?: number | null
+          id?: string
+          nome_fantasia?: string | null
+          razao_social: string
+          rejected_reason?: string | null
+          status?: string
+          telefone: string
+          updated_at?: string
+          user_id: string
+          vehicle_types?: string[] | null
+          whatsapp?: string | null
+        }
+        Update: {
+          address_cep?: string
+          address_city?: string
+          address_complement?: string | null
+          address_neighborhood?: string
+          address_number?: string
+          address_state?: string
+          address_street?: string
+          approval_notes?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          avg_monthly_capacity?: number | null
+          cnpj?: string
+          coverage_regions?: string[] | null
+          created_at?: string
+          email?: string
+          fleet_size?: number | null
+          id?: string
+          nome_fantasia?: string | null
+          razao_social?: string
+          rejected_reason?: string | null
+          status?: string
+          telefone?: string
+          updated_at?: string
+          user_id?: string
+          vehicle_types?: string[] | null
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
       carrier_price_table: {
         Row: {
           base_price: number

@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import Navbar from "@/components/Navbar";
 import { Stepper } from "@/components/ui/stepper";
+import { supabase } from "@/integrations/supabase/client";
 
 // Schema de validação com Zod
 const step1Schema = z.object({
@@ -156,10 +157,99 @@ const AutonomousOnboarding = ({ cpf, onBack }: AutonomousOnboardingProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validateStep(3)) return;
-    
-    toast.success("Cadastro recebido! Você receberá um e-mail com próximos passos.");
-    setTimeout(() => navigate("/motorista/dashboard"), 2000);
+    if (!validateStep(3)) {
+      return;
+    }
+
+    try {
+      toast.loading("Criando sua conta...");
+
+      // 1. Criar conta de usuário
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: Math.random().toString(36).slice(-12) + "A1!", // Senha temporária
+        options: {
+          data: {
+            full_name: formData.nome_completo,
+          },
+          emailRedirectTo: `${window.location.origin}/aguardando-aprovacao`,
+        }
+      });
+
+      if (authError) throw authError;
+      if (!authData.user) throw new Error("Falha ao criar usuário");
+
+      // 2. Criar perfil do motorista
+      const { data: profileData, error: profileError } = await supabase
+        .from("driver_profiles")
+        .insert({
+          user_id: authData.user.id,
+          cpf: cpf.replace(/\D/g, ""),
+          full_name: formData.nome_completo,
+          email: formData.email,
+          phone: formData.telefone,
+          whatsapp: formData.whatsapp || formData.telefone,
+          address_cep: "00000-000", // Placeholder - pode ser coletado em etapa futura
+          address_street: "A definir",
+          address_number: "S/N",
+          address_neighborhood: "A definir",
+          address_city: "A definir",
+          address_state: "SP",
+          pix_key_type: formData.pix_key_type,
+          pix_key: formData.pix_key,
+          status: "pending"
+        })
+        .select()
+        .single();
+
+      if (profileError) throw profileError;
+
+      // 3. Criar dados da CNH
+      const { error: cnhError } = await supabase
+        .from("driver_cnh_data")
+        .insert({
+          driver_profile_id: profileData.id,
+          cnh_number: formData.cnh_numero,
+          cnh_category: formData.cnh_categoria as any,
+          issue_date: new Date().toISOString().split('T')[0], // Data de hoje como placeholder
+          expiry_date: new Date(Date.now() + 5 * 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 5 anos no futuro
+        });
+
+      if (cnhError) throw cnhError;
+
+      // 4. Criar veículo
+      const { error: vehicleError } = await supabase
+        .from("driver_vehicles")
+        .insert({
+          driver_profile_id: profileData.id,
+          license_plate: formData.veiculo_placa.toUpperCase(),
+          vehicle_type: formData.veiculo_tipo as any,
+          max_weight_kg: parseFloat(formData.veiculo_capacidade_kg),
+          is_active: true,
+        });
+
+      if (vehicleError) throw vehicleError;
+
+      // 5. Atribuir role de driver
+      const { error: roleError } = await supabase
+        .from("user_roles")
+        .insert({
+          user_id: authData.user.id,
+          role: "driver"
+        });
+
+      if (roleError) throw roleError;
+
+      toast.dismiss();
+      toast.success("Cadastro enviado com sucesso! Aguarde aprovação da equipe.");
+      
+      // Redirecionar para página de aguardando aprovação
+      setTimeout(() => navigate("/aguardando-aprovacao"), 2000);
+    } catch (error: any) {
+      toast.dismiss();
+      console.error("Erro no cadastro:", error);
+      toast.error(error.message || "Erro ao enviar cadastro. Tente novamente.");
+    }
   };
 
   return (
