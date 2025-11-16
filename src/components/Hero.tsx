@@ -38,8 +38,8 @@ const Hero = () => {
           </div>
         </div>
 
-        {/* 3 Cards de Direcionamento Triplo com Hierarquia */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto mb-12 md:mb-20 px-4 md:px-0 items-stretch">
+        {/* 4 Cards de Direcionamento com Hierarquia */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 max-w-7xl mx-auto mb-12 md:mb-20 px-4 md:px-0 items-stretch">
           {/* Card 1: Embarcador (DESTAQUE PRINCIPAL) */}
           <div className="group bg-card rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-xl border-2 border-primary hover:border-primary hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 md:hover:scale-[1.08] relative animate-fade-in hover:animate-pulse-subtle">
             {/* Badge de Destaque */}
@@ -180,6 +180,52 @@ const Hero = () => {
                 <div className="flex items-center gap-2">
                   <div className="w-1.5 h-1.5 rounded-full bg-accent" />
                   <span>App com rastreamento GPS</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Card 4: Empresas B2B - Contratos Recorrentes (NOVO) */}
+          <div className="group bg-card rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-xl border-2 border-accent hover:border-accent hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 md:hover:scale-[1.08] relative animate-fade-in bg-gradient-to-br from-accent/5 to-accent/10">
+            <div className="flex flex-col items-center text-center space-y-6">
+              <div className="relative">
+                <div className="absolute inset-0 bg-accent/20 rounded-2xl blur-xl" />
+                <div className="relative p-6 bg-gradient-to-br from-accent to-accent/80 rounded-2xl">
+                  <Building2 className="h-12 w-12 text-primary-foreground" />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <h3 className="text-2xl font-bold text-foreground">
+                  Contrato B2B Recorrente
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Tabela diferenciada, SLA garantido e prioridade para empresas com volume
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 text-sm font-medium text-accent">
+                <TrendingUp className="h-4 w-4" />
+                <span>Economia em Escala</span>
+              </div>
+
+              <Button 
+                variant="default"
+                size="lg" 
+                className="w-full bg-accent hover:bg-accent/90 text-primary-foreground shadow-md hover:shadow-lg transition-all"
+                onClick={() => navigate("/cotacao-b2b")}
+              >
+                Solicitar Cotação B2B
+              </Button>
+
+              <div className="pt-4 space-y-1 text-xs text-muted-foreground border-t border-border w-full">
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-accent" />
+                  <span>Descontos por volume</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-accent" />
+                  <span>Relatórios personalizados</span>
                 </div>
               </div>
             </div>

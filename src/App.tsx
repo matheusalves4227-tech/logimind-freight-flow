@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Quote from "./pages/Quote";
+import B2BQuote from "./pages/B2BQuote";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Tracking from "./pages/Tracking";
@@ -27,6 +28,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/quote" element={<Quote />} />
+          <Route path="/cotacao-b2b" element={<B2BQuote />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/tracking/:trackingCode" element={<Tracking />} />
           <Route path="/motorista/dashboard" element={<DriverDashboard />} />
