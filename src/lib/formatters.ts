@@ -108,3 +108,22 @@ export function removerFormatacaoMonetaria(valorFormatado: string): string {
   // Remove pontos de milhares e substitui vírgula por ponto
   return valorFormatado.replace(/\./g, '').replace(',', '.');
 }
+
+/**
+ * Formata data no padrão brasileiro (dd/mm/yyyy)
+ * @param date - String ISO de data ou objeto Date
+ * @returns String formatada (ex: 15/03/2024)
+ */
+export function formatDate(date: string | Date): string {
+  if (!date) return '-';
+  
+  const d = typeof date === 'string' ? new Date(date) : date;
+  
+  if (isNaN(d.getTime())) return '-';
+  
+  return d.toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
+  });
+}
