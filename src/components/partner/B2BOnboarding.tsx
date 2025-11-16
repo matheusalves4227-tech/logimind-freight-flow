@@ -9,6 +9,7 @@ import { ArrowLeft, Building2, Upload, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import { supabase } from "@/integrations/supabase/client";
+import { validateCNPJ } from "@/lib/validators";
 
 interface B2BOnboardingProps {
   cnpj: string;
@@ -30,6 +31,12 @@ const B2BOnboarding = ({ cnpj, onBack }: B2BOnboardingProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validar CNPJ
+    if (!validateCNPJ(cnpj)) {
+      toast.error("CNPJ inválido");
+      return;
+    }
     
     try {
       toast.loading("Criando sua conta...");
