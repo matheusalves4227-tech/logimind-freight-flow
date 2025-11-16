@@ -561,6 +561,7 @@ export type Database = {
           cpf: string
           created_at: string
           email: string
+          foto_perfil_url: string | null
           full_name: string
           id: string
           phone: string
@@ -591,6 +592,7 @@ export type Database = {
           cpf: string
           created_at?: string
           email: string
+          foto_perfil_url?: string | null
           full_name: string
           id?: string
           phone: string
@@ -621,6 +623,7 @@ export type Database = {
           cpf?: string
           created_at?: string
           email?: string
+          foto_perfil_url?: string | null
           full_name?: string
           id?: string
           phone?: string
@@ -790,6 +793,7 @@ export type Database = {
           base_price: number
           carrier_id: string | null
           carrier_name: string
+          codigo_coleta: string | null
           comissao_logimarket_perc: number | null
           comissao_logimarket_val: number | null
           commission_applied: number
@@ -824,6 +828,10 @@ export type Database = {
           tracking_code: string
           updated_at: string
           user_id: string
+          validado_em: string | null
+          validado_para_coleta: boolean | null
+          validado_por_email: string | null
+          validado_por_nome: string | null
           valor_repasse_liquido: number | null
           vehicle_type: string | null
           weight_kg: number
@@ -834,6 +842,7 @@ export type Database = {
           base_price: number
           carrier_id?: string | null
           carrier_name: string
+          codigo_coleta?: string | null
           comissao_logimarket_perc?: number | null
           comissao_logimarket_val?: number | null
           commission_applied: number
@@ -868,6 +877,10 @@ export type Database = {
           tracking_code: string
           updated_at?: string
           user_id: string
+          validado_em?: string | null
+          validado_para_coleta?: boolean | null
+          validado_por_email?: string | null
+          validado_por_nome?: string | null
           valor_repasse_liquido?: number | null
           vehicle_type?: string | null
           weight_kg: number
@@ -878,6 +891,7 @@ export type Database = {
           base_price?: number
           carrier_id?: string | null
           carrier_name?: string
+          codigo_coleta?: string | null
           comissao_logimarket_perc?: number | null
           comissao_logimarket_val?: number | null
           commission_applied?: number
@@ -912,6 +926,10 @@ export type Database = {
           tracking_code?: string
           updated_at?: string
           user_id?: string
+          validado_em?: string | null
+          validado_para_coleta?: boolean | null
+          validado_por_email?: string | null
+          validado_por_nome?: string | null
           valor_repasse_liquido?: number | null
           vehicle_type?: string | null
           weight_kg?: number
@@ -1265,6 +1283,7 @@ export type Database = {
       }
     }
     Functions: {
+      generate_codigo_coleta: { Args: never; Returns: string }
       get_logimarket_kpis_current: {
         Args: never
         Returns: {

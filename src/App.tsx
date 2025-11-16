@@ -10,6 +10,8 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Tracking from "./pages/Tracking";
 import DriverDashboard from "./pages/DriverDashboard";
+import DriverPickupCode from "./pages/DriverPickupCode";
+import ShipperValidate from "./pages/ShipperValidate";
 import AdminDrivers from "./pages/AdminDrivers";
 import AdminOrders from "./pages/AdminOrders";
 import AdminB2BCalculator from "./pages/AdminB2BCalculator";
@@ -33,6 +35,8 @@ const App = () => (
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/tracking/:trackingCode" element={<Tracking />} />
           <Route path="/motorista/dashboard" element={<DriverDashboard />} />
+          <Route path="/motorista/coleta/:orderId" element={<DriverPickupCode />} />
+          <Route path="/validar-motorista/:orderId" element={<ShipperValidate />} />
           <Route path="/admin/motoristas" element={<AdminDrivers />} />
           <Route path="/admin/pedidos" element={<AdminOrders />} />
           <Route path="/admin/calculadora-b2b" element={<AdminB2BCalculator />} />
