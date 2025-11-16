@@ -9,7 +9,8 @@ import { DriverActive } from "@/components/driver/DriverActive";
 import { DriverBankAccount } from "@/components/driver/DriverBankAccount";
 import { DriverFinancialKPIs } from "@/components/driver/DriverFinancialKPIs";
 import { DriverPaymentHistory } from "@/components/driver/DriverPaymentHistory";
-import { Home, Map, Truck, Wallet } from "lucide-react";
+import { DriverProfile } from "@/components/driver/DriverProfile";
+import { Home, Map, Truck, Wallet, UserCircle } from "lucide-react";
 
 const DriverDashboard = () => {
   const navigate = useNavigate();
@@ -79,7 +80,7 @@ const DriverDashboard = () => {
         </div>
 
         <Tabs defaultValue="status" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-8">
+          <TabsList className="grid w-full grid-cols-5 mb-8">
             <TabsTrigger value="status" className="gap-2">
               <Home className="h-4 w-4" />
               <span className="hidden sm:inline">Status</span>
@@ -95,6 +96,10 @@ const DriverDashboard = () => {
             <TabsTrigger value="financial" className="gap-2">
               <Wallet className="h-4 w-4" />
               <span className="hidden sm:inline">Financeiro</span>
+            </TabsTrigger>
+            <TabsTrigger value="profile" className="gap-2">
+              <UserCircle className="h-4 w-4" />
+              <span className="hidden sm:inline">Perfil</span>
             </TabsTrigger>
           </TabsList>
 
@@ -119,6 +124,10 @@ const DriverDashboard = () => {
             
             {/* Histórico de Repasses */}
             <DriverPaymentHistory />
+          </TabsContent>
+
+          <TabsContent value="profile">
+            <DriverProfile driverProfile={driverProfile} />
           </TabsContent>
         </Tabs>
       </main>
