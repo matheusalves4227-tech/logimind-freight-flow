@@ -892,7 +892,7 @@ const Quote = () => {
                   <div className="flex-1">
                     <p className="font-semibold text-foreground mb-1">⏱️ Preço Dinâmico - Oferta Limitada</p>
                     <p className="text-sm text-muted-foreground">
-                      Este preço de <strong className="text-primary">Comissão Reduzida</strong> é válido por <strong className="text-primary">2 horas</strong> devido à demanda dinâmica da rota. 
+                      Este <strong className="text-primary">preço especial</strong> é válido por <strong className="text-primary">2 horas</strong> devido à demanda dinâmica da rota. 
                       Garanta agora a melhor oferta do mercado!
                     </p>
                   </div>
@@ -1000,46 +1000,6 @@ const Quote = () => {
                             <p className="text-base font-bold text-accent leading-tight">
                               {quote.delivery_days} {quote.delivery_days === 1 ? 'dia útil' : 'dias úteis'}
                             </p>
-                          </div>
-                        </div>
-
-                        {/* Detalhes LogiMind - Compacto e Discreto */}
-                        <div className="bg-muted/30 rounded-lg p-3 mb-3 border border-border">
-                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-2 flex items-center gap-1.5">
-                            <Info className="h-3 w-3" />
-                            Composição do Preço
-                          </p>
-                          
-                          <div className="space-y-1.5 text-xs">
-                            <div className="flex justify-between items-center">
-                              <span className="text-muted-foreground">Preço Base:</span>
-                              <span className="font-semibold">{formatarMoeda(quote.base_price)}</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                              <span className="text-muted-foreground">Comissão LogiMarket:</span>
-                              <div className="flex items-center gap-1.5">
-                                <span className="font-semibold text-primary">
-                                  {formatarPorcentagemSimples(quote.commission_applied)}
-                                </span>
-                                {(quote.adjustment_reason === 'HIGH_DEMAND_ROUTE' || quote.adjustment_reason === 'COMPETITION') && (
-                                  <TooltipProvider>
-                                    <Tooltip>
-                                      <TooltipTrigger>
-                                        <Info className="h-3 w-3 text-primary cursor-help" />
-                                      </TooltipTrigger>
-                                      <TooltipContent className="max-w-[220px] text-xs">
-                                        {quote.adjustment_reason === 'HIGH_DEMAND_ROUTE' && (
-                                          <p>✨ Rota de alta demanda - comissão reduzida para garantir o melhor preço do mercado</p>
-                                        )}
-                                        {quote.adjustment_reason === 'COMPETITION' && (
-                                          <p>🎯 Preço ajustado dinamicamente para competitividade máxima</p>
-                                        )}
-                                      </TooltipContent>
-                                    </Tooltip>
-                                  </TooltipProvider>
-                                )}
-                              </div>
-                            </div>
                           </div>
                         </div>
 

@@ -133,7 +133,7 @@ export const DriverPaymentHistory = () => {
       <CardHeader>
         <CardTitle>Histórico de Repasses</CardTitle>
         <CardDescription>
-          Acompanhe todos os seus pagamentos e comissões aplicadas
+          Acompanhe todos os seus pagamentos recebidos
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -142,8 +142,8 @@ export const DriverPaymentHistory = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>ID do Frete</TableHead>
-                <TableHead>Valor Repassado</TableHead>
-                <TableHead>Comissão LogiMarket</TableHead>
+                <TableHead>Valor Recebido</TableHead>
+                <TableHead>Taxa de Serviço</TableHead>
                 <TableHead>Data do Repasse</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Ações</TableHead>
@@ -187,7 +187,7 @@ export const DriverPaymentHistory = () => {
                         </TooltipTrigger>
                         <TooltipContent>
                           <p className="text-xs max-w-xs">
-                            Comissão calculada pelo LogiMind baseada em otimização de rota e competitividade
+                            Taxa de serviço da plataforma calculada pelo LogiMind com base em otimização de rota, demanda e competitividade. Inclui geração de demanda, rastreio, suporte e tecnologia.
                           </p>
                         </TooltipContent>
                       </Tooltip>
