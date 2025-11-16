@@ -10,6 +10,7 @@ import { FileText, CheckCircle, XCircle, Eye, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { DocumentViewer } from '@/components/admin/DocumentViewer';
 import { formatDate } from '@/lib/formatters';
+import { useRealtimeDocuments } from '@/hooks/useRealtimeDocuments';
 
 interface DriverDocument {
   id: string;
@@ -32,6 +33,14 @@ const AdminDocuments = () => {
   const [selectedDocument, setSelectedDocument] = useState<DriverDocument | null>(null);
   const [viewerOpen, setViewerOpen] = useState(false);
   const [processingId, setProcessingId] = useState<string | null>(null);
+
+  // Hook para escutar mudanças em tempo real
+  useRealtimeDocuments({
+    onNewDocument: () => {
+      console.log('Recarregando documentos devido a mudança em tempo real...');
+      fetchDocuments();
+    },
+  });
 
   useEffect(() => {
     checkAdminAccess();
