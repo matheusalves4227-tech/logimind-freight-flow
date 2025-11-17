@@ -29,6 +29,7 @@ export default function Profile() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [confirmText, setConfirmText] = useState("");
+  const [deleteReason, setDeleteReason] = useState("");
   const [userId, setUserId] = useState<string>("");
   const [profile, setProfile] = useState({
     full_name: "",
@@ -157,7 +158,11 @@ export default function Profile() {
       setDeleting(true);
       
       const { error } = await supabase.functions.invoke('delete-user-account', {
-        body: { userId }
+        body: { 
+          userId,
+          reason: deleteReason || "Não fornecido",
+          userAgent: navigator.userAgent
+        }
       });
 
       if (error) throw error;
@@ -174,6 +179,7 @@ export default function Profile() {
       setDeleting(false);
       setShowConfirmDialog(false);
       setConfirmText("");
+      setDeleteReason("");
     }
   };
 
@@ -374,16 +380,37 @@ export default function Profile() {
               </p>
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <div className="py-4">
-            <Input
-              value={confirmText}
-              onChange={(e) => setConfirmText(e.target.value)}
-              placeholder="Digite aqui..."
-              className="font-mono"
-            />
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="delete-reason" className="text-sm">
+                Motivo da exclusão (opcional - ajuda-nos a melhorar)
+              </Label>
+              <Input
+                id="delete-reason"
+                value={deleteReason}
+                onChange={(e) => setDeleteReason(e.target.value)}
+                placeholder="Ex: Encontrei outra solução, não preciso mais..."
+                className="text-sm"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirm-text" className="text-sm">
+                Digite para confirmar <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="confirm-text"
+                value={confirmText}
+                onChange={(e) => setConfirmText(e.target.value)}
+                placeholder="EXCLUIR MINHA CONTA"
+                className="font-mono"
+              />
+            </div>
           </div>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setConfirmText("")}>
+            <AlertDialogCancel onClick={() => {
+              setConfirmText("");
+              setDeleteReason("");
+            }}>
               Cancelar
             </AlertDialogCancel>
             <Button
