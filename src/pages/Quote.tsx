@@ -41,6 +41,7 @@ const Quote = () => {
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const [formData, setFormData] = useState({
     service_type: "ltl", // "ltl" (Padrão/Econômico) ou "ftl" (Dedicado/Expresso)
     vehicle_type: "", // Para FTL: "moto", "carro", "picape", "caminhao"
@@ -78,6 +79,23 @@ const Quote = () => {
     { label: "Carga", description: "Peso e dimensões" },
     { label: "Revisar", description: "Confirmar dados" },
   ];
+
+  // Verificar autenticação ao carregar
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast.error("Você precisa fazer login para solicitar cotações");
+        navigate("/auth?redirect=/quote&reason=quote");
+        return;
+      }
+      
+      setCheckingAuth(false);
+    };
+
+    checkAuth();
+  }, [navigate]);
 
   // Preencher CEPs da URL e buscar dados
   useEffect(() => {
@@ -415,15 +433,23 @@ const Quote = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       
-      <div className="container mx-auto px-4 pt-20 md:pt-24 pb-8 md:pb-12">
-        <Button
-          variant="ghost"
-          onClick={() => navigate("/")}
-          className="mb-4 md:mb-6"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Voltar
-        </Button>
+      {checkingAuth ? (
+        <div className="container mx-auto px-4 pt-32 pb-12">
+          <div className="max-w-md mx-auto text-center space-y-4">
+            <Loader2 className="h-12 w-12 animate-spin mx-auto text-primary" />
+            <p className="text-muted-foreground">Verificando autenticação...</p>
+          </div>
+        </div>
+      ) : (
+        <div className="container mx-auto px-4 pt-20 md:pt-24 pb-8 md:pb-12">
+          <Button
+            variant="ghost"
+            onClick={() => navigate("/")}
+            className="mb-4 md:mb-6"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Voltar
+          </Button>
 
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-6 md:mb-8">
@@ -1142,6 +1168,7 @@ const Quote = () => {
           )}
         </div>
       </div>
+      )}
     </div>
   );
 };
