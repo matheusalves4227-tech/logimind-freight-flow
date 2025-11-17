@@ -148,6 +148,10 @@ Deno.serve(async (req) => {
       driver_phone
     } = requestData;
 
+    // Normalizar CEPs (remover hífen para compatibilidade com constraint do banco)
+    const normalizedOriginCep = origin_cep.replace(/[^0-9]/g, '');
+    const normalizedDestinationCep = destination_cep.replace(/[^0-9]/g, '');
+
     // Gerar tracking code único
     const trackingCode = generateTrackingCode();
     console.log('[Create Order] Generated tracking code:', trackingCode);
@@ -166,9 +170,9 @@ Deno.serve(async (req) => {
         carrier_id,
         service_type,
         vehicle_type,
-        origin_cep,
+        origin_cep: normalizedOriginCep,
         origin_address: origin_address || `CEP ${origin_cep}`,
-        destination_cep,
+        destination_cep: normalizedDestinationCep,
         destination_address: destination_address || `CEP ${destination_cep}`,
         weight_kg,
         height_cm,
