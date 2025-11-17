@@ -123,6 +123,9 @@ const Navbar = () => {
             <Link to="/ranking" className="text-foreground hover:text-primary transition-colors text-sm whitespace-nowrap">
               Ranking
             </Link>
+            <Link to="/faq" className="text-foreground hover:text-primary transition-colors text-sm whitespace-nowrap">
+              FAQ
+            </Link>
             <Link to="/parceiro/cadastro" className="text-foreground hover:text-primary transition-colors text-sm whitespace-nowrap">
               Seja um Parceiro
             </Link>
@@ -256,6 +259,15 @@ const Navbar = () => {
                   >
                     <Users className="h-5 w-5" />
                     Ranking
+                  </Button>
+
+                  <Button
+                    variant="ghost"
+                    className="justify-start gap-3 text-base"
+                    onClick={() => handleNavigation("/faq")}
+                  >
+                    <FileText className="h-5 w-5" />
+                    FAQ
                   </Button>
                   
                   {user ? (
