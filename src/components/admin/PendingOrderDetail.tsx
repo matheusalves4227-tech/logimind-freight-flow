@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuditLog } from '@/hooks/useAuditLog';
 import {
   Dialog,
   DialogContent,
@@ -14,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import {
   Package,
@@ -27,6 +29,7 @@ import {
   AlertCircle,
   Upload,
   MapIcon,
+  UserCheck,
 } from 'lucide-react';
 
 interface PendingOrderDetailProps {
@@ -58,6 +61,7 @@ interface PendingOrderDetailProps {
 
 export const PendingOrderDetail = ({ order, open, onOpenChange, onUpdate }: PendingOrderDetailProps) => {
   const { toast } = useToast();
+  const { logAction } = useAuditLog();
   const [approvalNotes, setApprovalNotes] = useState('');
   const [rejectionReason, setRejectionReason] = useState('');
   const [driverInstructions, setDriverInstructions] = useState('');
@@ -65,11 +69,23 @@ export const PendingOrderDetail = ({ order, open, onOpenChange, onUpdate }: Pend
   const [processing, setProcessing] = useState(false);
   const [userDetails, setUserDetails] = useState<any>(null);
   const [carrierDetails, setCarrierDetails] = useState<any>(null);
+  const [availableDrivers, setAvailableDrivers] = useState<any[]>([]);
+  const [selectedDriverId, setSelectedDriverId] = useState<string>('');
 
   // Buscar detalhes do usuário e transportadora quando o modal abrir
   useEffect(() => {
     if (order && open) {
       const fetchDetails = async () => {
+        // Buscar motoristas aprovados disponíveis
+        const { data: drivers } = await supabase
+          .from('driver_profiles')
+          .select('id, full_name, phone, cpf')
+          .eq('status', 'approved');
+        
+        if (drivers) {
+          setAvailableDrivers(drivers);
+        }
+
         // Buscar dados da transportadora escolhida
         if (order.carrier_name) {
           const { data: carrier, error } = await supabase
@@ -189,6 +205,63 @@ export const PendingOrderDetail = ({ order, open, onOpenChange, onUpdate }: Pend
       toast({
         title: 'Erro',
         description: 'Erro ao rejeitar pedido',
+        variant: 'destructive',
+      });
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const handleAssignDriver = async () => {
+    if (!selectedDriverId) {
+      toast({
+        title: 'Motorista não selecionado',
+        description: 'Por favor, selecione um motorista',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setProcessing(true);
+    try {
+      const selectedDriver = availableDrivers.find(d => d.id === selectedDriverId);
+      
+      const { error } = await supabase
+        .from('orders')
+        .update({
+          driver_id: selectedDriverId,
+          driver_name: selectedDriver?.full_name,
+          driver_phone: selectedDriver?.phone,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', order.id);
+
+      if (error) throw error;
+
+      // Registrar auditoria
+      await logAction({
+        action: 'freight_assignment',
+        metadata: {
+          order_id: order.id,
+          tracking_code: order.tracking_code,
+          driver_id: selectedDriverId,
+          driver_name: selectedDriver?.full_name,
+          driver_cpf: selectedDriver?.cpf,
+          assigned_at: new Date().toISOString(),
+        },
+      });
+
+      toast({
+        title: 'Motorista Atribuído',
+        description: `Frete atribuído para ${selectedDriver?.full_name}`,
+      });
+
+      onUpdate();
+    } catch (error) {
+      console.error('Erro ao atribuir motorista:', error);
+      toast({
+        title: 'Erro',
+        description: 'Erro ao atribuir motorista',
         variant: 'destructive',
       });
     } finally {
@@ -519,7 +592,59 @@ export const PendingOrderDetail = ({ order, open, onOpenChange, onUpdate }: Pend
             </CardContent>
           </Card>
 
-          {/* 6. DOCUMENTAÇÃO E PREPARAÇÃO */}
+          {/* 6. ATRIBUIÇÃO DE MOTORISTA */}
+          <Card className="border-primary/20 bg-primary/5">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <UserCheck className="h-5 w-5 text-primary" />
+                Atribuir Motorista ao Frete
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="driver-select">Selecionar Motorista Aprovado</Label>
+                <Select value={selectedDriverId} onValueChange={setSelectedDriverId}>
+                  <SelectTrigger id="driver-select">
+                    <SelectValue placeholder="Escolha um motorista..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableDrivers.length > 0 ? (
+                      availableDrivers.map((driver) => (
+                        <SelectItem key={driver.id} value={driver.id}>
+                          {driver.full_name} - {driver.cpf} - {driver.phone}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem value="none" disabled>
+                        Nenhum motorista aprovado disponível
+                      </SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <Button
+                onClick={handleAssignDriver}
+                disabled={!selectedDriverId || processing}
+                className="w-full"
+              >
+                {processing ? (
+                  <>Atribuindo...</>
+                ) : (
+                  <>
+                    <UserCheck className="h-4 w-4 mr-2" />
+                    Atribuir Frete ao Motorista
+                  </>
+                )}
+              </Button>
+              
+              <p className="text-xs text-muted-foreground">
+                ⚠️ Esta ação registrará o motorista responsável pelo frete e será registrada em auditoria
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* 7. DOCUMENTAÇÃO E PREPARAÇÃO */}
           <Card>
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">

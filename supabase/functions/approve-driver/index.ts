@@ -191,7 +191,38 @@ Deno.serve(async (req) => {
       }
     }
 
-    // 7. TODO: Enviar notificação ao motorista (email ou push notification)
+    // 7. Registrar log de auditoria
+    const ipAddress = req.headers.get("CF-Connecting-IP") || 
+                      req.headers.get("X-Forwarded-For") || 
+                      req.headers.get("X-Real-IP") || 
+                      "unknown";
+    
+    const userAgent = req.headers.get("User-Agent") || "unknown";
+
+    const auditAction = action === 'approve' ? 'driver_approval' : 'driver_rejection';
+    const auditMetadata = {
+      driver_id: driver_profile_id,
+      driver_name: driverProfile.full_name,
+      driver_cpf: driverProfile.cpf,
+      driver_email: driverProfile.email,
+      action_taken: action,
+      approval_notes: notes || null,
+      rejection_reason: rejection_reason || null,
+      timestamp: new Date().toISOString(),
+    };
+
+    await supabaseClient
+      .from('audit_logs')
+      .insert({
+        user_id: user.id,
+        action: auditAction,
+        ip_address: ipAddress,
+        user_agent: userAgent,
+        reason: action === 'reject' ? rejection_reason : notes,
+        metadata: auditMetadata,
+      });
+
+    // 8. TODO: Enviar notificação ao motorista (email ou push notification)
     // Implementar envio de e-mail informando aprovação ou rejeição
 
     console.log(`[APPROVE-DRIVER] ✅ Processo concluído com sucesso`);
