@@ -34,6 +34,27 @@ const Navbar = () => {
     navigate(path);
   };
 
+  const handleScrollToSection = (sectionId: string) => {
+    // Se não estiver na home, navegar primeiro
+    if (window.location.pathname !== '/') {
+      navigate('/');
+      // Aguardar navegação e então rolar
+      setTimeout(() => {
+        const element = document.getElementById(sectionId);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+    } else {
+      // Já está na home, apenas rolar
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+    setMobileMenuOpen(false);
+  };
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -48,12 +69,18 @@ const Navbar = () => {
           </Link>
 
           <div className="hidden md:flex items-center gap-8">
-            <Link to="/#features" className="text-foreground hover:text-primary transition-colors">
+            <button 
+              onClick={() => handleScrollToSection('features')} 
+              className="text-foreground hover:text-primary transition-colors"
+            >
               Funcionalidades
-            </Link>
-            <Link to="/#how-it-works" className="text-foreground hover:text-primary transition-colors">
+            </button>
+            <button 
+              onClick={() => handleScrollToSection('how-it-works')} 
+              className="text-foreground hover:text-primary transition-colors"
+            >
               Como Funciona
-            </Link>
+            </button>
             <Link to="/ranking" className="text-foreground hover:text-primary transition-colors">
               Ranking
             </Link>
@@ -118,6 +145,24 @@ const Navbar = () => {
                   >
                     <Home className="h-5 w-5" />
                     Início
+                  </Button>
+
+                  <Button
+                    variant="ghost"
+                    className="justify-start gap-3 text-base"
+                    onClick={() => handleScrollToSection('features')}
+                  >
+                    <Package className="h-5 w-5" />
+                    Funcionalidades
+                  </Button>
+
+                  <Button
+                    variant="ghost"
+                    className="justify-start gap-3 text-base"
+                    onClick={() => handleScrollToSection('how-it-works')}
+                  >
+                    <FileText className="h-5 w-5" />
+                    Como Funciona
                   </Button>
 
                   <Button
