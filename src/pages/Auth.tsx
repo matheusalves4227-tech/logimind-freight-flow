@@ -1,15 +1,17 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Package, Loader2 } from "lucide-react";
+import { Package, Loader2, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const Auth = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [isResetPassword, setIsResetPassword] = useState(false);
@@ -18,23 +20,26 @@ const Auth = () => {
   const [name, setName] = useState("");
   const [loginAttempts, setLoginAttempts] = useState(0);
 
+  const redirectUrl = searchParams.get("redirect") || "/";
+  const reason = searchParams.get("reason");
+
   useEffect(() => {
     // Check if user is already logged in
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        navigate("/");
+        navigate(redirectUrl);
       }
     });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session) {
-        navigate("/");
+        navigate(redirectUrl);
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, redirectUrl]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -134,6 +139,16 @@ const Auth = () => {
               : "Acesse sua conta para continuar"}
           </p>
         </div>
+
+        {reason === "quote" && !isResetPassword && (
+          <Alert className="mb-6 border-accent bg-accent/5">
+            <AlertCircle className="h-4 w-4 text-accent" />
+            <AlertDescription className="text-sm">
+              <strong>Cotação Protegida:</strong> Para solicitar cotações de frete, você precisa estar autenticado. 
+              {isSignUp ? " Crie sua conta gratuitamente para continuar." : " Faça login para continuar."}
+            </AlertDescription>
+          </Alert>
+        )}
 
         <form onSubmit={isResetPassword ? handleResetPassword : isSignUp ? handleSignUp : handleSignIn} className="space-y-4">
           {isSignUp && !isResetPassword && (
