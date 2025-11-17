@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { checkRateLimit, getRateLimitHeaders, getClientIdentifier } from '../_shared/rateLimit.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -542,6 +543,12 @@ serve(async (req) => {
       }
     );
 
+    // Service role client for rate limiting (bypasses RLS)
+    const supabaseServiceClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
     // Get user from token
     const {
       data: { user },
@@ -551,6 +558,39 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Check rate limit: 10 requests per minute for quote generation
+    const identifier = getClientIdentifier(req, user.id);
+    const rateLimitResult = await checkRateLimit(
+      supabaseServiceClient,
+      identifier,
+      {
+        endpoint: 'generate-quote',
+        limit: 10,
+        windowMinutes: 1
+      }
+    );
+
+    const rateLimitHeaders = getRateLimitHeaders(rateLimitResult);
+
+    if (!rateLimitResult.allowed) {
+      console.warn('[Generate Quote] Rate limit exceeded for:', identifier);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Rate limit exceeded. Please try again later.',
+          retryAfter: Math.ceil((rateLimitResult.reset.getTime() - Date.now()) / 1000)
+        }),
+        { 
+          status: 429,
+          headers: { 
+            ...corsHeaders, 
+            ...rateLimitHeaders,
+            'Content-Type': 'application/json',
+            'Retry-After': Math.ceil((rateLimitResult.reset.getTime() - Date.now()) / 1000).toString()
+          } 
+        }
       );
     }
 
@@ -724,7 +764,7 @@ serve(async (req) => {
         logiguard_available: logiGuardPro?.available ?? false,
       }),
       {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders, ...rateLimitHeaders, 'Content-Type': 'application/json' },
         status: 200,
       }
     );
