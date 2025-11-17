@@ -7,14 +7,28 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { UserAvatarUpload } from "@/components/profile/UserAvatarUpload";
-import { Loader2, Save, User } from "lucide-react";
+import { Loader2, Save, User, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { formatCNPJ } from "@/lib/validators";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function Profile() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [confirmText, setConfirmText] = useState("");
   const [userId, setUserId] = useState<string>("");
   const [profile, setProfile] = useState({
     full_name: "",
@@ -131,6 +145,36 @@ export default function Profile() {
 
   const handleAvatarUploadComplete = (newUrl: string) => {
     setProfile(prev => ({ ...prev, avatar_url: newUrl }));
+  };
+
+  const handleDeleteAccount = async () => {
+    if (confirmText !== "EXCLUIR MINHA CONTA") {
+      toast.error("Digite exatamente 'EXCLUIR MINHA CONTA' para confirmar.");
+      return;
+    }
+
+    try {
+      setDeleting(true);
+      
+      const { error } = await supabase.functions.invoke('delete-user-account', {
+        body: { userId }
+      });
+
+      if (error) throw error;
+
+      toast.success("Conta excluída com sucesso. Você será redirecionado.");
+      
+      // Fazer logout e redirecionar
+      await supabase.auth.signOut();
+      setTimeout(() => navigate("/"), 1500);
+    } catch (error: any) {
+      console.error("Erro ao excluir conta:", error);
+      toast.error("Erro ao excluir conta. Por favor, tente novamente.");
+    } finally {
+      setDeleting(false);
+      setShowConfirmDialog(false);
+      setConfirmText("");
+    }
   };
 
   if (loading) {
@@ -251,7 +295,117 @@ export default function Profile() {
             </div>
           </CardContent>
         </Card>
+
+        <Card className="border-destructive">
+          <CardHeader>
+            <CardTitle className="text-destructive">Zona de Perigo</CardTitle>
+            <CardDescription>
+              Ações irreversíveis que afetam permanentemente sua conta
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Ao excluir sua conta, todos os seus dados serão permanentemente removidos, incluindo:
+              </p>
+              <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1 ml-2">
+                <li>Perfil e informações pessoais</li>
+                <li>Histórico de cotações e pedidos</li>
+                <li>Documentos e uploads</li>
+                <li>Configurações e preferências</li>
+              </ul>
+              <p className="text-sm font-semibold text-destructive">
+                Esta ação não pode ser desfeita.
+              </p>
+              <Button
+                variant="destructive"
+                onClick={() => setShowDeleteDialog(true)}
+                className="w-full sm:w-auto"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Excluir Minha Conta
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Primeiro Dialog - Confirmação Inicial */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Tem certeza absoluta?</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p>
+                Esta ação não pode ser desfeita. Isso irá permanentemente excluir sua conta
+                e remover todos os seus dados de nossos servidores.
+              </p>
+              <p className="font-semibold text-foreground">
+                Você perderá acesso a todos os seus pedidos, cotações e histórico.
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setShowDeleteDialog(false);
+                setShowConfirmDialog(true);
+              }}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              Continuar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Segundo Dialog - Confirmação com Digitação */}
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmação Final</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-4">
+              <p>
+                Para confirmar a exclusão permanente da sua conta, digite exatamente:
+              </p>
+              <p className="font-mono font-bold text-foreground bg-muted p-2 rounded text-center">
+                EXCLUIR MINHA CONTA
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <Input
+              value={confirmText}
+              onChange={(e) => setConfirmText(e.target.value)}
+              placeholder="Digite aqui..."
+              className="font-mono"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setConfirmText("")}>
+              Cancelar
+            </AlertDialogCancel>
+            <Button
+              onClick={handleDeleteAccount}
+              disabled={deleting || confirmText !== "EXCLUIR MINHA CONTA"}
+              variant="destructive"
+            >
+              {deleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Excluindo...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Excluir Conta Permanentemente
+                </>
+              )}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
