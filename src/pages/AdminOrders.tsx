@@ -140,13 +140,23 @@ const AdminOrders = () => {
               <Package className="h-8 w-8 text-primary" />
               <h1 className="text-3xl font-bold text-foreground">Gestão de Pedidos e Cotações</h1>
             </div>
-            <Button 
-              onClick={() => navigate('/admin/calculadora-b2b')}
-              className="gap-2"
-            >
-              <Calculator className="h-4 w-4" />
-              Calculadora B2B
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline"
+                onClick={() => navigate('/admin/auditoria')}
+                className="gap-2"
+              >
+                <Package className="h-4 w-4" />
+                Logs de Auditoria
+              </Button>
+              <Button 
+                onClick={() => navigate('/admin/calculadora-b2b')}
+                className="gap-2"
+              >
+                <Calculator className="h-4 w-4" />
+                Calculadora B2B
+              </Button>
+            </div>
           </div>
           <p className="text-muted-foreground">
             Painel de operação manual - Intermediação entre clientes e transportadoras parceiras
