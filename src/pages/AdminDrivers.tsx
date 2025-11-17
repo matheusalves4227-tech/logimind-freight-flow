@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuditLog } from '@/hooks/useAuditLog';
@@ -7,12 +7,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Shield, Users, FileText, AlertCircle, CheckCircle, Wallet, Truck, TrendingUp, Clock, Package } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Shield, Users, FileText, AlertCircle, CheckCircle, Wallet, Truck, TrendingUp, Clock, Package, Download } from 'lucide-react';
 import { DriverApprovalModal } from '@/components/admin/DriverApprovalModal';
 import { PaymentTestPanel } from '@/components/admin/PaymentTestPanel';
 import { FinancialKPIs } from '@/components/admin/FinancialKPIs';
 import { PendingPayoutsTable } from '@/components/admin/PendingPayoutsTable';
+import { DriverFilters } from '@/components/admin/DriverFilters';
+import { BulkDriverActions } from '@/components/admin/BulkDriverActions';
 import { useToast } from '@/hooks/use-toast';
+import * as XLSX from 'xlsx';
 
 interface PendingDriver {
   id: string;
@@ -59,6 +63,16 @@ const AdminDrivers = () => {
   const [approvedWithPix, setApprovedWithPix] = useState(0);
   const [totalVehicles, setTotalVehicles] = useState(0);
   const [avgBidsPerDay, setAvgBidsPerDay] = useState(0);
+  
+  // Filtros avançados
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [regionFilter, setRegionFilter] = useState('all');
+  const [dateFromFilter, setDateFromFilter] = useState<Date | undefined>(undefined);
+  const [dateToFilter, setDateToFilter] = useState<Date | undefined>(undefined);
+  const [searchFilter, setSearchFilter] = useState('');
+  
+  // Seleção múltipla
+  const [selectedDriverIds, setSelectedDriverIds] = useState<string[]>([]);
 
   useEffect(() => {
     checkAdminAccess();
@@ -216,7 +230,141 @@ const AdminDrivers = () => {
   const handleApprovalComplete = () => {
     setModalOpen(false);
     setSelectedDriver(null);
+    setSelectedDriverIds([]);
     fetchPendingDrivers(); // Recarregar lista
+  };
+
+  // Filtrar motoristas baseado nos filtros
+  const filteredDrivers = useMemo(() => {
+    let filtered = [...pendingDrivers];
+
+    // Filtro de status
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(d => d.status === statusFilter);
+    }
+
+    // Filtro de região/estado
+    if (regionFilter !== 'all') {
+      filtered = filtered.filter(d => 
+        d.vehicles?.some(v => v.vehicle_type?.includes(regionFilter))
+      );
+    }
+
+    // Filtro de data (de)
+    if (dateFromFilter) {
+      filtered = filtered.filter(d => 
+        new Date(d.created_at) >= dateFromFilter
+      );
+    }
+
+    // Filtro de data (até)
+    if (dateToFilter) {
+      const endOfDay = new Date(dateToFilter);
+      endOfDay.setHours(23, 59, 59, 999);
+      filtered = filtered.filter(d => 
+        new Date(d.created_at) <= endOfDay
+      );
+    }
+
+    // Filtro de busca por nome/CPF
+    if (searchFilter.trim()) {
+      const search = searchFilter.toLowerCase();
+      filtered = filtered.filter(d => 
+        d.full_name.toLowerCase().includes(search) ||
+        d.cpf.includes(search)
+      );
+    }
+
+    return filtered;
+  }, [pendingDrivers, statusFilter, regionFilter, dateFromFilter, dateToFilter, searchFilter]);
+
+  const activeFiltersCount = useMemo(() => {
+    let count = 0;
+    if (statusFilter !== 'all') count++;
+    if (regionFilter !== 'all') count++;
+    if (dateFromFilter) count++;
+    if (dateToFilter) count++;
+    if (searchFilter.trim()) count++;
+    return count;
+  }, [statusFilter, regionFilter, dateFromFilter, dateToFilter, searchFilter]);
+
+  const handleClearFilters = () => {
+    setStatusFilter('all');
+    setRegionFilter('all');
+    setDateFromFilter(undefined);
+    setDateToFilter(undefined);
+    setSearchFilter('');
+  };
+
+  const handleToggleDriver = (driverId: string) => {
+    setSelectedDriverIds(prev => 
+      prev.includes(driverId) 
+        ? prev.filter(id => id !== driverId)
+        : [...prev, driverId]
+    );
+  };
+
+  const handleToggleAll = () => {
+    if (selectedDriverIds.length === filteredDrivers.length) {
+      setSelectedDriverIds([]);
+    } else {
+      setSelectedDriverIds(filteredDrivers.map(d => d.id));
+    }
+  };
+
+  const handleExportToExcel = () => {
+    try {
+      const exportData = filteredDrivers.map(driver => ({
+        'Nome': driver.full_name,
+        'CPF': driver.cpf,
+        'Telefone': driver.phone,
+        'Email': driver.email,
+        'Status': driver.status === 'pending' ? 'Pendente' : 
+                  driver.status === 'approved' ? 'Aprovado' : 
+                  driver.status === 'rejected' ? 'Rejeitado' : 'Suspenso',
+        'Data de Cadastro': new Date(driver.created_at).toLocaleDateString('pt-BR'),
+        'Veículos': driver.vehicles?.map(v => `${v.vehicle_type} - ${v.license_plate}`).join(', ') || 'Nenhum',
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Motoristas');
+
+      // Ajustar largura das colunas
+      const colWidths = [
+        { wch: 30 }, // Nome
+        { wch: 15 }, // CPF
+        { wch: 15 }, // Telefone
+        { wch: 30 }, // Email
+        { wch: 12 }, // Status
+        { wch: 15 }, // Data
+        { wch: 40 }, // Veículos
+      ];
+      ws['!cols'] = colWidths;
+
+      XLSX.writeFile(wb, `motoristas_${new Date().toISOString().split('T')[0]}.xlsx`);
+
+      toast({
+        title: 'Exportação Concluída',
+        description: `${filteredDrivers.length} motorista(s) exportado(s) para Excel com sucesso`,
+      });
+
+      logAction({
+        action: 'data_export',
+        metadata: {
+          export_type: 'drivers',
+          record_count: filteredDrivers.length,
+          filters_applied: activeFiltersCount,
+        },
+      });
+    } catch (error) {
+      console.error('Erro ao exportar para Excel:', error);
+      toast({
+        title: 'Erro na Exportação',
+        description: 'Não foi possível exportar os dados para Excel',
+        variant: 'destructive',
+      });
+    }
   };
 
   if (loading || !isAdmin) {
@@ -244,14 +392,23 @@ const AdminDrivers = () => {
                 Painel administrativo para análise e aprovação de cadastros de motoristas
               </p>
             </div>
-            <div className="flex-shrink-0">
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Button
+                onClick={handleExportToExcel}
+                variant="outline"
+                className="gap-2"
+                disabled={filteredDrivers.length === 0}
+              >
+                <Download className="h-4 w-4" />
+                Exportar Excel
+              </Button>
               <Button
                 onClick={() => navigate('/admin/pedidos')}
                 variant="outline"
-                className="gap-2 w-full md:w-auto"
+                className="gap-2"
               >
                 <Package className="h-4 w-4" />
-                Ver Pedidos e Cotações
+                Ver Pedidos
               </Button>
             </div>
           </div>
@@ -302,6 +459,29 @@ const AdminDrivers = () => {
           </Card>
         </div>
 
+        {/* Filtros Avançados */}
+        <DriverFilters
+          statusFilter={statusFilter}
+          setStatusFilter={setStatusFilter}
+          regionFilter={regionFilter}
+          setRegionFilter={setRegionFilter}
+          dateFromFilter={dateFromFilter}
+          setDateFromFilter={setDateFromFilter}
+          dateToFilter={dateToFilter}
+          setDateToFilter={setDateToFilter}
+          searchFilter={searchFilter}
+          setSearchFilter={setSearchFilter}
+          onClearFilters={handleClearFilters}
+          activeFiltersCount={activeFiltersCount}
+        />
+
+        {/* Ações em Lote */}
+        <BulkDriverActions
+          selectedDriverIds={selectedDriverIds}
+          onActionComplete={handleApprovalComplete}
+          onClearSelection={() => setSelectedDriverIds([])}
+        />
+
         {/* KPIs Financeiros */}
         <FinancialKPIs />
 
@@ -311,21 +491,42 @@ const AdminDrivers = () => {
         {/* Painel de Teste de Repasse Financeiro */}
         <PaymentTestPanel />
 
-        {/* Tabela de Motoristas Pendentes */}
-        <Card className="card-logimarket mb-8">
+        {/* Tabela de Motoristas */}
+        <Card className="mb-8">
           <CardHeader>
-            <CardTitle>Motoristas Pendentes de Aprovação</CardTitle>
-            <CardDescription>
-              Analise documentos e aprove ou rejeite cadastros de novos motoristas
-            </CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <AlertCircle className="h-5 w-5 text-accent" />
+                  Motoristas ({filteredDrivers.length})
+                </CardTitle>
+                <CardDescription>
+                  {activeFiltersCount > 0 
+                    ? `Exibindo ${filteredDrivers.length} de ${pendingDrivers.length} motorista(s) com filtros aplicados`
+                    : 'Analise os documentos e aprove ou rejeite os cadastros de motoristas'
+                  }
+                </CardDescription>
+              </div>
+              {filteredDrivers.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    checked={selectedDriverIds.length === filteredDrivers.length && filteredDrivers.length > 0}
+                    onCheckedChange={handleToggleAll}
+                  />
+                  <span className="text-sm text-muted-foreground">Selecionar todos</span>
+                </div>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
-            {pendingDrivers.length === 0 ? (
+            {filteredDrivers.length === 0 ? (
               <div className="text-center py-12">
-                <Users className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-                <p className="text-muted-foreground">Nenhum motorista pendente de análise</p>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Novos cadastros aparecerão aqui automaticamente
+                <CheckCircle className="h-12 w-12 text-secondary mx-auto mb-4" />
+                <p className="text-muted-foreground">
+                  {activeFiltersCount > 0 
+                    ? 'Nenhum motorista encontrado com os filtros aplicados'
+                    : 'Não há motoristas para exibir no momento'
+                  }
                 </p>
               </div>
             ) : (
@@ -333,60 +534,72 @@ const AdminDrivers = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-[50px]">
+                        <Checkbox
+                          checked={selectedDriverIds.length === filteredDrivers.length}
+                          onCheckedChange={handleToggleAll}
+                        />
+                      </TableHead>
                       <TableHead>Nome</TableHead>
-                      <TableHead>CPF / Telefone</TableHead>
-                      <TableHead>Veículo</TableHead>
-                      <TableHead>Data Cadastro</TableHead>
+                      <TableHead>CPF</TableHead>
+                      <TableHead>Telefone</TableHead>
+                      <TableHead>Email</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead>Data Cadastro</TableHead>
+                      <TableHead>Veículo(s)</TableHead>
                       <TableHead className="text-right">Ações</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {pendingDrivers.map((driver) => (
-                      <TableRow key={driver.id} className="hover:bg-muted/50">
+                    {filteredDrivers.map((driver) => (
+                      <TableRow key={driver.id}>
                         <TableCell>
-                          <div className="flex flex-col">
-                            <span className="font-medium">{driver.full_name}</span>
-                            <span className="text-xs text-muted-foreground">{driver.email}</span>
-                          </div>
+                          <Checkbox
+                            checked={selectedDriverIds.includes(driver.id)}
+                            onCheckedChange={() => handleToggleDriver(driver.id)}
+                          />
                         </TableCell>
-                        
+                        <TableCell className="font-medium">{driver.full_name}</TableCell>
+                        <TableCell className="font-mono text-sm">{driver.cpf}</TableCell>
+                        <TableCell>{driver.phone}</TableCell>
+                        <TableCell className="text-sm">{driver.email}</TableCell>
                         <TableCell>
-                          <div className="flex flex-col text-sm">
-                            <span>{driver.cpf}</span>
-                            <span className="text-muted-foreground">{driver.phone}</span>
-                          </div>
-                        </TableCell>
-                        
-                        <TableCell>
-                          {driver.vehicles && driver.vehicles.length > 0 ? (
-                            <div className="flex flex-col text-sm">
-                              <span className="font-medium">{driver.vehicles[0].license_plate}</span>
-                              <span className="text-muted-foreground">{driver.vehicles[0].vehicle_type}</span>
-                            </div>
-                          ) : (
-                            <span className="text-muted-foreground text-sm">Sem veículo</span>
-                          )}
-                        </TableCell>
-                        
-                        <TableCell>
-                          <span className="text-sm">
-                            {new Date(driver.created_at).toLocaleDateString('pt-BR')}
-                          </span>
-                        </TableCell>
-                        
-                        <TableCell>
-                          <Badge className="tag-status tag-status-atraso">
-                            Pendente
+                          <Badge 
+                            variant={
+                              driver.status === 'pending' ? 'secondary' :
+                              driver.status === 'approved' ? 'default' :
+                              'destructive'
+                            }
+                          >
+                            {driver.status === 'pending' ? 'Pendente' :
+                             driver.status === 'approved' ? 'Aprovado' :
+                             driver.status === 'rejected' ? 'Rejeitado' : 'Suspenso'}
                           </Badge>
                         </TableCell>
-                        
+                        <TableCell>
+                          {new Date(driver.created_at).toLocaleDateString('pt-BR')}
+                        </TableCell>
+                        <TableCell>
+                          {driver.vehicles && driver.vehicles.length > 0 ? (
+                            <div className="flex flex-col gap-1">
+                              {driver.vehicles.map((vehicle, idx) => (
+                                <Badge key={idx} variant="outline" className="text-xs">
+                                  {vehicle.vehicle_type} - {vehicle.license_plate}
+                                </Badge>
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground text-sm">Nenhum veículo</span>
+                          )}
+                        </TableCell>
                         <TableCell className="text-right">
                           <Button
+                            size="sm"
                             onClick={() => handleAnalyze(driver)}
-                            className="bg-accent text-accent-foreground hover:bg-accent/90"
+                            className="gap-2"
                           >
-                            Analisar Documentos
+                            <FileText className="h-4 w-4" />
+                            Analisar
                           </Button>
                         </TableCell>
                       </TableRow>
