@@ -121,7 +121,7 @@ serve(async (req) => {
       ],
       mode: "payment",
       success_url: `${req.headers.get("origin")}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${req.headers.get("origin")}/pedidos?order_id=${order.id}`,
+      cancel_url: `${req.headers.get("origin")}/dashboard`,
       metadata: {
         order_id: order.id,
         tracking_code: order.tracking_code,
