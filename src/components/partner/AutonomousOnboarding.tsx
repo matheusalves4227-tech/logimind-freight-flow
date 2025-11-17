@@ -275,6 +275,22 @@ const AutonomousOnboarding = ({ cpf, onBack }: AutonomousOnboardingProps) => {
 
       if (roleError) throw roleError;
 
+      // 6. Notificar administradores sobre novo cadastro
+      try {
+        await supabase.functions.invoke('notify-admin-new-registration', {
+          body: {
+            registrationType: 'driver',
+            userName: formData.nome_completo,
+            userEmail: formData.email,
+            registrationId: profileData.id
+          }
+        });
+        console.log("[ONBOARDING] Notificação enviada aos administradores");
+      } catch (notifyError) {
+        console.error("[ONBOARDING] Erro ao notificar admins:", notifyError);
+        // Não bloqueamos o fluxo se a notificação falhar
+      }
+
       toast.dismiss();
       toast.success("Cadastro enviado com sucesso! Aguarde aprovação da equipe.");
       

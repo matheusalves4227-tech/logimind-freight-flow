@@ -121,6 +121,30 @@ const B2BOnboarding = ({ cnpj, onBack }: B2BOnboardingProps) => {
 
       if (roleError) throw roleError;
 
+      // 4. Notificar administradores sobre novo cadastro
+      try {
+        const { data: carrierData } = await supabase
+          .from("b2b_carriers")
+          .select("id")
+          .eq("user_id", authData.user.id)
+          .single();
+
+        if (carrierData) {
+          await supabase.functions.invoke('notify-admin-new-registration', {
+            body: {
+              registrationType: 'b2b_carrier',
+              userName: formData.razao_social,
+              userEmail: formData.email,
+              registrationId: carrierData.id
+            }
+          });
+          console.log("[ONBOARDING B2B] Notificação enviada aos administradores");
+        }
+      } catch (notifyError) {
+        console.error("[ONBOARDING B2B] Erro ao notificar admins:", notifyError);
+        // Não bloqueamos o fluxo se a notificação falhar
+      }
+
       toast.dismiss();
       toast.success("Cadastro recebido! Entraremos em contato em até 24h para validação.");
       

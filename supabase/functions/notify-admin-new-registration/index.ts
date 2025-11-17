@@ -47,8 +47,11 @@ serve(async (req) => {
 
     const adminEmail = "admin@logimarket.com.br"; // Email do admin
     const typeLabel = registrationType === "driver" ? "Motorista Autônomo" : "Transportadora B2B";
-    const detailPagePath = registrationType === "driver" ? "motoristas" : "transportadoras";
-    const appUrl = Deno.env.get("SUPABASE_URL")?.replace('/supabase', '') || "https://logimarket.com.br";
+    const detailPagePath = registrationType === "driver" ? "admin/motoristas" : "admin/transportadoras";
+    
+    // Construir URL do painel admin - usar window.location.origin no frontend
+    const appUrl = "https://xrerhrqxfvvwiefzlkux.lovableproject.com"; // URL base do projeto
+    const adminPanelUrl = `${appUrl}/${detailPagePath}`;
 
     // Envia o email via API do Resend
     const emailData = {
@@ -130,17 +133,21 @@ serve(async (req) => {
                         Este cadastro está aguardando sua análise e aprovação. Clique no botão abaixo para revisar os documentos e dados enviados:
                       </p>
                       
-                      <!-- CTA Button -->
-                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
-                        <tr>
-                          <td align="center" style="padding: 20px 0;">
-                            <a href="${appUrl}/admin/${detailPagePath}" 
-                               style="display: inline-block; background: linear-gradient(135deg, #FBBC05 0%, #f59e0b 100%); color: #ffffff; padding: 16px 40px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(251, 188, 5, 0.3); transition: all 0.3s;">
-                              🔍 Analisar Cadastro Agora
-                            </a>
-                          </td>
-                        </tr>
-                      </table>
+                       <!-- CTA Button -->
+                       <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                         <tr>
+                           <td align="center" style="padding: 20px 0;">
+                             <a href="${adminPanelUrl}" 
+                                style="display: inline-block; background: linear-gradient(135deg, #FBBC05 0%, #f59e0b 100%); color: #ffffff; padding: 16px 40px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(251, 188, 5, 0.3); transition: all 0.3s;">
+                               🔍 Analisar Cadastro Agora
+                             </a>
+                           </td>
+                         </tr>
+                       </table>
+                       
+                       <p style="margin: 15px 0 0; color: #666666; font-size: 13px; text-align: center;">
+                         Ou acesse: <a href="${adminPanelUrl}" style="color: #1A73E8; text-decoration: none;">${adminPanelUrl}</a>
+                       </p>
                       
                       <div style="background-color: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 16px; margin: 30px 0;">
                         <p style="margin: 0; color: #92400e; font-size: 14px; line-height: 1.6;">
