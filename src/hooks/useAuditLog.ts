@@ -12,7 +12,8 @@ export type AuditAction =
   | "driver_approval"
   | "driver_rejection"
   | "freight_assignment"
-  | "delivery_confirmation";
+  | "delivery_confirmation"
+  | "order_rejection";
 
 interface AuditLogParams {
   action: AuditAction;

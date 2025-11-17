@@ -12,6 +12,7 @@ const Auth = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
+  const [isResetPassword, setIsResetPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -81,6 +82,26 @@ const Auth = () => {
     }
   };
 
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth/reset`,
+      });
+
+      if (error) throw error;
+
+      toast.success("Email de redefinição enviado! Verifique sua caixa de entrada.");
+      setIsResetPassword(false);
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5 flex items-center justify-center p-4">
       <Card className="w-full max-w-md p-8 shadow-xl">
@@ -91,20 +112,22 @@ const Auth = () => {
             </div>
           </div>
           <h1 className="text-2xl font-bold mb-2">
-            {isSignUp ? "Criar Conta" : "Entrar"} no{" "}
+            {isResetPassword ? "Redefinir Senha" : isSignUp ? "Criar Conta" : "Entrar"} no{" "}
             <span className="bg-gradient-primary bg-clip-text text-transparent">
               LogiMarket
             </span>
           </h1>
           <p className="text-muted-foreground">
-            {isSignUp
+            {isResetPassword
+              ? "Digite seu email para receber instruções de redefinição"
+              : isSignUp
               ? "Comece a cotar fretes com precificação inteligente"
               : "Acesse sua conta para continuar"}
           </p>
         </div>
 
-        <form onSubmit={isSignUp ? handleSignUp : handleSignIn} className="space-y-4">
-          {isSignUp && (
+        <form onSubmit={isResetPassword ? handleResetPassword : isSignUp ? handleSignUp : handleSignIn} className="space-y-4">
+          {isSignUp && !isResetPassword && (
             <div className="space-y-2">
               <Label htmlFor="name">Nome</Label>
               <Input
@@ -130,18 +153,20 @@ const Auth = () => {
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="password">Senha</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={6}
-            />
-          </div>
+          {!isResetPassword && (
+            <div className="space-y-2">
+              <Label htmlFor="password">Senha</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={6}
+              />
+            </div>
+          )}
 
           <Button
             type="submit"
@@ -155,6 +180,8 @@ const Auth = () => {
                 <Loader2 className="h-5 w-5 mr-2 animate-spin" />
                 Processando...
               </>
+            ) : isResetPassword ? (
+              "Enviar Email"
             ) : isSignUp ? (
               "Criar Conta"
             ) : (
@@ -163,13 +190,30 @@ const Auth = () => {
           </Button>
         </form>
 
-        <div className="mt-6 text-center">
+        <div className="mt-6 text-center space-y-2">
+          {!isResetPassword && !isSignUp && (
+            <button
+              type="button"
+              onClick={() => {
+                setIsResetPassword(true);
+                setIsSignUp(false);
+              }}
+              className="text-sm text-primary hover:underline block w-full"
+            >
+              Esqueceu sua senha?
+            </button>
+          )}
           <button
             type="button"
-            onClick={() => setIsSignUp(!isSignUp)}
-            className="text-sm text-primary hover:underline"
+            onClick={() => {
+              setIsSignUp(!isSignUp);
+              setIsResetPassword(false);
+            }}
+            className="text-sm text-primary hover:underline block w-full"
           >
-            {isSignUp
+            {isResetPassword
+              ? "Voltar para login"
+              : isSignUp
               ? "Já tem uma conta? Faça login"
               : "Não tem uma conta? Cadastre-se"}
           </button>

@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import Quote from "./pages/Quote";
 import B2BQuote from "./pages/B2BQuote";
 import Auth from "./pages/Auth";
+import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import Tracking from "./pages/Tracking";
 import DriverDashboard from "./pages/DriverDashboard";
@@ -50,6 +51,7 @@ const App = () => (
           <Route path="/ranking" element={<Ranking />} />
           <Route path="/perfil" element={<Profile />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/auth/reset" element={<ResetPassword />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
