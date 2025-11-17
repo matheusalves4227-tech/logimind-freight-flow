@@ -187,11 +187,25 @@ export const PendingOrderDetail = ({ order, open, onOpenChange, onUpdate }: Pend
         .from('orders')
         .update({
           status: 'rejected',
+          operational_notes: `REJEITADO: ${rejectionReason}`,
           updated_at: new Date().toISOString(),
         })
         .eq('id', order.id);
 
       if (error) throw error;
+
+      // Registrar auditoria
+      await logAction({
+        action: 'admin_access',
+        reason: rejectionReason,
+        metadata: {
+          action_type: 'order_rejection',
+          order_id: order.id,
+          tracking_code: order.tracking_code,
+          carrier_name: order.carrier_name,
+          rejected_at: new Date().toISOString(),
+        },
+      });
 
       toast({
         title: 'Pedido Rejeitado',
