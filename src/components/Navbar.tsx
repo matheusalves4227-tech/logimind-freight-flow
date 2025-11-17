@@ -96,9 +96,9 @@ const Navbar = () => {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <Link to="/" className="flex items-center gap-2 group">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-[1400px]">
+        <div className="flex items-center justify-between h-16 gap-4">
+          <Link to="/" className="flex items-center gap-2 group flex-shrink-0">
             <div className="p-2 bg-gradient-primary rounded-lg group-hover:shadow-md transition-all">
               <Package className="h-6 w-6 text-primary-foreground" />
             </div>
@@ -107,46 +107,46 @@ const Navbar = () => {
             </span>
           </Link>
 
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden lg:flex items-center gap-6 flex-shrink-0">
             <button 
               onClick={() => handleScrollToSection('features')} 
-              className="text-foreground hover:text-primary transition-colors"
+              className="text-foreground hover:text-primary transition-colors text-sm whitespace-nowrap"
             >
               Funcionalidades
             </button>
             <button 
               onClick={() => handleScrollToSection('how-it-works')} 
-              className="text-foreground hover:text-primary transition-colors"
+              className="text-foreground hover:text-primary transition-colors text-sm whitespace-nowrap"
             >
               Como Funciona
             </button>
-            <Link to="/ranking" className="text-foreground hover:text-primary transition-colors">
+            <Link to="/ranking" className="text-foreground hover:text-primary transition-colors text-sm whitespace-nowrap">
               Ranking
             </Link>
-            <Link to="/parceiro/cadastro" className="text-foreground hover:text-primary transition-colors">
+            <Link to="/parceiro/cadastro" className="text-foreground hover:text-primary transition-colors text-sm whitespace-nowrap">
               Seja um Parceiro
             </Link>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 flex-shrink-0 ml-auto">
             {user ? (
               <>
-                <Link to="/dashboard">
-                  <Button variant="ghost" className="hidden md:inline-flex">
-                    <LayoutDashboard className="h-4 w-4 mr-2" />
-                    Dashboard
+                <Link to="/dashboard" className="hidden lg:block">
+                  <Button variant="ghost" size="sm" className="gap-2">
+                    <LayoutDashboard className="h-4 w-4" />
+                    <span className="hidden xl:inline">Dashboard</span>
                   </Button>
                 </Link>
 
                 {/* Menu de Conta */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="hidden md:inline-flex gap-2">
+                    <Button variant="ghost" size="sm" className="hidden lg:inline-flex gap-2">
                       <User className="h-4 w-4" />
-                      Conta
+                      <span className="hidden xl:inline">Conta</span>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuContent align="end" className="w-56 bg-background z-50">
                     <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => navigate("/perfil")}>
@@ -164,12 +164,12 @@ const Navbar = () => {
                 {isAdmin && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="outline" className="hidden md:inline-flex gap-2">
+                      <Button variant="outline" size="sm" className="hidden lg:inline-flex gap-2 whitespace-nowrap">
                         <Shield className="h-4 w-4" />
-                        Área Admin
+                        <span className="hidden xl:inline">Área Admin</span>
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuContent align="end" className="w-56 bg-background z-50">
                       <DropdownMenuLabel>Painel Administrativo</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={() => navigate("/admin/motoristas")}>
@@ -188,31 +188,29 @@ const Navbar = () => {
                   </DropdownMenu>
                 )}
 
-                <Link to="/quote">
-                  <Button variant="hero" size="lg" className="text-sm sm:text-base px-3 sm:px-6">
-                    <span className="hidden sm:inline">Nova Cotação</span>
-                    <span className="sm:hidden">Nova Cotação</span>
+                <Link to="/quote" className="flex-shrink-0">
+                  <Button variant="hero" size="default" className="whitespace-nowrap">
+                    Nova Cotação
                   </Button>
                 </Link>
               </>
             ) : (
               <>
-                <Link to="/auth">
-                  <Button variant="ghost" className="hidden md:inline-flex">
+                <Link to="/auth" className="hidden lg:block flex-shrink-0">
+                  <Button variant="ghost" size="sm">
                     Entrar
                   </Button>
                 </Link>
-                <Link to="/auth">
-                  <Button variant="hero" size="lg" className="text-sm sm:text-base px-3 sm:px-6">
-                    <span className="hidden sm:inline">Começar Grátis</span>
-                    <span className="sm:hidden">Começar</span>
+                <Link to="/auth" className="flex-shrink-0">
+                  <Button variant="hero" size="default" className="whitespace-nowrap">
+                    Começar Grátis
                   </Button>
                 </Link>
               </>
             )}
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="md:hidden">
+                <Button variant="ghost" size="icon" className="lg:hidden flex-shrink-0">
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
