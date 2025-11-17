@@ -139,6 +139,16 @@ export const PendingOrderDetail = ({ order, open, onOpenChange, onUpdate }: Pend
   };
 
   const handleApprove = async () => {
+    // Validação de campos obrigatórios
+    if (!operationalNotes.trim()) {
+      toast({
+        title: 'Campo Obrigatório',
+        description: 'Por favor, adicione notas operacionais antes de aprovar',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setProcessing(true);
     try {
       const { error } = await supabase
@@ -172,10 +182,29 @@ export const PendingOrderDetail = ({ order, open, onOpenChange, onUpdate }: Pend
   };
 
   const handleReject = async () => {
+    // Validação do motivo de rejeição
     if (!rejectionReason.trim()) {
       toast({
         title: 'Motivo Obrigatório',
         description: 'Por favor, informe o motivo da rejeição',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (rejectionReason.trim().length < 10) {
+      toast({
+        title: 'Motivo Insuficiente',
+        description: 'O motivo da rejeição deve ter pelo menos 10 caracteres',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (rejectionReason.length > 500) {
+      toast({
+        title: 'Motivo Muito Longo',
+        description: 'O motivo da rejeição deve ter no máximo 500 caracteres',
         variant: 'destructive',
       });
       return;

@@ -65,14 +65,15 @@ const Dashboard = () => {
         'in_transit': 'in_transit',
         'delivered': 'delivered',
         'cancelled': 'incident',
+        'rejected': 'incident',
         'failed': 'incident'
       };
 
       const mappedOrders: Order[] = realOrders?.map((order) => ({
         id: order.id,
-        tracking_code: order.tracking_code,
+        tracking_code: order.tracking_code || `TEMP-${order.id.slice(0, 8)}`,
         quote_id: order.quote_id || order.id,
-        status: statusMapping[order.status] || 'in_transit',
+        status: statusMapping[order.status] || 'scheduled',
         carrier_name: order.carrier_name,
         carrier_type: order.service_type === 'ftl' ? 'autonomous' : 'carrier',
         vehicle_type: order.vehicle_type || undefined,

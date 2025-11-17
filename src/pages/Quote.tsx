@@ -128,26 +128,87 @@ const Quote = () => {
 
   const handleNext = () => {
     if (currentStep === 1) {
-      // Step 1: Localidades
+      // Step 1: Localidades - Validação robusta
+      const originCepClean = formData.origin_cep.replace(/\D/g, '');
+      const destCepClean = formData.destination_cep.replace(/\D/g, '');
+
       if (!formData.origin_cep || !formData.destination_cep) {
-        toast.error("Por favor, preencha origem e destino");
+        toast.error("Preencha os CEPs de origem e destino");
         return;
       }
+
+      if (originCepClean.length !== 8 || destCepClean.length !== 8) {
+        toast.error("CEPs devem ter 8 dígitos");
+        return;
+      }
+
+      if (originCepClean === '00000000' || destCepClean === '00000000') {
+        toast.error("CEP inválido: não pode ser 00000-000");
+        return;
+      }
+
       if (!formData.origin_number || !formData.destination_number) {
-        toast.error("Por favor, preencha os números dos endereços");
+        toast.error("Preencha os números dos endereços");
         return;
       }
+
+      if (!formData.origin_address || !formData.destination_address) {
+        toast.error("Erro ao buscar endereços dos CEPs. Verifique se os CEPs são válidos");
+        return;
+      }
+
       setCurrentStep(2);
     } else if (currentStep === 2) {
-      // Step 2: Carga
-      if (!formData.weight_kg) {
-        toast.error("Por favor, preencha o peso da carga");
+      // Step 2: Carga - Validação de peso e dimensões
+      const weight = parseFloat(formData.weight_kg.replace(',', '.'));
+      
+      if (!formData.weight_kg || isNaN(weight)) {
+        toast.error("Preencha o peso da carga");
         return;
       }
+
+      if (weight <= 0) {
+        toast.error("O peso deve ser maior que zero");
+        return;
+      }
+
+      if (weight > 30000) {
+        toast.error("Peso excede o limite máximo de 30.000 kg");
+        return;
+      }
+
+      // Validar dimensões para LTL
+      if (formData.service_type === "ltl") {
+        if (!formData.height_cm || !formData.width_cm || !formData.length_cm) {
+          toast.error("Para frete LTL, informe as dimensões da carga");
+          return;
+        }
+
+        const height = parseFloat(formData.height_cm);
+        const width = parseFloat(formData.width_cm);
+        const length = parseFloat(formData.length_cm);
+
+        if (isNaN(height) || isNaN(width) || isNaN(length)) {
+          toast.error("Dimensões devem ser números válidos");
+          return;
+        }
+
+        if (height <= 0 || width <= 0 || length <= 0) {
+          toast.error("As dimensões devem ser maiores que zero");
+          return;
+        }
+
+        if (height > 500 || width > 500 || length > 1500) {
+          toast.error("Dimensões excedem limites razoáveis (Altura/Largura: 500cm, Comprimento: 1500cm)");
+          return;
+        }
+      }
+
       if (formData.service_type === "ftl" && !formData.vehicle_type) {
-        toast.error("Por favor, selecione o tipo de veículo");
+        toast.error("Selecione o tipo de veículo");
         return;
       }
+
       setCurrentStep(3);
     }
   };
