@@ -138,6 +138,28 @@ const Navbar = () => {
                   </Button>
                 </Link>
 
+                {/* Menu de Conta */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="hidden md:inline-flex gap-2">
+                      <User className="h-4 w-4" />
+                      Conta
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => navigate("/perfil")}>
+                      <User className="h-4 w-4 mr-2" />
+                      Meu Perfil
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleSignOut}>
+                      Sair
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
                 {/* Menu Admin - Apenas para admins */}
                 {isAdmin && (
                   <DropdownMenu>
@@ -172,10 +194,6 @@ const Navbar = () => {
                     <span className="sm:hidden">Nova Cotação</span>
                   </Button>
                 </Link>
-                <Button variant="ghost" onClick={handleSignOut} className="hidden md:inline-flex">
-                  <User className="h-4 w-4 mr-2" />
-                  Sair
-                </Button>
               </>
             ) : (
               <>
@@ -259,6 +277,14 @@ const Navbar = () => {
                       >
                         <FileText className="h-5 w-5" />
                         Nova Cotação
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="justify-start gap-3 text-base"
+                        onClick={() => handleNavigation("/perfil")}
+                      >
+                        <User className="h-5 w-5" />
+                        Meu Perfil
                       </Button>
                       <Button
                         variant="ghost"
