@@ -20,6 +20,7 @@ import {
   Loader2
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuditLog } from "@/hooks/useAuditLog";
 import { supabase } from "@/integrations/supabase/client";
 
 interface DriverInfo {
@@ -50,6 +51,7 @@ interface ShipperValidateDriverProps {
 
 const ShipperValidateDriver = ({ orderId }: ShipperValidateDriverProps) => {
   const { toast } = useToast();
+  const { logAction } = useAuditLog();
   const [loading, setLoading] = useState(false);
   const [validating, setValidating] = useState(false);
   const [codigoInput, setCodigoInput] = useState("");
@@ -174,6 +176,19 @@ const ShipperValidateDriver = ({ orderId }: ShipperValidateDriverProps) => {
         .eq('id', orderId);
 
       if (error) throw error;
+
+      // Registrar auditoria
+      await logAction({
+        action: 'delivery_confirmation',
+        metadata: {
+          order_id: orderId,
+          tracking_code: orderInfo?.tracking_code,
+          driver_id: driverInfo?.id,
+          driver_name: driverInfo?.full_name,
+          validated_at: new Date().toISOString(),
+          validation_code: codigoInput,
+        },
+      });
 
       toast({
         title: "Motorista Validado!",

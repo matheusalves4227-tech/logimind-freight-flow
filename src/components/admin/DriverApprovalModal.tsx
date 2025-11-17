@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuditLog } from '@/hooks/useAuditLog';
 import { CheckCircle2, XCircle, FileText, ExternalLink, Loader2 } from 'lucide-react';
 
 interface DriverApprovalModalProps {
@@ -40,6 +41,7 @@ interface DriverCNH {
 
 export const DriverApprovalModal = ({ driver, open, onClose, onComplete }: DriverApprovalModalProps) => {
   const { toast } = useToast();
+  const { logAction } = useAuditLog();
   const [loading, setLoading] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [documents, setDocuments] = useState<DriverDocument[]>([]);
@@ -146,6 +148,19 @@ export const DriverApprovalModal = ({ driver, open, onClose, onComplete }: Drive
 
       if (error) throw error;
 
+      // Registrar auditoria
+      await logAction({
+        action: 'driver_approval',
+        metadata: {
+          driver_id: driver.id,
+          driver_name: driver.full_name,
+          driver_cpf: driver.cpf,
+          approval_notes: notes,
+          checks_validated: checks,
+          approved_at: new Date().toISOString(),
+        },
+      });
+
       toast({
         title: 'Sucesso',
         description: `Motorista ${driver.full_name} aprovado com sucesso!`,
@@ -185,6 +200,18 @@ export const DriverApprovalModal = ({ driver, open, onClose, onComplete }: Drive
       });
 
       if (error) throw error;
+
+      // Registrar auditoria
+      await logAction({
+        action: 'driver_rejection',
+        reason: rejectionReason,
+        metadata: {
+          driver_id: driver.id,
+          driver_name: driver.full_name,
+          driver_cpf: driver.cpf,
+          rejected_at: new Date().toISOString(),
+        },
+      });
 
       toast({
         title: 'Motorista Rejeitado',

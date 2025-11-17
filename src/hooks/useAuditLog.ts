@@ -8,7 +8,11 @@ export type AuditAction =
   | "admin_access"
   | "profile_update"
   | "document_upload"
-  | "payment_processed";
+  | "payment_processed"
+  | "driver_approval"
+  | "driver_rejection"
+  | "freight_assignment"
+  | "delivery_confirmation";
 
 interface AuditLogParams {
   action: AuditAction;
