@@ -205,7 +205,7 @@ const Tracking = () => {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
-        <div className="container mx-auto px-4 py-8 flex items-center justify-center min-h-[60vh]">
+        <div className="container mx-auto px-4 py-8 pt-24 flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
             <p className="text-muted-foreground">Carregando rastreamento...</p>
@@ -219,7 +219,7 @@ const Tracking = () => {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-8 pt-24">
           <Card className="p-8 text-center">
             <Package className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
             <h2 className="text-xl font-bold mb-2">Rastreamento não encontrado</h2>
@@ -242,7 +242,7 @@ const Tracking = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       
-      <div className="container mx-auto px-4 pt-20 pb-6 sm:pt-6">
+      <div className="container mx-auto px-4 pt-24 pb-6 sm:pt-24">
         {/* Header */}
         <div className="mb-6 space-y-3">
           <div className="flex items-center justify-between gap-2">

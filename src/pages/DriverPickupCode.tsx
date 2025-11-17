@@ -86,7 +86,7 @@ const DriverPickupCode = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       
-      <div className="container mx-auto px-4 py-8 max-w-3xl">
+      <div className="container mx-auto px-4 py-8 pt-24 max-w-3xl">
         <Button 
           variant="ghost" 
           onClick={() => navigate("/motorista/dashboard")}
