@@ -168,6 +168,33 @@ const AutonomousOnboarding = ({ cpf, onBack }: AutonomousOnboardingProps) => {
     }
 
     try {
+      toast.loading("Validando CPF...");
+
+      // NOVO: Verificar duplicidade de CPF antes de criar conta
+      const { data: duplicityCheck, error: duplicityError } = await supabase.functions.invoke(
+        'check-cpf-cnpj-duplicity',
+        {
+          body: {
+            cpf_cnpj: cpf,
+            type: 'cpf'
+          }
+        }
+      );
+
+      if (duplicityError) {
+        console.error("Erro ao verificar duplicidade:", duplicityError);
+        toast.dismiss();
+        toast.error("Erro ao validar CPF. Tente novamente.");
+        return;
+      }
+
+      if (duplicityCheck.isDuplicate) {
+        toast.dismiss();
+        toast.error(`Este CPF já está cadastrado. Status: ${duplicityCheck.existingUser.status}`);
+        return;
+      }
+
+      toast.dismiss();
       toast.loading("Criando sua conta...");
 
       // 1. Criar conta de usuário
