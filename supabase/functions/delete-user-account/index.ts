@@ -38,7 +38,7 @@ serve(async (req) => {
       throw new Error("Unauthorized");
     }
 
-    const { userId } = await req.json();
+    const { userId, reason, userAgent } = await req.json();
 
     // Verificar se o usuário está tentando deletar sua própria conta
     if (user.id !== userId) {
@@ -46,6 +46,35 @@ serve(async (req) => {
     }
 
     console.log(`Deletando conta do usuário: ${userId}`);
+
+    // Obter IP do usuário (Cloudflare Workers ou padrão)
+    const ipAddress = req.headers.get("CF-Connecting-IP") || 
+                     req.headers.get("X-Forwarded-For") || 
+                     req.headers.get("X-Real-IP") || 
+                     "unknown";
+
+    // Registrar log de auditoria ANTES de deletar
+    const { error: auditError } = await supabaseAdmin
+      .from("audit_logs")
+      .insert({
+        user_id: userId,
+        action: "account_deletion",
+        ip_address: ipAddress,
+        user_agent: userAgent || "unknown",
+        reason: reason || "Não fornecido",
+        metadata: {
+          timestamp: new Date().toISOString(),
+          deletion_initiated_by: user.email,
+          user_email: user.email,
+        }
+      });
+
+    if (auditError) {
+      console.error("Erro ao registrar log de auditoria:", auditError);
+      // Não bloquear exclusão por erro de auditoria, mas logar
+    } else {
+      console.log(`Log de auditoria registrado para usuário ${userId}`);
+    }
 
     // Deletar dados associados (RLS + CASCADE devem cuidar de alguns, mas garantimos manualmente)
     
