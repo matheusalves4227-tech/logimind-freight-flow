@@ -62,7 +62,7 @@ const Hero = () => {
                   Quero Cotação Preditiva
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  LogiMind AI analisa risco e preço em tempo real para o menor CAC logístico
+                  LogiMind AI analisa risco e preço em tempo real garantindo o melhor custo-benefício
                 </p>
               </div>
 
