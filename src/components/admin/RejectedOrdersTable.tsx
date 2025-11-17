@@ -49,7 +49,7 @@ export const RejectedOrdersTable = ({ onUpdate }: RejectedOrdersTableProps) => {
     try {
       const { data, error } = await supabase
         .from('orders')
-        .select('*')
+        .select('id, tracking_code, origin_address, destination_address, origin_cep, destination_cep, weight_kg, service_type, final_price, carrier_name, created_at, updated_at, operational_notes')
         .eq('status', 'rejected')
         .order('updated_at', { ascending: false })
         .limit(100);
@@ -164,8 +164,8 @@ export const RejectedOrdersTable = ({ onUpdate }: RejectedOrdersTableProps) => {
                       <TableCell className="text-sm text-muted-foreground">
                         {formatDate(order.updated_at)}
                       </TableCell>
-                      <TableCell className="max-w-[200px]">
-                        <div className="text-sm text-muted-foreground truncate">
+                      <TableCell className="max-w-[250px]">
+                        <div className="text-sm text-muted-foreground truncate" title={getRejectionReason(order.operational_notes)}>
                           {getRejectionReason(order.operational_notes)}
                         </div>
                       </TableCell>
