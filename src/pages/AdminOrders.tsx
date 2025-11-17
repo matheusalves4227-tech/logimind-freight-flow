@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuditLog } from '@/hooks/useAuditLog';
 import Navbar from '@/components/Navbar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -23,6 +24,7 @@ interface StatsData {
 const AdminOrders = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { logAction } = useAuditLog();
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [stats, setStats] = useState<StatsData>({
@@ -64,6 +66,16 @@ const AdminOrders = () => {
       }
 
       setIsAdmin(true);
+      
+      // Registrar acesso administrativo
+      await logAction({
+        action: "admin_access",
+        metadata: {
+          page: "admin_orders",
+          accessed_at: new Date().toISOString(),
+        }
+      });
+      
       await fetchStats();
     } catch (error) {
       console.error('Erro ao verificar acesso admin:', error);
