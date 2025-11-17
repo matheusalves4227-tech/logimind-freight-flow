@@ -1,27 +1,66 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Package, Menu, User, LayoutDashboard, Truck, Users, FileText, Home } from "lucide-react";
+import { Package, Menu, User, LayoutDashboard, Truck, Users, FileText, Home, Shield, Settings } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Navbar = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
+      if (session?.user) {
+        checkAdminRole(session.user.id);
+      }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
+      if (session?.user) {
+        checkAdminRole(session.user.id);
+      } else {
+        setIsAdmin(false);
+      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const checkAdminRole = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .eq('role', 'admin')
+        .maybeSingle();
+
+      if (error) {
+        console.error('Erro ao verificar role admin:', error);
+        setIsAdmin(false);
+        return;
+      }
+
+      setIsAdmin(!!data);
+    } catch (error) {
+      console.error('Erro ao verificar role admin:', error);
+      setIsAdmin(false);
+    }
+  };
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -98,6 +137,35 @@ const Navbar = () => {
                     Dashboard
                   </Button>
                 </Link>
+
+                {/* Menu Admin - Apenas para admins */}
+                {isAdmin && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" className="hidden md:inline-flex gap-2">
+                        <Shield className="h-4 w-4" />
+                        Área Admin
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56">
+                      <DropdownMenuLabel>Painel Administrativo</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => navigate("/admin/motoristas")}>
+                        <Users className="h-4 w-4 mr-2" />
+                        Motoristas
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate("/admin/pedidos")}>
+                        <FileText className="h-4 w-4 mr-2" />
+                        Pedidos & KPIs
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate("/admin/calculadora-b2b")}>
+                        <Settings className="h-4 w-4 mr-2" />
+                        Calculadora B2B
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+
                 <Link to="/quote">
                   <Button variant="hero" size="lg" className="text-sm sm:text-base px-3 sm:px-6">
                     <span className="hidden sm:inline">Nova Cotação</span>
@@ -200,22 +268,47 @@ const Navbar = () => {
                         <Truck className="h-5 w-5" />
                         Dashboard Motorista
                       </Button>
-                      <Button
-                        variant="ghost"
-                        className="justify-start gap-3 text-base"
-                        onClick={() => handleNavigation("/admin/motoristas")}
-                      >
-                        <Users className="h-5 w-5" />
-                        Admin Motoristas
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        className="justify-start gap-3 text-base"
-                        onClick={() => handleNavigation("/admin/pedidos")}
-                      >
-                        <FileText className="h-5 w-5" />
-                        Admin Pedidos
-                      </Button>
+
+                      {/* Menu Admin - Mobile - Apenas para admins */}
+                      {isAdmin && (
+                        <>
+                          <div className="border-t border-border my-2" />
+                          <div className="px-3 py-2">
+                            <p className="text-xs font-semibold text-muted-foreground flex items-center gap-2">
+                              <Shield className="h-4 w-4" />
+                              ÁREA ADMINISTRATIVA
+                            </p>
+                          </div>
+
+                          <Button
+                            variant="ghost"
+                            className="justify-start gap-3 text-base"
+                            onClick={() => handleNavigation("/admin/motoristas")}
+                          >
+                            <Truck className="h-5 w-5" />
+                            Motoristas
+                          </Button>
+
+                          <Button
+                            variant="ghost"
+                            className="justify-start gap-3 text-base"
+                            onClick={() => handleNavigation("/admin/pedidos")}
+                          >
+                            <FileText className="h-5 w-5" />
+                            Pedidos & KPIs
+                          </Button>
+
+                          <Button
+                            variant="ghost"
+                            className="justify-start gap-3 text-base"
+                            onClick={() => handleNavigation("/admin/calculadora-b2b")}
+                          >
+                            <Settings className="h-5 w-5" />
+                            Calculadora B2B
+                          </Button>
+                        </>
+                      )}
+
                       <div className="border-t pt-4 mt-4">
                         <Button
                           variant="ghost"
