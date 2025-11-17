@@ -25,25 +25,39 @@ export default function Profile() {
   });
 
   useEffect(() => {
-    loadProfile();
+    checkAuthAndLoadProfile();
   }, []);
 
-  const loadProfile = async () => {
+  const checkAuthAndLoadProfile = async () => {
     try {
       setLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
+      
+      // Verificar se o usuário está autenticado
+      const { data: { session } } = await supabase.auth.getSession();
 
-      if (!user) {
+      if (!session) {
+        toast.error("Você precisa estar logado para acessar esta página.");
         navigate("/auth");
         return;
       }
 
-      setUserId(user.id);
+      setUserId(session.user.id);
+      await loadProfile(session.user.id);
+    } catch (error: any) {
+      console.error("Erro ao verificar autenticação:", error);
+      navigate("/auth");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadProfile = async (userId: string) => {
+    try {
 
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
-        .eq("user_id", user.id)
+        .eq("user_id", userId)
         .maybeSingle();
 
       if (error && error.code !== "PGRST116") {
@@ -62,8 +76,6 @@ export default function Profile() {
     } catch (error: any) {
       console.error("Erro ao carregar perfil:", error);
       toast.error("Erro ao carregar perfil.");
-    } finally {
-      setLoading(false);
     }
   };
 
