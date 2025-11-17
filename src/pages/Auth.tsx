@@ -16,6 +16,7 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [loginAttempts, setLoginAttempts] = useState(0);
 
   useEffect(() => {
     // Check if user is already logged in
@@ -75,8 +76,16 @@ const Auth = () => {
       if (error) throw error;
 
       toast.success("Login realizado com sucesso!");
+      setLoginAttempts(0); // Reset attempts on success
     } catch (error: any) {
+      setLoginAttempts(prev => prev + 1);
       toast.error(error.message);
+      
+      if (loginAttempts + 1 >= 2) {
+        toast.info("Tendo problemas? Você pode redefinir sua senha.", {
+          duration: 5000,
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -192,22 +201,40 @@ const Auth = () => {
 
         <div className="mt-6 text-center space-y-2">
           {!isResetPassword && !isSignUp && (
-            <button
-              type="button"
-              onClick={() => {
-                setIsResetPassword(true);
-                setIsSignUp(false);
-              }}
-              className="text-sm text-primary hover:underline block w-full"
-            >
-              Esqueceu sua senha?
-            </button>
+            <>
+              {loginAttempts >= 2 && (
+                <div className="bg-accent/10 border border-accent rounded-lg p-3 mb-3">
+                  <p className="text-sm text-accent-foreground font-medium mb-2">
+                    Não consegue acessar sua conta?
+                  </p>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    Após {loginAttempts} tentativas sem sucesso, recomendamos redefinir sua senha.
+                  </p>
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  setIsResetPassword(true);
+                  setIsSignUp(false);
+                  setLoginAttempts(0);
+                }}
+                className={`text-sm hover:underline block w-full ${
+                  loginAttempts >= 2 
+                    ? "text-accent font-semibold" 
+                    : "text-primary"
+                }`}
+              >
+                Esqueceu sua senha?
+              </button>
+            </>
           )}
           <button
             type="button"
             onClick={() => {
               setIsSignUp(!isSignUp);
               setIsResetPassword(false);
+              setLoginAttempts(0);
             }}
             className="text-sm text-primary hover:underline block w-full"
           >
