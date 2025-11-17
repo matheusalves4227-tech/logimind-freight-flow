@@ -53,7 +53,7 @@ export const PendingOrdersTable = ({ onUpdate }: PendingOrdersTableProps) => {
       const { data, error } = await supabase
         .from('orders')
         .select('id, tracking_code, origin_address, destination_address, origin_cep, destination_cep, weight_kg, height_cm, width_cm, length_cm, service_type, final_price, base_price, commission_applied, comissao_logimarket_perc, status, carrier_name, driver_id, driver_name, created_at, estimated_delivery, user_id')
-        .or('status.eq.pending,driver_id.is.null')
+        .eq('status', 'pending')
         .order('created_at', { ascending: false })
         .limit(50);
 

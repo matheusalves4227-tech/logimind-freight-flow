@@ -7,10 +7,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { FileText, Package, AlertCircle, Clock, TrendingUp, Truck, Calculator } from 'lucide-react';
+import { FileText, Package, AlertCircle, Clock, TrendingUp, Truck, Calculator, CheckCircle, XCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { PendingQuotesTable } from '@/components/admin/PendingQuotesTable';
 import { PendingOrdersTable } from '@/components/admin/PendingOrdersTable';
+import { AcceptedOrdersTable } from '@/components/admin/AcceptedOrdersTable';
+import { RejectedOrdersTable } from '@/components/admin/RejectedOrdersTable';
 import { LogiMindKPIs } from '@/components/admin/LogiMindKPIs';
 import { CarriersManagement } from '@/components/admin/CarriersManagement';
 
@@ -91,11 +93,11 @@ const AdminOrders = () => {
         .select('id', { count: 'exact', head: true })
         .eq('status', 'pending');
 
-      // Contar pedidos pendentes de motorista (status pending ou sem driver_id)
+      // Contar pedidos pendentes (status pending)
       const { count: ordersCount } = await supabase
         .from('orders')
         .select('id', { count: 'exact', head: true })
-        .or('status.eq.pending,driver_id.is.null');
+        .eq('status', 'pending');
 
       // Total de pedidos
       const { count: totalCount } = await supabase
@@ -228,7 +230,7 @@ const AdminOrders = () => {
 
         {/* Tabs de Conteúdo */}
         <Tabs defaultValue="carriers" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 max-w-3xl">
+          <TabsList className="grid w-full grid-cols-6 max-w-5xl">
             <TabsTrigger value="carriers" className="gap-2">
               <Truck className="h-4 w-4" />
               Transportadoras
@@ -246,14 +248,22 @@ const AdminOrders = () => {
                 </Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="orders" className="gap-2">
+            <TabsTrigger value="orders-pending" className="gap-2">
               <AlertCircle className="h-4 w-4" />
-              Pedidos
+              Pendentes
               {stats.pendingOrders > 0 && (
                 <Badge variant="destructive" className="ml-2">
                   {stats.pendingOrders}
                 </Badge>
               )}
+            </TabsTrigger>
+            <TabsTrigger value="orders-accepted" className="gap-2">
+              <CheckCircle className="h-4 w-4" />
+              Aceitos
+            </TabsTrigger>
+            <TabsTrigger value="orders-rejected" className="gap-2">
+              <XCircle className="h-4 w-4" />
+              Rejeitados
             </TabsTrigger>
           </TabsList>
 
@@ -269,8 +279,16 @@ const AdminOrders = () => {
             <PendingQuotesTable onUpdate={fetchStats} />
           </TabsContent>
 
-          <TabsContent value="orders">
+          <TabsContent value="orders-pending">
             <PendingOrdersTable onUpdate={fetchStats} />
+          </TabsContent>
+
+          <TabsContent value="orders-accepted">
+            <AcceptedOrdersTable onUpdate={fetchStats} />
+          </TabsContent>
+
+          <TabsContent value="orders-rejected">
+            <RejectedOrdersTable onUpdate={fetchStats} />
           </TabsContent>
         </Tabs>
       </main>
