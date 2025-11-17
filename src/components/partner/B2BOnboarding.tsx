@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import { supabase } from "@/integrations/supabase/client";
 import { validateCNPJ } from "@/lib/validators";
+import { CpfCnpjInput } from "@/components/ui/cpf-cnpj-input";
 
 interface B2BOnboardingProps {
   cnpj: string;

@@ -14,6 +14,7 @@ import { Stepper } from "@/components/ui/stepper";
 import { supabase } from "@/integrations/supabase/client";
 import { validateCPF } from "@/lib/validators";
 import { ProfilePhotoUpload } from "@/components/driver/ProfilePhotoUpload";
+import { CpfCnpjInput } from "@/components/ui/cpf-cnpj-input";
 
 // Schema de validação com Zod
 const step1Schema = z.object({
