@@ -222,8 +222,33 @@ Deno.serve(async (req) => {
         metadata: auditMetadata,
       });
 
-    // 8. TODO: Enviar notificação ao motorista (email ou push notification)
-    // Implementar envio de e-mail informando aprovação ou rejeição
+    // 8. CRÍTICO: Enviar notificação por email ao motorista
+    try {
+      console.log(`[APPROVE-DRIVER] Enviando email para ${driverProfile.email}...`);
+      
+      const { error: emailError } = await supabaseClient.functions.invoke(
+        'send-approval-notification',
+        {
+          body: {
+            email: driverProfile.email,
+            name: driverProfile.full_name,
+            status: action === 'approve' ? 'approved' : 'rejected',
+            userType: 'driver',
+            rejectionReason: rejection_reason,
+          },
+        }
+      );
+
+      if (emailError) {
+        console.error('[APPROVE-DRIVER] Erro ao enviar email:', emailError);
+        // Não bloqueia o processo, apenas loga o erro
+      } else {
+        console.log(`[APPROVE-DRIVER] ✅ Email enviado com sucesso para ${driverProfile.email}`);
+      }
+    } catch (emailException) {
+      console.error('[APPROVE-DRIVER] Exceção ao enviar email:', emailException);
+      // Não bloqueia o processo de aprovação/rejeição
+    }
 
     console.log(`[APPROVE-DRIVER] ✅ Processo concluído com sucesso`);
 

@@ -39,6 +39,33 @@ const B2BOnboarding = ({ cnpj, onBack }: B2BOnboardingProps) => {
     }
     
     try {
+      toast.loading("Validando CNPJ...");
+
+      // NOVO: Verificar duplicidade de CNPJ
+      const { data: duplicityCheck, error: duplicityError } = await supabase.functions.invoke(
+        'check-cpf-cnpj-duplicity',
+        {
+          body: {
+            cpf_cnpj: cnpj,
+            type: 'cnpj'
+          }
+        }
+      );
+
+      if (duplicityError) {
+        console.error("Erro ao verificar duplicidade:", duplicityError);
+        toast.dismiss();
+        toast.error("Erro ao validar CNPJ. Tente novamente.");
+        return;
+      }
+
+      if (duplicityCheck.isDuplicate) {
+        toast.dismiss();
+        toast.error(`Este CNPJ já está cadastrado. Status: ${duplicityCheck.existingUser.status}`);
+        return;
+      }
+
+      toast.dismiss();
       toast.loading("Criando sua conta...");
 
       // 1. Criar conta de usuário
