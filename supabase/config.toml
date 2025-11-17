@@ -24,3 +24,9 @@ verify_jwt = false
 [functions.approve-driver]
 verify_jwt = true
 
+[functions.approve-b2b-carrier]
+verify_jwt = true
+
+[functions.notify-admin-new-registration]
+verify_jwt = false
+
