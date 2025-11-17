@@ -8,13 +8,16 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Shield, Users, FileText, AlertCircle, CheckCircle, Wallet, Truck, TrendingUp, Clock, Package, Download } from 'lucide-react';
+import { Shield, Users, FileText, AlertCircle, CheckCircle, Wallet, Truck, TrendingUp, Clock, Package, Download, History, Ban } from 'lucide-react';
 import { DriverApprovalModal } from '@/components/admin/DriverApprovalModal';
 import { PaymentTestPanel } from '@/components/admin/PaymentTestPanel';
 import { FinancialKPIs } from '@/components/admin/FinancialKPIs';
 import { PendingPayoutsTable } from '@/components/admin/PendingPayoutsTable';
 import { DriverFilters } from '@/components/admin/DriverFilters';
 import { BulkDriverActions } from '@/components/admin/BulkDriverActions';
+import { AdminDriverHistory } from '@/components/admin/AdminDriverHistory';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import * as XLSX from 'xlsx';
 
@@ -58,6 +61,10 @@ const AdminDrivers = () => {
   const [approvedDrivers, setApprovedDrivers] = useState<ApprovedDriver[]>([]);
   const [selectedDriver, setSelectedDriver] = useState<PendingDriver | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [selectedApprovedDriver, setSelectedApprovedDriver] = useState<ApprovedDriver | null>(null);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const [suspendDialogOpen, setSuspendDialogOpen] = useState(false);
+  const [driverToSuspend, setDriverToSuspend] = useState<ApprovedDriver | null>(null);
   const [totalDrivers, setTotalDrivers] = useState(0);
   const [verifiedDocs, setVerifiedDocs] = useState(0);
   const [approvedWithPix, setApprovedWithPix] = useState(0);
@@ -232,6 +239,56 @@ const AdminDrivers = () => {
     setSelectedDriver(null);
     setSelectedDriverIds([]);
     fetchPendingDrivers(); // Recarregar lista
+  };
+
+  const handleViewHistory = (driver: ApprovedDriver) => {
+    setSelectedApprovedDriver(driver);
+    setProfileModalOpen(true);
+  };
+
+  const handleSuspendClick = (driver: ApprovedDriver) => {
+    setDriverToSuspend(driver);
+    setSuspendDialogOpen(true);
+  };
+
+  const handleSuspendConfirm = async () => {
+    if (!driverToSuspend) return;
+
+    try {
+      const { error } = await supabase
+        .from('driver_profiles')
+        .update({ status: 'suspended' })
+        .eq('id', driverToSuspend.id);
+
+      if (error) throw error;
+
+      // Registrar ação de auditoria
+      await logAction({
+        action: 'driver_rejection',
+        reason: 'Motorista suspenso pelo administrador',
+        metadata: {
+          driver_id: driverToSuspend.id,
+          driver_name: driverToSuspend.full_name,
+          previous_status: driverToSuspend.status,
+        },
+      });
+
+      toast({
+        title: 'Motorista Suspenso',
+        description: `${driverToSuspend.full_name} foi suspenso com sucesso`,
+      });
+
+      setSuspendDialogOpen(false);
+      setDriverToSuspend(null);
+      fetchPendingDrivers(); // Recarregar dados
+    } catch (error) {
+      console.error('Erro ao suspender motorista:', error);
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível suspender o motorista',
+        variant: 'destructive',
+      });
+    }
   };
 
   // Filtrar motoristas baseado nos filtros
@@ -784,13 +841,17 @@ const AdminDrivers = () => {
                               variant="outline"
                               size="sm"
                               className="mr-2"
+                              onClick={() => handleViewHistory(driver)}
                             >
+                              <History className="h-4 w-4 mr-1" />
                               Ver Histórico
                             </Button>
                             <Button
                               variant="destructive"
                               size="sm"
+                              onClick={() => handleSuspendClick(driver)}
                             >
+                              <Ban className="h-4 w-4 mr-1" />
                               Suspender
                             </Button>
                           </TableCell>
@@ -814,6 +875,48 @@ const AdminDrivers = () => {
           onComplete={handleApprovalComplete}
         />
       )}
+
+      {/* Modal de Histórico/Perfil */}
+      <Dialog open={profileModalOpen} onOpenChange={setProfileModalOpen}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Histórico do Motorista</DialogTitle>
+            <DialogDescription>
+              Informações completas e histórico de atividades
+            </DialogDescription>
+          </DialogHeader>
+          {selectedApprovedDriver && (
+            <AdminDriverHistory 
+              driverId={selectedApprovedDriver.id}
+              driverName={selectedApprovedDriver.full_name}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog de Confirmação de Suspensão */}
+      <AlertDialog open={suspendDialogOpen} onOpenChange={setSuspendDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar Suspensão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja suspender o motorista <strong>{driverToSuspend?.full_name}</strong>?
+              <br /><br />
+              Esta ação irá impedir que o motorista acesse o sistema e aceite novos fretes.
+              A ação será registrada nos logs de auditoria.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleSuspendConfirm}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              Sim, Suspender
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
