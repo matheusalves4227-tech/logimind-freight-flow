@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.81.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit } from "../_shared/rateLimit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -24,6 +25,42 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
+
+    // Extract IP address for rate limiting
+    const forwarded = req.headers.get("x-forwarded-for");
+    const ip = forwarded ? forwarded.split(",")[0] : "unknown";
+    
+    // Apply rate limiting: 5 requests per hour per IP
+    const rateLimit = await checkRateLimit(
+      supabaseClient,
+      ip,
+      {
+        endpoint: "notify-admin-new-registration",
+        limit: 5,
+        windowMinutes: 60
+      }
+    );
+
+    if (!rateLimit.allowed) {
+      console.warn(`[NOTIFY-ADMIN] Rate limit exceeded for IP ${ip}`);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          message: "Too many requests. Please try again later.",
+          retryAfter: rateLimit.reset.toISOString()
+        }),
+        {
+          status: 429,
+          headers: { 
+            "Content-Type": "application/json",
+            "X-RateLimit-Limit": rateLimit.limit.toString(),
+            "X-RateLimit-Remaining": rateLimit.remaining.toString(),
+            "X-RateLimit-Reset": rateLimit.reset.toISOString(),
+            ...corsHeaders 
+          },
+        }
+      );
+    }
 
     const { registrationType, userName, userEmail, registrationId }: NotificationRequest = await req.json();
 

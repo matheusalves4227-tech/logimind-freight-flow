@@ -16,7 +16,7 @@ verify_jwt = true
 verify_jwt = false
 
 [functions.send-approval-notification]
-verify_jwt = false
+verify_jwt = true
 
 [functions.approve-driver]
 verify_jwt = true
