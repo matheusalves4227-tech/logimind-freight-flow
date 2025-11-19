@@ -7,6 +7,7 @@ import { OrderDetail, OrderDetails } from "@/components/dashboard/OrderDetail";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { Helmet } from "react-helmet-async";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -282,20 +283,33 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
-        <Navbar />
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12">
-          <div className="flex items-center justify-center h-64">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <>
+        <Helmet>
+          <title>Meu Dashboard - LogiMarket</title>
+          <meta name="robots" content="noindex, nofollow" />
+        </Helmet>
+        
+        <div className="min-h-screen bg-background">
+          <Navbar />
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12">
+            <div className="flex items-center justify-center h-64">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
           </div>
         </div>
-      </div>
+      </>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
+    <>
+      <Helmet>
+        <title>Meu Dashboard - LogiMarket</title>
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
+      
+      <div className="min-h-screen bg-background">
+        <Navbar />
       
       <div className="container mx-auto px-4 pt-20 md:pt-24 pb-8 md:pb-12">
         {selectedOrderId && orderDetails ? (
@@ -325,6 +339,7 @@ const Dashboard = () => {
         )}
       </div>
     </div>
+    </>
   );
 };
 
