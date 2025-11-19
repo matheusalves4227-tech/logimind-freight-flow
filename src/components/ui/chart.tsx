@@ -58,6 +58,19 @@ const ChartContainer = React.forwardRef<
 });
 ChartContainer.displayName = "Chart";
 
+/**
+ * Validates that a color value is safe for CSS injection.
+ * Prevents XSS attacks through malicious color values.
+ * 
+ * @param color - Color value to validate
+ * @returns true if color matches safe CSS patterns, false otherwise
+ */
+const isValidColor = (color: string): boolean => {
+  // Allow: hex colors, rgb/rgba, hsl/hsla, CSS variables
+  const safeColorPattern = /^(#[0-9A-Fa-f]{3,8}|rgba?\([^)]+\)|hsla?\([^)]+\)|var\([^)]+\))$/;
+  return safeColorPattern.test(color.trim());
+};
+
 const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
   const colorConfig = Object.entries(config).filter(([_, config]) => config.theme || config.color);
 
@@ -75,7 +88,9 @@ ${prefix} [data-chart=${id}] {
 ${colorConfig
   .map(([key, itemConfig]) => {
     const color = itemConfig.theme?.[theme as keyof typeof itemConfig.theme] || itemConfig.color;
-    return color ? `  --color-${key}: ${color};` : null;
+    // Validate color to prevent CSS injection attacks
+    const safeColor = color && isValidColor(color) ? color : 'hsl(var(--muted))';
+    return `  --color-${key}: ${safeColor};`;
   })
   .join("\n")}
 }
