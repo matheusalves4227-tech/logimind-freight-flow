@@ -424,7 +424,7 @@ const Tracking = () => {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
