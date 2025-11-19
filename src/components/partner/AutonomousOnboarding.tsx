@@ -22,12 +22,9 @@ const step1Schema = z.object({
   email: z.string().trim().email("E-mail inválido").max(255, "E-mail muito longo"),
   telefone: z.string().trim().min(10, "Telefone inválido").max(20, "Telefone inválido"),
   whatsapp: z.string().trim().max(20, "WhatsApp inválido").optional(),
-  cnh_numero: z.string().trim().min(11, "CNH inválida").max(11, "CNH inválida"),
+  cnh_numero: z.string().trim().min(11, "CNH deve ter 11 dígitos").max(11, "CNH deve ter 11 dígitos").regex(/^\d+$/, "CNH deve conter apenas números"),
   cnh_categoria: z.string().min(1, "Selecione a categoria"),
   rntrc: z.string().trim().min(8, "RNTRC inválido").max(20, "RNTRC inválido"),
-}).refine((data) => validateCPF(data.cnh_numero.substring(0, 11)), {
-  message: "CPF inválido",
-  path: ["cnh_numero"],
 });
 
 const step2Schema = z.object({
