@@ -186,9 +186,9 @@ const AutonomousOnboarding = ({ cpf, onBack }: AutonomousOnboardingProps) => {
         return;
       }
 
-      if (duplicityCheck.isDuplicate) {
+      if (duplicityCheck?.isDuplicate) {
         toast.dismiss();
-        toast.error(`Este CPF já está cadastrado. Status: ${duplicityCheck.existingUser.status}`);
+        toast.error("Este CPF já está cadastrado no sistema.");
         return;
       }
 
