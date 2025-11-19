@@ -8,8 +8,9 @@ const corsHeaders = {
 };
 
 interface CheckRequest {
-  cpf_cnpj: string;
-  type: "cpf" | "cnpj";
+  cpf_cnpj?: string;
+  email?: string;
+  type: "cpf" | "cnpj" | "email";
 }
 
 serve(async (req) => {
@@ -60,14 +61,57 @@ serve(async (req) => {
       );
     }
 
-    const { cpf_cnpj, type }: CheckRequest = await req.json();
+    const { cpf_cnpj, email, type }: CheckRequest = await req.json();
+
+    let isDuplicate = false;
+    let duplicateType: 'cpf' | 'email' | 'both' | null = null;
+
+    if (type === "email" && email) {
+      // Verificar email no auth.users
+      const cleanEmail = email.trim().toLowerCase();
+      console.log(`[CHECK-DUPLICITY] Verificando EMAIL: ${cleanEmail.substring(0, 3)}*** de IP ${ip}`);
+
+      const { data: authUsers, error: authError } = await supabaseClient.auth.admin.listUsers();
+
+      if (authError) {
+        console.error("[CHECK-DUPLICITY] Erro ao buscar usuários:", authError);
+        throw authError;
+      }
+
+      const emailExists = authUsers.users.some(user => user.email?.toLowerCase() === cleanEmail);
+      isDuplicate = emailExists;
+      duplicateType = emailExists ? 'email' : null;
+
+      console.log(`[CHECK-DUPLICITY] Resultado EMAIL: ${isDuplicate ? "DUPLICADO" : "DISPONÍVEL"}`);
+
+      return new Response(
+        JSON.stringify({ 
+          isDuplicate,
+          duplicateType,
+          message: isDuplicate 
+            ? "Este email já está cadastrado no sistema." 
+            : "Email disponível para cadastro."
+        }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    if (!cpf_cnpj) {
+      return new Response(
+        JSON.stringify({ error: "CPF/CNPJ é obrigatório" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
 
     // Remove formatação (pontos, traços, barras)
     const cleanDocument = cpf_cnpj.replace(/\D/g, "");
-
     console.log(`[CHECK-DUPLICITY] Verificando ${type.toUpperCase()}: ${cleanDocument.substring(0, 3)}*** de IP ${ip}`);
-
-    let isDuplicate = false;
 
     if (type === "cpf") {
       // Verificar na tabela driver_profiles
@@ -82,6 +126,7 @@ serve(async (req) => {
       }
 
       isDuplicate = drivers && drivers.length > 0;
+      duplicateType = isDuplicate ? 'cpf' : null;
     } else if (type === "cnpj") {
       // Verificar na tabela b2b_carriers
       const { data: carriers, error: carrierError } = await supabaseClient
@@ -95,6 +140,7 @@ serve(async (req) => {
       }
 
       isDuplicate = carriers && carriers.length > 0;
+      duplicateType = isDuplicate ? 'cpf' : null;
     }
 
     console.log(`[CHECK-DUPLICITY] Resultado: ${isDuplicate ? "DUPLICADO" : "DISPONÍVEL"}`);
@@ -102,6 +148,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         isDuplicate,
+        duplicateType,
         message: isDuplicate 
           ? `Este ${type.toUpperCase()} já está cadastrado no sistema.` 
           : `${type.toUpperCase()} disponível para cadastro.`
