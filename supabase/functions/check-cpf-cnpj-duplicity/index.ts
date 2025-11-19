@@ -19,33 +19,15 @@ serve(async (req) => {
   }
 
   try {
-    // Verify authentication (JWT required)
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: "Authentication required" }),
-        { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
-      );
-    }
-
+    // Use SERVICE_ROLE_KEY to bypass RLS for public duplicate check
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-      { global: { headers: { Authorization: authHeader } } }
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
-
-    // Verify user authentication
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
-    if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: "Invalid authentication" }),
-        { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
-      );
-    }
 
     // Extract IP address for rate limiting
     const forwarded = req.headers.get("x-forwarded-for");
-    const ip = forwarded ? forwarded.split(",")[0] : user.id;
+    const ip = forwarded ? forwarded.split(",")[0] : "anonymous";
     
     // Apply rate limiting: 10 requests per minute per user
     const rateLimit = await checkRateLimit(
@@ -59,7 +41,7 @@ serve(async (req) => {
     );
 
     if (!rateLimit.allowed) {
-      console.warn(`[CHECK-DUPLICITY] Rate limit exceeded for user ${user.id}`);
+      console.warn(`[CHECK-DUPLICITY] Rate limit exceeded for IP ${ip}`);
       return new Response(
         JSON.stringify({ 
           error: "Too many requests. Please try again later.",
@@ -83,7 +65,7 @@ serve(async (req) => {
     // Remove formatação (pontos, traços, barras)
     const cleanDocument = cpf_cnpj.replace(/\D/g, "");
 
-    console.log(`[CHECK-DUPLICITY] Verificando ${type.toUpperCase()}: ${cleanDocument.substring(0, 3)}*** para usuário ${user.id}`);
+    console.log(`[CHECK-DUPLICITY] Verificando ${type.toUpperCase()}: ${cleanDocument.substring(0, 3)}*** de IP ${ip}`);
 
     let isDuplicate = false;
 
