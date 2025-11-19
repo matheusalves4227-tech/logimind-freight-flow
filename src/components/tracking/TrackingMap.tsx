@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
 
 interface TrackingMapProps {
@@ -26,25 +25,16 @@ export const TrackingMap = ({
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [loading, setLoading] = useState(true);
-  const [mapboxToken, setMapboxToken] = useState<string>('');
 
   useEffect(() => {
-    // Buscar token do Mapbox
-    const fetchToken = async () => {
-      try {
-        const { data } = await supabase.functions.invoke('get-mapbox-token');
-        if (data?.token) {
-          setMapboxToken(data.token);
-        }
-      } catch (error) {
-        console.error('Error fetching Mapbox token:', error);
-      }
-    };
-    fetchToken();
-  }, []);
+    if (!mapContainer.current) return;
 
-  useEffect(() => {
-    if (!mapContainer.current || !mapboxToken) return;
+    const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
+    if (!mapboxToken) {
+      console.error('Mapbox token not configured');
+      setLoading(false);
+      return;
+    }
 
     mapboxgl.accessToken = mapboxToken;
 
@@ -96,20 +86,32 @@ export const TrackingMap = ({
         el.style.width = '48px';
         el.style.height = '48px';
 
+        // Create popup content safely using DOM
+        const popupDiv = document.createElement('div');
+        popupDiv.style.padding = '8px';
+        popupDiv.style.minWidth = '200px';
+
+        const locationText = document.createElement('strong');
+        locationText.style.color = '#FBBC05';
+        locationText.style.fontSize = '14px';
+        locationText.textContent = '🚚 Localização Atual';
+
+        const updateText = document.createElement('p');
+        updateText.style.fontSize = '12px';
+        updateText.style.color = '#666';
+        updateText.style.marginTop = '4px';
+        updateText.textContent = currentLocation.lastUpdate ? 
+          `Atualizado: ${new Date(currentLocation.lastUpdate).toLocaleString('pt-BR')}` 
+          : 'Última atualização disponível';
+
+        popupDiv.appendChild(locationText);
+        popupDiv.appendChild(updateText);
+
         new mapboxgl.Marker({ element: el, anchor: 'center' })
           .setLngLat([currentLocation.lng, currentLocation.lat])
           .setPopup(
             new mapboxgl.Popup({ offset: 25 })
-              .setHTML(`
-                <div style="padding: 8px; min-width: 200px;">
-                  <strong style="color: #FBBC05; font-size: 14px;">🚚 Localização Atual</strong>
-                  <p style="font-size: 12px; color: #666; margin-top: 4px;">
-                    ${currentLocation.lastUpdate ? 
-                      `Atualizado: ${new Date(currentLocation.lastUpdate).toLocaleString('pt-BR')}` 
-                      : 'Última atualização disponível'}
-                  </p>
-                </div>
-              `)
+              .setDOMContent(popupDiv)
           )
           .addTo(map.current);
       }
@@ -130,16 +132,27 @@ export const TrackingMap = ({
         // Coordenadas mock para origem (exemplo: São Paulo)
         const originCoords: [number, number] = [-46.6333, -23.5505];
         
+        // Create origin popup content safely
+        const originPopupDiv = document.createElement('div');
+        originPopupDiv.style.padding = '8px';
+
+        const originTitle = document.createElement('strong');
+        originTitle.style.color = '#1A73E8';
+        originTitle.textContent = '📍 Origem';
+
+        const originCepText = document.createElement('p');
+        originCepText.style.fontSize = '12px';
+        originCepText.style.marginTop = '4px';
+        originCepText.textContent = `CEP: ${originCep}`;
+
+        originPopupDiv.appendChild(originTitle);
+        originPopupDiv.appendChild(originCepText);
+
         new mapboxgl.Marker({ element: originEl, anchor: 'bottom' })
           .setLngLat(originCoords)
           .setPopup(
             new mapboxgl.Popup({ offset: 25 })
-              .setHTML(`
-                <div style="padding: 8px;">
-                  <strong style="color: #1A73E8;">📍 Origem</strong>
-                  <p style="font-size: 12px; margin-top: 4px;">CEP: ${originCep}</p>
-                </div>
-              `)
+              .setDOMContent(originPopupDiv)
           )
           .addTo(map.current);
       }
@@ -158,16 +171,27 @@ export const TrackingMap = ({
         // Coordenadas mock para destino (exemplo: Rio de Janeiro)
         const destCoords: [number, number] = [-43.1729, -22.9068];
         
+        // Create destination popup content safely
+        const destPopupDiv = document.createElement('div');
+        destPopupDiv.style.padding = '8px';
+
+        const destTitle = document.createElement('strong');
+        destTitle.style.color = '#34A853';
+        destTitle.textContent = '🏁 Destino';
+
+        const destCepText = document.createElement('p');
+        destCepText.style.fontSize = '12px';
+        destCepText.style.marginTop = '4px';
+        destCepText.textContent = `CEP: ${destinationCep}`;
+
+        destPopupDiv.appendChild(destTitle);
+        destPopupDiv.appendChild(destCepText);
+
         new mapboxgl.Marker({ element: destEl, anchor: 'bottom' })
           .setLngLat(destCoords)
           .setPopup(
             new mapboxgl.Popup({ offset: 25 })
-              .setHTML(`
-                <div style="padding: 8px;">
-                  <strong style="color: #34A853;">🏁 Destino</strong>
-                  <p style="font-size: 12px; margin-top: 4px;">CEP: ${destinationCep}</p>
-                </div>
-              `)
+              .setDOMContent(destPopupDiv)
           )
           .addTo(map.current);
       }
@@ -181,9 +205,9 @@ export const TrackingMap = ({
     return () => {
       map.current?.remove();
     };
-  }, [mapboxToken, currentLocation, serviceType, originCep, destinationCep]);
+  }, [currentLocation, serviceType, originCep, destinationCep]);
 
-  if (loading || !mapboxToken) {
+  if (loading) {
     return (
       <div className="w-full h-full flex items-center justify-center bg-muted/30 rounded-lg">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
