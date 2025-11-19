@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Helmet } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RankingDisplay } from "@/components/reviews/RankingDisplay";
@@ -7,9 +8,29 @@ import { Users, Truck, Trophy } from "lucide-react";
 const Ranking = () => {
   const [activeTab, setActiveTab] = useState("drivers");
 
+  const rankingSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": "Ranking de Transportadoras e Motoristas - LogiMarket",
+    "description": "Ranking dinâmico de desempenho baseado em entregas realizadas, avaliações e KPIs da plataforma",
+    "itemListElement": []
+  };
+
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
+    <>
+      <Helmet>
+        <title>Ranking de Transportadoras | Melhores Fretes - LogiMarket</title>
+        <meta name="description" content="Veja o ranking das melhores transportadoras e motoristas do Brasil. Compare desempenho, pontualidade e avaliações de clientes reais." />
+        <link rel="canonical" href="https://logimarket.com.br/ranking" />
+        <meta property="og:url" content="https://logimarket.com.br/ranking" />
+        <meta property="og:type" content="website" />
+        <script type="application/ld+json">
+          {JSON.stringify(rankingSchema)}
+        </script>
+      </Helmet>
+      
+      <div className="min-h-screen bg-background">
+        <Navbar />
       
       <main className="container mx-auto px-4 py-8 pt-24">
         <div className="max-w-5xl mx-auto">
@@ -75,7 +96,8 @@ const Ranking = () => {
           </div>
         </div>
       </main>
-    </div>
+      </div>
+    </>
   );
 };
 

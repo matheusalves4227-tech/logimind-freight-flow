@@ -1,4 +1,5 @@
 import { HelpCircle } from "lucide-react";
+import { Helmet } from "react-helmet-async";
 import {
   Accordion,
   AccordionContent,
@@ -9,9 +10,68 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 const FAQ = () => {
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Como funciona a precificação do LogiMarket?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "O LogiMarket utiliza o LogiMind, nossa IA de precificação dinâmica, que analisa múltiplos fatores em tempo real: Preço base das transportadoras parceiras, Tipo de rota (alta demanda, retorno, padrão), Fator de risco da região, Performance histórica das transportadoras, Demanda atual do mercado. A comissão aplicada varia entre 5% e 18% dependendo desses fatores, garantindo sempre o melhor preço final para você."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "O que é o LogiMind e como ele me ajuda a economizar?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "O LogiMind é nosso agente de precificação inteligente que otimiza custos através de três estratégias principais: Rotas de Alta Demanda (reduz nossa comissão para 5-6% garantindo preço imbatível), Rotas de Retorno (aplica comissão maior mas subsidia o transportador), Análise de Risco (avalia segurança da rota e recomenda LogiGuard Pro quando necessário). Resultado: economia média de 42% comparado a cotações tradicionais."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "O que é o LogiGuard Pro?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "LogiGuard Pro é nosso serviço de segurança adicional para cargas de alto valor ou rotas de risco elevado. Inclui: Rastreamento 24/7 em tempo real, Escolta digital com alertas, Seguro adicional contra roubo de carga, Monitoramento por Central de Segurança. É recomendado automaticamente quando detectamos condições de risco."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Como funciona o rastreamento unificado?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Após contratar o frete, você recebe um código de rastreamento único (formato LM-YYYY-MM-XXXX). Este código consolida informações de todas as transportadoras parceiras em um único painel, eliminando a necessidade de acessar múltiplos sites."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Quais são as formas de pagamento aceitas?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Aceitamos: PIX (confirmação instantânea), Cartão de Crédito (parcelamento em até 12x), Boleto Bancário (confirmação em 1-2 dias úteis). O pagamento fica em custódia até a entrega confirmada."
+        }
+      }
+    ]
+  };
+
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
+    <>
+      <Helmet>
+        <title>Perguntas Frequentes - Como Funciona o LogiMarket</title>
+        <meta name="description" content="Tire suas dúvidas sobre cotação de frete, rastreamento, pagamento e como funciona o marketplace logístico LogiMarket." />
+        <link rel="canonical" href="https://logimarket.com.br/faq" />
+        <meta property="og:url" content="https://logimarket.com.br/faq" />
+        <meta property="og:type" content="website" />
+        <script type="application/ld+json">
+          {JSON.stringify(faqSchema)}
+        </script>
+      </Helmet>
+      
+      <div className="min-h-screen bg-background">
+        <Navbar />
       
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 pt-24">
         {/* Header */}
@@ -432,7 +492,8 @@ const FAQ = () => {
       </div>
 
       <Footer />
-    </div>
+      </div>
+    </>
   );
 };
 

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,8 +47,17 @@ const PartnerOnboarding = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
+    <>
+      <Helmet>
+        <title>Cadastre sua Transportadora - Aumente Seus Fretes | LogiMarket</title>
+        <meta name="description" content="Cadastre sua transportadora ou torne-se motorista parceiro. Acesse milhares de oportunidades de frete e aumente sua receita." />
+        <link rel="canonical" href="https://logimarket.com.br/parceiro/cadastro" />
+        <meta property="og:url" content="https://logimarket.com.br/parceiro/cadastro" />
+        <meta property="og:type" content="website" />
+      </Helmet>
+      
+      <div className="min-h-screen bg-background">
+        <Navbar />
       
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12">
         <Button
@@ -150,7 +160,8 @@ const PartnerOnboarding = () => {
           </Card>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 

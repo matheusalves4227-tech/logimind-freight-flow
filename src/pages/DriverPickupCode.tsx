@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import Navbar from "@/components/Navbar";
@@ -83,8 +84,14 @@ const DriverPickupCode = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
+    <>
+      <Helmet>
+        <title>Validação de Coleta - LogiMarket</title>
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
+      
+      <div className="min-h-screen bg-background">
+        <Navbar />
       
       <div className="container mx-auto px-4 py-8 pt-24 max-w-3xl">
         <Button 
@@ -106,6 +113,7 @@ const DriverPickupCode = () => {
         <DriverPickupValidation orderId={orderId!} />
       </div>
     </div>
+    </>
   );
 };
 

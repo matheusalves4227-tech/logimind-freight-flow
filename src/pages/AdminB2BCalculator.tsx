@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
@@ -69,8 +70,14 @@ const AdminB2BCalculator = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
+    <>
+      <Helmet>
+        <title>Calculadora B2B - Admin - LogiMarket</title>
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
+      
+      <div className="min-h-screen bg-background">
+        <Navbar />
       
       <div className="container mx-auto px-4 py-8 pt-24 max-w-6xl">
         <Button 
@@ -92,6 +99,7 @@ const AdminB2BCalculator = () => {
         <B2BQuoteCalculator />
       </div>
     </div>
+    </>
   );
 };
 
