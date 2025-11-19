@@ -1,14 +1,44 @@
+# Bots de busca principais - Acesso controlado
 User-agent: Googlebot
 Allow: /
+Disallow: /admin/
+Disallow: /dashboard
+Disallow: /perfil
+Disallow: /motorista/
+Disallow: /validar-motorista/
 
 User-agent: Bingbot
 Allow: /
+Disallow: /admin/
+Disallow: /dashboard
+Disallow: /perfil
+Disallow: /motorista/
+Disallow: /validar-motorista/
 
+# Bots de redes sociais - Apenas páginas públicas
 User-agent: Twitterbot
 Allow: /
+Disallow: /admin/
+Disallow: /dashboard
+Disallow: /perfil
+Disallow: /motorista/
 
 User-agent: facebookexternalhit
 Allow: /
+Disallow: /admin/
+Disallow: /dashboard
+Disallow: /perfil
+Disallow: /motorista/
 
+# Todos os outros bots
 User-agent: *
 Allow: /
+Disallow: /admin/
+Disallow: /dashboard
+Disallow: /perfil
+Disallow: /motorista/
+Disallow: /validar-motorista/
+Disallow: /tracking/
+
+# Sitemap
+Sitemap: https://logimarket.com.br/sitemap.xml
