@@ -192,6 +192,33 @@ const AutonomousOnboarding = ({ cpf, onBack }: AutonomousOnboardingProps) => {
         return;
       }
 
+      // NOVO: Verificar duplicidade de EMAIL antes de criar conta
+      toast.dismiss();
+      toast.loading("Validando email...");
+
+      const { data: emailCheck, error: emailError } = await supabase.functions.invoke(
+        'check-cpf-cnpj-duplicity',
+        {
+          body: {
+            email: formData.email,
+            type: 'email'
+          }
+        }
+      );
+
+      if (emailError) {
+        console.error("Erro ao verificar email:", emailError);
+        toast.dismiss();
+        toast.error("Erro ao validar email. Tente novamente.");
+        return;
+      }
+
+      if (emailCheck?.isDuplicate) {
+        toast.dismiss();
+        toast.error("Este email já está em uso. Tente fazer login ou use outro email.");
+        return;
+      }
+
       toast.dismiss();
       toast.loading("Criando sua conta...");
 
@@ -207,7 +234,20 @@ const AutonomousOnboarding = ({ cpf, onBack }: AutonomousOnboardingProps) => {
         }
       });
 
-      if (authError) throw authError;
+      if (authError) {
+        console.error("Erro ao criar conta:", authError);
+        toast.dismiss();
+        
+        // Tratamento específico para email já registrado
+        if (authError.message.toLowerCase().includes("user already registered") || 
+            authError.message.toLowerCase().includes("already registered") ||
+            authError.message.toLowerCase().includes("already been registered")) {
+          toast.error("Este email já está em uso. Tente fazer login ou use outro email.");
+        } else {
+          toast.error(`Erro ao criar conta: ${authError.message}`);
+        }
+        return;
+      }
       if (!authData.user) throw new Error("Falha ao criar usuário");
 
       // 2. Criar perfil do motorista
