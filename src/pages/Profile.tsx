@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -331,7 +332,12 @@ export default function Profile() {
   }
 
   return (
-    <div className="container max-w-4xl py-8 px-4">
+    <>
+      <Helmet>
+        <title>Meu Perfil - LogiMarket</title>
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
+      <div className="container max-w-4xl py-8 px-4">
       <div className="mb-8">
         <h1 className="text-3xl font-bold flex items-center gap-2">
           <User className="h-8 w-8 text-primary" />
@@ -710,6 +716,7 @@ export default function Profile() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </>
   );
 }

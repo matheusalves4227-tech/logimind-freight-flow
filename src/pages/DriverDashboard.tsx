@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -68,8 +69,14 @@ const DriverDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
+    <>
+      <Helmet>
+        <title>Dashboard do Motorista - LogiMarket</title>
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
+      
+      <div className="min-h-screen bg-background">
+        <Navbar />
       
       <main className="container mx-auto px-4 py-8 pt-24">
         <div className="mb-6">
@@ -132,6 +139,7 @@ const DriverDashboard = () => {
         </Tabs>
       </main>
     </div>
+    </>
   );
 };
 
