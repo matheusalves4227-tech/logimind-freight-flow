@@ -11,6 +11,8 @@ import Navbar from "@/components/Navbar";
 import { supabase } from "@/integrations/supabase/client";
 import { validateCNPJ } from "@/lib/validators";
 import { CpfCnpjInput } from "@/components/ui/cpf-cnpj-input";
+import { PhoneInput } from "@/components/ui/phone-input";
+import { MoneyInput } from "@/components/ui/money-input";
 
 interface B2BOnboardingProps {
   cnpj: string;
@@ -227,16 +229,12 @@ const B2BOnboarding = ({ cnpj, onBack }: B2BOnboardingProps) => {
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="telefone">Telefone *</Label>
-                    <Input
-                      id="telefone"
-                      type="tel"
-                      value={formData.telefone}
-                      onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
-                      required
-                    />
-                  </div>
+                  <PhoneInput
+                    value={formData.telefone}
+                    onChange={(value) => setFormData({ ...formData, telefone: value })}
+                    label="Telefone"
+                    required
+                  />
                 </div>
               </div>
 

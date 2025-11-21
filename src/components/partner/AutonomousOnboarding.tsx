@@ -15,6 +15,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { validateCPF } from "@/lib/validators";
 import { ProfilePhotoUpload } from "@/components/driver/ProfilePhotoUpload";
 import { CpfCnpjInput } from "@/components/ui/cpf-cnpj-input";
+import { PhoneInput } from "@/components/ui/phone-input";
+import { WeightInput } from "@/components/ui/weight-input";
 
 // Schema de validação com Zod
 const step1Schema = z.object({
@@ -443,34 +445,20 @@ const AutonomousOnboarding = ({ cpf, onBack }: AutonomousOnboardingProps) => {
                           )}
                         </div>
 
-                        <div className="space-y-2">
-                          <Label htmlFor="telefone">Telefone *</Label>
-                          <Input
-                            id="telefone"
-                            type="tel"
-                            placeholder="(11) 98888-7777"
-                            value={formData.telefone}
-                            onChange={(e) => handleFormChange("telefone", e.target.value)}
-                            className={errors.telefone ? "border-destructive" : ""}
-                          />
-                          {errors.telefone && (
-                            <p className="text-xs text-destructive">{errors.telefone}</p>
-                          )}
-                          <p className="text-xs text-muted-foreground">
-                            Usaremos para envio de fretes e alertas
-                          </p>
-                        </div>
+                        <PhoneInput
+                          value={formData.telefone}
+                          onChange={(value) => handleFormChange("telefone", value)}
+                          label="Telefone"
+                          required
+                          error={errors.telefone}
+                        />
 
-                        <div className="space-y-2">
-                          <Label htmlFor="whatsapp">WhatsApp (Opcional)</Label>
-                          <Input
-                            id="whatsapp"
-                            type="tel"
-                            placeholder="(11) 98888-7777"
-                            value={formData.whatsapp}
-                            onChange={(e) => handleFormChange("whatsapp", e.target.value)}
-                          />
-                        </div>
+                        <PhoneInput
+                          value={formData.whatsapp}
+                          onChange={(value) => handleFormChange("whatsapp", value)}
+                          label="WhatsApp (Opcional)"
+                          error={errors.whatsapp}
+                        />
                       </div>
                     </div>
                   </div>
@@ -656,23 +644,14 @@ const AutonomousOnboarding = ({ cpf, onBack }: AutonomousOnboardingProps) => {
                         </p>
                       </div>
 
-                      <div className="space-y-2">
-                        <Label htmlFor="veiculo_capacidade_kg">Capacidade Máxima (kg) *</Label>
-                        <Input
-                          id="veiculo_capacidade_kg"
-                          type="number"
-                          placeholder="Ex: 5000"
-                          value={formData.veiculo_capacidade_kg}
-                          onChange={(e) => handleFormChange("veiculo_capacidade_kg", e.target.value)}
-                          className={errors.veiculo_capacidade_kg ? "border-destructive" : ""}
-                        />
-                        {errors.veiculo_capacidade_kg && (
-                          <p className="text-xs text-destructive">{errors.veiculo_capacidade_kg}</p>
-                        )}
-                        <p className="text-xs text-muted-foreground">
-                          Evita sobrecarga e multas
-                        </p>
-                      </div>
+                      <WeightInput
+                        value={formData.veiculo_capacidade_kg}
+                        onChange={(value) => handleFormChange("veiculo_capacidade_kg", value)}
+                        label="Capacidade Máxima"
+                        placeholder="5000"
+                        required
+                        error={errors.veiculo_capacidade_kg}
+                      />
                     </div>
                   </div>
 
