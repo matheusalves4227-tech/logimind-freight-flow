@@ -219,6 +219,32 @@ const AutonomousOnboarding = ({ cpf, onBack }: AutonomousOnboardingProps) => {
         return;
       }
 
+      // Validar CNH duplicada
+      const { data: cnhData } = await supabase
+        .from("driver_cnh_data")
+        .select("cnh_number")
+        .eq("cnh_number", formData.cnh_numero)
+        .maybeSingle();
+
+      if (cnhData) {
+        toast.dismiss();
+        toast.error("Este número de CNH já está cadastrado no sistema.");
+        return;
+      }
+
+      // Validar placa duplicada
+      const { data: plateData } = await supabase
+        .from("driver_vehicles")
+        .select("license_plate")
+        .eq("license_plate", formData.veiculo_placa.toUpperCase())
+        .maybeSingle();
+
+      if (plateData) {
+        toast.dismiss();
+        toast.error("Esta placa de veículo já está cadastrada no sistema.");
+        return;
+      }
+
       toast.dismiss();
       toast.loading("Criando sua conta...");
 
@@ -336,7 +362,21 @@ const AutonomousOnboarding = ({ cpf, onBack }: AutonomousOnboardingProps) => {
     } catch (error: any) {
       toast.dismiss();
       console.error("Erro no cadastro:", error);
-      toast.error(error.message || "Erro ao enviar cadastro. Tente novamente.");
+      
+      // Tratamento específico para erros de duplicidade
+      if (error.code === "23505") {
+        if (error.message.includes("driver_cnh_data_cnh_number_key")) {
+          toast.error("Este número de CNH já está cadastrado no sistema.");
+        } else if (error.message.includes("driver_vehicles_license_plate_key")) {
+          toast.error("Esta placa de veículo já está cadastrada no sistema.");
+        } else if (error.message.includes("driver_profiles_cpf_key")) {
+          toast.error("Este CPF já está cadastrado no sistema.");
+        } else {
+          toast.error("Dados já cadastrados no sistema. Verifique CNH, placa ou CPF.");
+        }
+      } else {
+        toast.error(error.message || "Erro ao enviar cadastro. Tente novamente.");
+      }
     }
   };
 
