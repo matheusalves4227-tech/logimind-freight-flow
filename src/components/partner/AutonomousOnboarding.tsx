@@ -328,17 +328,7 @@ const AutonomousOnboarding = ({ cpf, onBack }: AutonomousOnboardingProps) => {
 
       if (vehicleError) throw vehicleError;
 
-      // 5. Atribuir role de driver
-      const { error: roleError } = await supabase
-        .from("user_roles")
-        .insert({
-          user_id: authData.user.id,
-          role: "driver"
-        });
-
-      if (roleError) throw roleError;
-
-      // 6. Notificar administradores sobre novo cadastro
+      // 5. Notificar administradores sobre novo cadastro
       try {
         await supabase.functions.invoke('notify-admin-new-registration', {
           body: {
