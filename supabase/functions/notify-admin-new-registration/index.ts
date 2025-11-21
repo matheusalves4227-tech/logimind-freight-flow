@@ -82,7 +82,9 @@ serve(async (req) => {
       );
     }
 
-    const adminEmail = "admin@logimarket.com.br"; // Email do admin
+    // IMPORTANTE: Resend em modo teste só permite enviar para email verificado
+    // Para produção, verifique um domínio em resend.com/domains
+    const adminEmail = "matheus.alves4227@gmail.com"; // Email verificado no Resend
     const typeLabel = registrationType === "driver" ? "Motorista Autônomo" : "Transportadora B2B";
     const detailPagePath = registrationType === "driver" ? "admin/motoristas" : "admin/transportadoras";
     
