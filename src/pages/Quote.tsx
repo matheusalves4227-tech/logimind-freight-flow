@@ -12,6 +12,8 @@ import Navbar from "@/components/Navbar";
 import { Stepper } from "@/components/ui/stepper";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { formatarMoeda, formatarPorcentagemSimples, formatarPeso, removerFormatacaoPeso, formatarValorMonetario, removerFormatacaoMonetaria } from "@/lib/formatters";
+import { WeightInput } from "@/components/ui/weight-input";
+import { MoneyInput } from "@/components/ui/money-input";
 
 interface QuoteResult {
   carrier_id: string;
@@ -719,24 +721,13 @@ const Quote = () => {
               {currentStep === 2 && (
                 <div className="space-y-6">
                   {/* Peso - Sempre exibido */}
-                  <div className="space-y-2">
-                    <Label htmlFor="weight_kg">
-                      <Package className="h-4 w-4 inline mr-2" />
-                      Peso (kg) *
-                    </Label>
-                    <Input
-                      id="weight_kg"
-                      type="text"
-                      placeholder="0"
-                      value={formData.weight_kg ? formatarPeso(formData.weight_kg) : ''}
-                      onChange={(e) => {
-                        const valorFormatado = formatarPeso(e.target.value);
-                        const valorNumerico = removerFormatacaoPeso(valorFormatado);
-                        setFormData({ ...formData, weight_kg: valorNumerico });
-                      }}
-                      required
-                    />
-                  </div>
+                  <WeightInput
+                    value={formData.weight_kg}
+                    onChange={(value) => setFormData({ ...formData, weight_kg: value.replace(/\D/g, "") })}
+                    label="Peso"
+                    placeholder="1500"
+                    required
+                  />
 
                   {/* Condicional: LTL mostra dimensões, FTL mostra tipo de veículo */}
                   {formData.service_type === "ltl" ? (
@@ -801,24 +792,12 @@ const Quote = () => {
 
                   {/* Valor da Carga (Opcional para LogiGuard Pro) */}
                   <div className="space-y-2 p-4 bg-accent/5 border border-accent/30 rounded-lg">
-                    <Label htmlFor="cargo_value" className="flex items-center gap-2">
-                      <DollarSign className="h-4 w-4 text-accent" />
-                      Valor da Carga (R$) - Opcional
-                    </Label>
-                    <p className="text-xs text-muted-foreground mb-2">
-                      Informe o valor declarado da carga para receber recomendação de serviços de segurança (LogiGuard Pro)
-                    </p>
-                    <Input
-                      id="cargo_value"
-                      type="text"
-                      placeholder="0,00"
-                      value={formData.cargo_value ? formatarValorMonetario(formData.cargo_value) : ''}
-                      onChange={(e) => {
-                        const valorFormatado = formatarValorMonetario(e.target.value);
-                        const valorNumerico = removerFormatacaoMonetaria(valorFormatado);
-                        setFormData({ ...formData, cargo_value: valorNumerico });
-                      }}
-                    />
+                  <MoneyInput
+                    value={formData.cargo_value}
+                    onChange={(value) => setFormData({ ...formData, cargo_value: value.replace(/\D/g, "") })}
+                    label="Valor da Carga"
+                    placeholder="10.000,00"
+                  />
                   </div>
 
                   <div className="flex justify-between">
