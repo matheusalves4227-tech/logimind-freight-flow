@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,8 +16,19 @@ type PartnerType = "b2b" | "autonomous" | null;
 
 const PartnerOnboarding = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [partnerType, setPartnerType] = useState<PartnerType>(null);
   const [cnpjCpf, setCnpjCpf] = useState("");
+
+  // Detectar tipo de parceiro pela URL e pular direto para o fluxo correto
+  useEffect(() => {
+    const tipo = searchParams.get("tipo");
+    if (tipo === "transportadora") {
+      setPartnerType("b2b");
+    } else if (tipo === "motorista") {
+      setPartnerType("autonomous");
+    }
+  }, [searchParams]);
 
   const handleTriagem = () => {
     const cleanValue = cnpjCpf.replace(/\D/g, "");
