@@ -14,6 +14,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { formatarMoeda, formatarPorcentagemSimples, formatarPeso, removerFormatacaoPeso, formatarValorMonetario, removerFormatacaoMonetaria } from "@/lib/formatters";
 import { WeightInput } from "@/components/ui/weight-input";
 import { MoneyInput } from "@/components/ui/money-input";
+import { PixPaymentModal } from "@/components/payment/PixPaymentModal";
 
 interface QuoteResult {
   carrier_id: string;
@@ -76,6 +77,9 @@ const Quote = () => {
   });
   const [contractingCarrierId, setContractingCarrierId] = useState<string | null>(null);
   const [selectedLogiGuard, setSelectedLogiGuard] = useState<{ [key: string]: boolean }>({});
+  const [pixModalOpen, setPixModalOpen] = useState(false);
+  const [pixData, setPixData] = useState<any>(null);
+  const [currentOrderId, setCurrentOrderId] = useState<string>("");
 
   const steps = [
     { label: "Localidades", description: "Origem e destino" },
@@ -389,47 +393,42 @@ const Quote = () => {
 
       toast.success(`Pedido criado! Código: ${orderData.tracking_code}`, { id: 'contract-freight' });
 
-      // PASSO 2: Criar sessão de pagamento no Stripe
-      toast.loading("Redirecionando para pagamento...", { id: 'payment-redirect' });
+      // PASSO 2: Gerar dados do PIX Manual
+      toast.loading("Gerando dados do pagamento PIX...", { id: 'payment-redirect' });
 
-      const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke(
-        'create-checkout-session',
+      const { data: pixPaymentData, error: pixError } = await supabase.functions.invoke(
+        'create-pix-payment',
         {
           body: { order_id: orderData.order_id }
         }
       );
 
-      if (checkoutError || !checkoutData?.url) {
-        console.error('Error creating checkout session:', checkoutError);
-        toast.error("Erro ao iniciar pagamento. Tente novamente.", { id: 'payment-redirect' });
+      if (pixError || !pixPaymentData?.pix_data) {
+        console.error('Error creating PIX payment:', pixError);
+        toast.error("Erro ao gerar pagamento PIX. Tente novamente.", { id: 'payment-redirect' });
         setContractingCarrierId(null);
         // Redirecionar para dashboard onde o usuário pode tentar pagar novamente
         setTimeout(() => navigate('/dashboard'), 2000);
         return;
       }
 
-      toast.success("Redirecionando para pagamento seguro...", { id: 'payment-redirect' });
-
-      // PASSO 3: Redirecionar para Stripe Checkout - abrir em nova aba para evitar bloqueio no preview
-      // Mantemos o loading até o usuário voltar
-      const win = window.open(checkoutData.url, '_blank', 'noopener,noreferrer');
-      if (!win) {
-        // Fallback: tentar navegar a janela superior ou atual
-        try {
-          if (window.top) {
-            window.top.location.href = checkoutData.url;
-          } else {
-            window.location.assign(checkoutData.url);
-          }
-        } catch {
-          window.location.assign(checkoutData.url);
-        }
-      }
+      toast.dismiss('payment-redirect');
+      
+      // PASSO 3: Mostrar modal com QR Code PIX
+      setPixData(pixPaymentData.pix_data);
+      setCurrentOrderId(orderData.order_id);
+      setPixModalOpen(true);
+      setContractingCarrierId(null);
     } catch (error) {
       console.error('Unexpected error:', error);
       toast.error("Erro inesperado ao contratar frete", { id: 'contract-freight' });
       setContractingCarrierId(null);
     }
+  };
+
+  const handlePixPaymentComplete = () => {
+    toast.success("Comprovante enviado! Aguarde confirmação.");
+    navigate('/dashboard');
   };
 
   return (
@@ -1136,7 +1135,7 @@ const Quote = () => {
                             <>
                               <Truck className="mr-2 h-5 w-5" />
                               Contratar Frete
-                            </>
+                             </>
                           )}
                         </Button>
                       </div>
@@ -1148,6 +1147,17 @@ const Quote = () => {
           )}
         </div>
       </div>
+      )}
+      
+      {/* Modal de Pagamento PIX */}
+      {pixData && (
+        <PixPaymentModal
+          open={pixModalOpen}
+          onOpenChange={setPixModalOpen}
+          orderId={currentOrderId}
+          pixData={pixData}
+          onPaymentComplete={handlePixPaymentComplete}
+        />
       )}
     </div>
   );

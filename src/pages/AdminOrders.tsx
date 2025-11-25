@@ -16,6 +16,7 @@ import { AcceptedOrdersTable } from '@/components/admin/AcceptedOrdersTable';
 import { RejectedOrdersTable } from '@/components/admin/RejectedOrdersTable';
 import { LogiMindKPIs } from '@/components/admin/LogiMindKPIs';
 import { CarriersManagement } from '@/components/admin/CarriersManagement';
+import { PendingPaymentsTable } from '@/components/admin/PendingPaymentsTable';
 
 interface StatsData {
   pendingQuotes: number;
@@ -231,10 +232,14 @@ const AdminOrders = () => {
 
         {/* Tabs de Conteúdo */}
         <Tabs defaultValue="carriers" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6 max-w-5xl">
+          <TabsList className="grid w-full grid-cols-7 max-w-6xl">
             <TabsTrigger value="carriers" className="gap-2">
               <Truck className="h-4 w-4" />
               Transportadoras
+            </TabsTrigger>
+            <TabsTrigger value="payments" className="gap-2">
+              <CheckCircle className="h-4 w-4" />
+              Pagamentos PIX
             </TabsTrigger>
             <TabsTrigger value="kpis" className="gap-2">
               <TrendingUp className="h-4 w-4" />
@@ -270,6 +275,10 @@ const AdminOrders = () => {
 
           <TabsContent value="carriers">
             <CarriersManagement />
+          </TabsContent>
+
+          <TabsContent value="payments">
+            <PendingPaymentsTable />
           </TabsContent>
 
           <TabsContent value="kpis">
