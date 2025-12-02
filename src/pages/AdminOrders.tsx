@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { FileText, Package, AlertCircle, Clock, TrendingUp, Truck, Calculator, CheckCircle, XCircle } from 'lucide-react';
+import { FileText, Package, AlertCircle, Clock, TrendingUp, Truck, Calculator, CheckCircle, XCircle, History } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { PendingQuotesTable } from '@/components/admin/PendingQuotesTable';
 import { PendingOrdersTable } from '@/components/admin/PendingOrdersTable';
@@ -17,6 +17,7 @@ import { RejectedOrdersTable } from '@/components/admin/RejectedOrdersTable';
 import { LogiMindKPIs } from '@/components/admin/LogiMindKPIs';
 import { CarriersManagement } from '@/components/admin/CarriersManagement';
 import { PendingPaymentsTable } from '@/components/admin/PendingPaymentsTable';
+import { PixPaymentHistory } from '@/components/admin/PixPaymentHistory';
 
 interface StatsData {
   pendingQuotes: number;
@@ -232,14 +233,18 @@ const AdminOrders = () => {
 
         {/* Tabs de Conteúdo */}
         <Tabs defaultValue="carriers" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-7 max-w-6xl">
+          <TabsList className="grid w-full grid-cols-8 max-w-7xl">
             <TabsTrigger value="carriers" className="gap-2">
               <Truck className="h-4 w-4" />
               Transportadoras
             </TabsTrigger>
             <TabsTrigger value="payments" className="gap-2">
               <CheckCircle className="h-4 w-4" />
-              Pagamentos PIX
+              PIX Pendentes
+            </TabsTrigger>
+            <TabsTrigger value="pix-history" className="gap-2">
+              <History className="h-4 w-4" />
+              Histórico PIX
             </TabsTrigger>
             <TabsTrigger value="kpis" className="gap-2">
               <TrendingUp className="h-4 w-4" />
@@ -279,6 +284,10 @@ const AdminOrders = () => {
 
           <TabsContent value="payments">
             <PendingPaymentsTable />
+          </TabsContent>
+
+          <TabsContent value="pix-history">
+            <PixPaymentHistory />
           </TabsContent>
 
           <TabsContent value="kpis">
