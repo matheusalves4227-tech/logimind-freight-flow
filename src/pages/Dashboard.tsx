@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import { KPICards } from "@/components/dashboard/KPICards";
 import { ActiveOrdersTable, Order } from "@/components/dashboard/ActiveOrdersTable";
 import { OrderDetail, OrderDetails } from "@/components/dashboard/OrderDetail";
+import { PixPaymentModal } from "@/components/payment/PixPaymentModal";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
@@ -15,6 +16,9 @@ const Dashboard = () => {
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
+  const [pixModalOpen, setPixModalOpen] = useState(false);
+  const [pixData, setPixData] = useState<any>(null);
+  const [currentOrderId, setCurrentOrderId] = useState<string | null>(null);
 
   // Mock KPI data - Em produção, viria do backend
   const kpiData = {
@@ -221,7 +225,7 @@ const Dashboard = () => {
 
   const handleRetryPayment = async (orderId: string) => {
     try {
-      toast.loading("Preparando pagamento...", { id: 'retry-payment' });
+      toast.loading("Gerando dados do pagamento PIX...", { id: 'retry-payment' });
 
       // Verificar autenticação antes de fazer qualquer chamada
       const { data: { session } } = await supabase.auth.getSession();
@@ -238,47 +242,39 @@ const Dashboard = () => {
         return;
       }
 
-      // Criar nova sessão de checkout
-      const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke(
-        'create-checkout-session',
+      // Gerar dados do PIX Manual
+      const { data: pixPaymentData, error: pixError } = await supabase.functions.invoke(
+        'create-pix-payment',
         {
           body: { order_id: orderId }
         }
       );
 
-      if (checkoutError) {
-        console.error('Checkout error:', checkoutError);
-        const errorMessage = parsePaymentError(checkoutError);
-        toast.error(errorMessage, { id: 'retry-payment' });
+      if (pixError || !pixPaymentData?.pix_data) {
+        console.error('PIX payment error:', pixError);
+        toast.error("Erro ao gerar pagamento PIX. Tente novamente.", { id: 'retry-payment' });
         return;
       }
 
-      if (!checkoutData?.url) {
-        toast.error("URL de pagamento não recebida. Tente novamente.", { id: 'retry-payment' });
-        return;
-      }
-
-      toast.success("Redirecionando para pagamento...", { id: 'retry-payment' });
-
-      // Redirecionar para Stripe Checkout
-      const win = window.open(checkoutData.url, '_blank', 'noopener,noreferrer');
-      if (!win) {
-        // Fallback: tentar navegar a janela superior ou atual
-        try {
-          if (window.top) {
-            window.top.location.href = checkoutData.url;
-          } else {
-            window.location.assign(checkoutData.url);
-          }
-        } catch {
-          window.location.assign(checkoutData.url);
-        }
-      }
+      toast.dismiss('retry-payment');
+      
+      // Mostrar modal com QR Code PIX
+      setPixData(pixPaymentData.pix_data);
+      setCurrentOrderId(orderId);
+      setPixModalOpen(true);
     } catch (error: any) {
       console.error('Unexpected error retrying payment:', error);
-      const errorMessage = parsePaymentError(error);
-      toast.error(errorMessage, { id: 'retry-payment' });
+      toast.error("Erro ao processar pagamento. Tente novamente.", { id: 'retry-payment' });
     }
+  };
+
+  const handlePixPaymentComplete = () => {
+    toast.success("Comprovante enviado! Aguarde confirmação do admin.");
+    setPixModalOpen(false);
+    setPixData(null);
+    setCurrentOrderId(null);
+    // Recarregar pedidos para atualizar status
+    loadOrders();
   };
 
   if (loading) {
@@ -339,6 +335,15 @@ const Dashboard = () => {
         )}
       </div>
     </div>
+
+    {/* Modal de Pagamento PIX */}
+    <PixPaymentModal
+      open={pixModalOpen}
+      onOpenChange={setPixModalOpen}
+      orderId={currentOrderId || ""}
+      pixData={pixData}
+      onPaymentComplete={handlePixPaymentComplete}
+    />
     </>
   );
 };
