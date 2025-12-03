@@ -49,10 +49,10 @@ serve(async (req: Request) => {
       );
     }
 
-    // Chave PIX da LogiMarket (usar chave real da empresa)
-    const pixKey = "pix@logimarket.com.br"; // SUBSTITUIR pela chave PIX real
-    const pixRecipientName = "LogiMarket Logística Ltda";
-    const pixCity = "São Paulo";
+    // Chave PIX real da LogiMarket (configurada via secret)
+    const pixKey = Deno.env.get("LOGIMARKET_PIX_KEY") || "pix@logimarket.com.br";
+    const pixRecipientName = "LogiMarket Logistica Ltda";
+    const pixCity = "Sao Paulo";
     
     // Gerar payload PIX EMV (formato padrão Banco Central)
     const amount = order.final_price.toFixed(2);
@@ -78,6 +78,8 @@ serve(async (req: Request) => {
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    console.log(`PIX payment generated for order ${order_id}, tracking: ${order.tracking_code}, amount: R$ ${amount}`);
 
     return new Response(
       JSON.stringify({
