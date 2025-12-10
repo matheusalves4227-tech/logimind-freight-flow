@@ -49,11 +49,14 @@ const statusConfig = {
   incident: { label: "Ocorrência", color: "bg-destructive text-destructive-foreground" },
 };
 
-const paymentStatusConfig = {
+const paymentStatusConfig: Record<string, { label: string; color: string }> = {
   paid: { label: "Pago", color: "bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20" },
+  PAGO: { label: "Pago", color: "bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20" },
   pending: { label: "Pendente", color: "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-500/20" },
   processing: { label: "Processando", color: "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20" },
+  AGUARDANDO_PIX: { label: "Aguardando PIX", color: "bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-500/20" },
   failed: { label: "Falhou", color: "bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20" },
+  FALHA_REPASSE: { label: "Falha Repasse", color: "bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20" },
 };
 
 export const ActiveOrdersTable = ({ orders, onViewDetails, onRetryPayment }: ActiveOrdersTableProps) => {
@@ -83,16 +86,16 @@ export const ActiveOrdersTable = ({ orders, onViewDetails, onRetryPayment }: Act
 
   const canRetryPayment = (order: Order) => {
     // Pode tentar pagamento apenas se:
-    // 1. Pagamento está pendente ou processando
+    // 1. Pagamento está pendente, processando ou aguardando PIX
     // 2. Pedido não foi entregue
     // 3. Pedido não tem ocorrência
-    const validPaymentStatus = order.payment_status === 'pending' || order.payment_status === 'processing';
+    const validPaymentStatus = ['pending', 'processing', 'AGUARDANDO_PIX'].includes(order.payment_status || '');
     const validOrderStatus = order.status !== 'delivered' && order.status !== 'incident';
     return validPaymentStatus && validOrderStatus;
   };
 
   const getPaymentDisabledReason = (order: Order) => {
-    if (order.payment_status === 'paid') return "Pedido já foi pago";
+    if (order.payment_status === 'paid' || order.payment_status === 'PAGO') return "Pedido já foi pago";
     if (order.status === 'delivered') return "Pedido já foi entregue";
     if (order.status === 'incident') return "Pedido tem ocorrência";
     return "";
@@ -217,7 +220,7 @@ export const ActiveOrdersTable = ({ orders, onViewDetails, onRetryPayment }: Act
                             <TooltipTrigger asChild>
                               <span>
                                 <Button
-                                  variant={order.payment_status === 'paid' ? "secondary" : "default"}
+                                  variant={(order.payment_status === 'paid' || order.payment_status === 'PAGO') ? "secondary" : "default"}
                                   size="sm"
                                   onClick={() => handlePaymentClick(order.id)}
                                   disabled={!canRetryPayment(order) || loadingOrderId === order.id}
@@ -228,11 +231,13 @@ export const ActiveOrdersTable = ({ orders, onViewDetails, onRetryPayment }: Act
                                       <Loader2 className="h-4 w-4 animate-spin" />
                                       Processando...
                                     </>
-                                  ) : order.payment_status === 'paid' ? (
+                                  ) : (order.payment_status === 'paid' || order.payment_status === 'PAGO') ? (
                                     <>
                                       <CheckCircle2 className="h-4 w-4" />
                                       Pago ✓
                                     </>
+                                  ) : order.payment_status === 'AGUARDANDO_PIX' ? (
+                                    'Enviar Comprovante'
                                   ) : (
                                     'Pagar agora'
                                   )}
