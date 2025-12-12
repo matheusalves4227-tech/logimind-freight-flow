@@ -216,24 +216,24 @@ const Quote = () => {
         return;
       }
 
-      // Validar dimensões para LTL
-      if (formData.service_type === "ltl") {
-        if (!formData.height_cm || !formData.width_cm || !formData.length_cm) {
-          toast.error("Para frete LTL, informe as dimensões da carga");
+      // Validar dimensões apenas se preenchidas (são opcionais)
+      if (formData.height_cm || formData.width_cm || formData.length_cm) {
+        const height = formData.height_cm ? parseFloat(formData.height_cm) : 0;
+        const width = formData.width_cm ? parseFloat(formData.width_cm) : 0;
+        const length = formData.length_cm ? parseFloat(formData.length_cm) : 0;
+
+        if (formData.height_cm && (isNaN(height) || height <= 0)) {
+          toast.error("Altura deve ser um número válido maior que zero");
           return;
         }
 
-        const height = parseFloat(formData.height_cm);
-        const width = parseFloat(formData.width_cm);
-        const length = parseFloat(formData.length_cm);
-
-        if (isNaN(height) || isNaN(width) || isNaN(length)) {
-          toast.error("Dimensões devem ser números válidos");
+        if (formData.width_cm && (isNaN(width) || width <= 0)) {
+          toast.error("Largura deve ser um número válido maior que zero");
           return;
         }
 
-        if (height <= 0 || width <= 0 || length <= 0) {
-          toast.error("As dimensões devem ser maiores que zero");
+        if (formData.length_cm && (isNaN(length) || length <= 0)) {
+          toast.error("Comprimento deve ser um número válido maior que zero");
           return;
         }
 
