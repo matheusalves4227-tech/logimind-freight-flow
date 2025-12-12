@@ -213,7 +213,12 @@ const Navbar = () => {
             )}
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="lg:hidden flex-shrink-0">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="lg:hidden flex-shrink-0"
+                  data-testid="mobile-menu-trigger"
+                >
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
