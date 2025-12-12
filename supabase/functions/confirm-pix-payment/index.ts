@@ -28,12 +28,16 @@ serve(async (req: Request) => {
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    // Extract JWT token from Bearer header
+    const jwt = authHeader.replace('Bearer ', '');
     
     const supabase = createClient(supabaseUrl, supabaseKey, {
       global: { headers: { Authorization: authHeader } },
     });
 
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    // Use getUser with JWT token directly
+    const { data: { user }, error: userError } = await supabase.auth.getUser(jwt);
     if (userError || !user) {
       console.log("User auth error:", userError);
       return new Response(
