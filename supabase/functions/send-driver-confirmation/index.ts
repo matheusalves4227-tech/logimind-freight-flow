@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.81.0';
+import { checkRateLimit, getRateLimitHeaders, getClientIdentifier } from '../_shared/rateLimit.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -21,7 +22,29 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    // Simple rate limiting by checking recent requests
+    // Rate limiting: 5 requests per hour per IP
+    const clientIdentifier = getClientIdentifier(req);
+    const rateLimitResult = await checkRateLimit(supabaseClient, clientIdentifier, {
+      endpoint: 'send-driver-confirmation',
+      limit: 5,
+      windowSeconds: 3600 // 1 hour
+    });
+
+    if (!rateLimitResult.allowed) {
+      console.warn(`[DRIVER-CONFIRMATION] Rate limit exceeded for ${clientIdentifier}`);
+      return new Response(
+        JSON.stringify({ success: false, message: "Too many requests. Please try again later." }),
+        { 
+          status: 429, 
+          headers: { 
+            "Content-Type": "application/json", 
+            ...corsHeaders,
+            ...getRateLimitHeaders(rateLimitResult)
+          } 
+        }
+      );
+    }
+
     const { email, name }: ConfirmationRequest = await req.json();
 
     if (!email || !name) {
