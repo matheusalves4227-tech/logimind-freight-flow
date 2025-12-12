@@ -102,59 +102,42 @@ const Dashboard = () => {
 
   const handleViewDetails = async (orderId: string) => {
     try {
-      // Buscar detalhes do pedido diretamente da tabela orders
-      const { data: order, error: orderError } = await supabase
-        .from('orders')
-        .select('*')
-        .eq('id', orderId)
-        .single();
+      // Buscar detalhes do pedido e eventos de tracking em paralelo
+      const [orderResult, trackingResult] = await Promise.all([
+        supabase
+          .from('orders')
+          .select('*')
+          .eq('id', orderId)
+          .single(),
+        supabase
+          .from('tracking_events')
+          .select('*')
+          .eq('order_id', orderId)
+          .order('event_timestamp', { ascending: true })
+      ]);
 
-      if (orderError) throw orderError;
-      if (!order) throw new Error("Pedido não encontrado");
+      if (orderResult.error) throw orderResult.error;
+      if (!orderResult.data) throw new Error("Pedido não encontrado");
 
-      // Se houver quote_id, buscar detalhes da cotação também
-      let quoteData = null;
-      if (order.quote_id) {
-        const { data: quote } = await supabase
-          .from('quotes')
-          .select(`
-            *,
-            quote_items (
-              *,
-              carriers (
-                name,
-                carrier_size
-              )
-            )
-          `)
-          .eq('id', order.quote_id)
-          .maybeSingle();
-        
-        quoteData = quote;
-      }
+      const order = orderResult.data;
+      const trackingEvents = trackingResult.data || [];
 
-      // Criar timeline baseada no status do pedido
-      const mockTimeline = [
+      // Mapear eventos reais para o formato da timeline
+      const realTimeline = trackingEvents.map(event => ({
+        date: event.event_timestamp,
+        status: event.event_description,
+        description: event.city && event.state 
+          ? `${event.city} - ${event.state}` 
+          : event.event_code
+      }));
+
+      // Se não houver eventos, criar evento inicial de criação do pedido
+      const timeline = realTimeline.length > 0 ? realTimeline : [
         {
           date: order.created_at,
           status: "Pedido Criado",
           description: "Pedido registrado no sistema LogiMarket"
-        },
-        ...(order.status !== 'pending' ? [{
-          date: new Date(new Date(order.created_at).getTime() + 1 * 60 * 60 * 1000).toISOString(),
-          status: "Coleta Agendada",
-          description: "Coleta programada com a transportadora"
-        }] : []),
-        ...(order.status === 'in_transit' || order.status === 'delivered' ? [{
-          date: new Date(new Date(order.created_at).getTime() + 2 * 24 * 60 * 60 * 1000).toISOString(),
-          status: "Em Trânsito",
-          description: "Mercadoria em rota para o destino"
-        }] : []),
-        ...(order.status === 'delivered' ? [{
-          date: order.actual_delivery || new Date().toISOString(),
-          status: "Entregue",
-          description: "Carga entregue no destino"
-        }] : []),
+        }
       ];
 
       const details: OrderDetails = {
@@ -183,7 +166,7 @@ const Dashboard = () => {
         weight_kg: parseFloat(order.weight_kg.toString()),
         estimated_delivery: order.estimated_delivery,
         created_at: order.created_at,
-        timeline: mockTimeline,
+        timeline: timeline,
       };
 
       setOrderDetails(details);
