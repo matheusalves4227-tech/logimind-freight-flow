@@ -22,7 +22,7 @@ const QuoteRequestSchema = z.object({
   height_cm: z.number().positive().max(1000).optional(),
   width_cm: z.number().positive().max(1000).optional(),
   length_cm: z.number().positive().max(2000).optional(),
-  cargo_value: z.number().nonnegative().max(10000000).optional(),
+  cargo_value: z.number().nonnegative().max(100000000).optional(), // Max R$ 100 milhões
 });
 
 // LogiMind Constants
