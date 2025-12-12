@@ -30,6 +30,7 @@ import {
   Upload,
   MapIcon,
   UserCheck,
+  Save,
 } from 'lucide-react';
 
 interface PendingOrderDetailProps {
@@ -160,6 +161,57 @@ export const PendingOrderDetail = ({ order, open, onOpenChange, onUpdate }: Pend
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
+  };
+
+  // Salvar notas sem aprovar (permite salvar progresso)
+  const handleSaveNotes = async () => {
+    if (!operationalNotes.trim() && !selectedDriverId) {
+      toast({
+        title: 'Nada para Salvar',
+        description: 'Adicione notas ou selecione um motorista para salvar',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setProcessing(true);
+    try {
+      const updateData: any = {
+        operational_notes: operationalNotes,
+        updated_at: new Date().toISOString(),
+      };
+
+      // Se tiver motorista selecionado, atribuir também
+      if (selectedDriverId) {
+        const selectedDriver = availableDrivers.find(d => d.id === selectedDriverId);
+        updateData.driver_id = selectedDriverId;
+        updateData.driver_name = selectedDriver?.full_name;
+        updateData.driver_phone = selectedDriver?.phone;
+      }
+
+      const { error } = await supabase
+        .from('orders')
+        .update(updateData)
+        .eq('id', order.id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Dados Salvos',
+        description: 'Notas e informações salvas com sucesso. O pedido continua pendente.',
+      });
+
+      onUpdate();
+    } catch (error) {
+      console.error('Erro ao salvar notas:', error);
+      toast({
+        title: 'Erro',
+        description: 'Erro ao salvar notas',
+        variant: 'destructive',
+      });
+    } finally {
+      setProcessing(false);
+    }
   };
 
   const handleApprove = async () => {
@@ -815,19 +867,29 @@ export const PendingOrderDetail = ({ order, open, onOpenChange, onUpdate }: Pend
 
               <div className="flex flex-wrap gap-3">
                 <Button
+                  onClick={handleSaveNotes}
+                  disabled={processing}
+                  variant="secondary"
+                  className="gap-2 flex-1 min-w-[180px]"
+                >
+                  <Save className="h-4 w-4" />
+                  {processing ? 'Salvando...' : 'Salvar Progresso'}
+                </Button>
+
+                <Button
                   onClick={handleApprove}
                   disabled={processing}
-                  className="gap-2 flex-1 min-w-[200px]"
+                  className="gap-2 flex-1 min-w-[180px]"
                 >
                   <CheckCircle className="h-4 w-4" />
-                  {processing ? 'Processando...' : 'Confirmar Contato Feito'}
+                  {processing ? 'Processando...' : 'Aprovar e Confirmar'}
                 </Button>
 
                 <Button
                   onClick={handleReject}
                   disabled={processing}
                   variant="destructive"
-                  className="gap-2 flex-1 min-w-[200px]"
+                  className="gap-2 flex-1 min-w-[180px]"
                 >
                   <XCircle className="h-4 w-4" />
                   {processing ? 'Processando...' : 'Rejeitar Pedido'}
@@ -836,7 +898,7 @@ export const PendingOrderDetail = ({ order, open, onOpenChange, onUpdate }: Pend
                 <Button
                   variant="outline"
                   disabled
-                  className="gap-2 flex-1 min-w-[200px]"
+                  className="gap-2 flex-1 min-w-[180px]"
                   title="Rastreamento estará disponível após aprovação e início da execução"
                 >
                   <MapIcon className="h-4 w-4" />
