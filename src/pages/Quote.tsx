@@ -14,6 +14,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { formatarMoeda, formatarPorcentagemSimples, formatarPeso, removerFormatacaoPeso, formatarValorMonetario, removerFormatacaoMonetaria } from "@/lib/formatters";
 import { WeightInput } from "@/components/ui/weight-input";
 import { MoneyInput } from "@/components/ui/money-input";
+import { DimensionInput } from "@/components/ui/dimension-input";
 import { PixPaymentModal } from "@/components/payment/PixPaymentModal";
 
 interface QuoteResult {
@@ -745,41 +746,32 @@ const Quote = () => {
                   {formData.service_type === "ltl" ? (
                     <>
                       <div className="grid md:grid-cols-3 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="height_cm">Altura (cm) - Opcional</Label>
-                          <Input
-                            id="height_cm"
-                            type="number"
-                            step="0.01"
-                            placeholder="0.00"
-                            value={formData.height_cm}
-                            onChange={(e) => setFormData({ ...formData, height_cm: e.target.value })}
-                          />
-                        </div>
+                        <DimensionInput
+                          value={formData.height_cm}
+                          onChange={(value) => setFormData({ ...formData, height_cm: value })}
+                          label="Altura (cm) - Opcional"
+                          placeholder="0"
+                          unit="cm"
+                          maxValue={500}
+                        />
 
-                        <div className="space-y-2">
-                          <Label htmlFor="width_cm">Largura (cm) - Opcional</Label>
-                          <Input
-                            id="width_cm"
-                            type="number"
-                            step="0.01"
-                            placeholder="0.00"
-                            value={formData.width_cm}
-                            onChange={(e) => setFormData({ ...formData, width_cm: e.target.value })}
-                          />
-                        </div>
+                        <DimensionInput
+                          value={formData.width_cm}
+                          onChange={(value) => setFormData({ ...formData, width_cm: value })}
+                          label="Largura (cm) - Opcional"
+                          placeholder="0"
+                          unit="cm"
+                          maxValue={500}
+                        />
 
-                        <div className="space-y-2">
-                          <Label htmlFor="length_cm">Comprimento (cm) - Opcional</Label>
-                          <Input
-                            id="length_cm"
-                            type="number"
-                            step="0.01"
-                            placeholder="0.00"
-                            value={formData.length_cm}
-                            onChange={(e) => setFormData({ ...formData, length_cm: e.target.value })}
-                          />
-                        </div>
+                        <DimensionInput
+                          value={formData.length_cm}
+                          onChange={(value) => setFormData({ ...formData, length_cm: value })}
+                          label="Comprimento (cm) - Opcional"
+                          placeholder="0"
+                          unit="cm"
+                          maxValue={1500}
+                        />
                       </div>
                     </>
                   ) : (
