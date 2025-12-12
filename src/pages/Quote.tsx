@@ -243,6 +243,15 @@ const Quote = () => {
         }
       }
 
+      // Validar valor da carga se preenchido
+      if (formData.cargo_value) {
+        const cargoValue = parseFloat(formData.cargo_value.replace(/\./g, '').replace(',', '.'));
+        if (!isNaN(cargoValue) && cargoValue > 100000000) {
+          toast.error("Valor da carga excede o limite máximo de R$ 100.000.000");
+          return;
+        }
+      }
+
       if (formData.service_type === "ftl" && !formData.vehicle_type) {
         toast.error("Selecione o tipo de veículo");
         return;
