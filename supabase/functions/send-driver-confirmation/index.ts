@@ -1,4 +1,4 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.81.0';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.87.1';
 import { checkRateLimit, getRateLimitHeaders, getClientIdentifier } from '../_shared/rateLimit.ts';
 
 const corsHeaders = {
@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
     const rateLimitResult = await checkRateLimit(supabaseClient, clientIdentifier, {
       endpoint: 'send-driver-confirmation',
       limit: 5,
-      windowSeconds: 3600 // 1 hour
+      windowMinutes: 60 // 1 hour
     });
 
     if (!rateLimitResult.allowed) {
