@@ -51,10 +51,13 @@ export const AcceptedOrdersTable = ({ onUpdate }: AcceptedOrdersTableProps) => {
 
   const fetchOrders = async () => {
     try {
+      // Pedidos aceitos = status 'confirmed' (motorista atribuído, pronto para operação)
+      // ou 'in_transit', 'delivered' etc.
       const { data, error } = await supabase
         .from('orders')
         .select('id, tracking_code, origin_address, destination_address, origin_cep, destination_cep, weight_kg, height_cm, width_cm, length_cm, service_type, final_price, base_price, commission_applied, comissao_logimarket_perc, status, carrier_name, driver_id, driver_name, created_at, estimated_delivery, user_id, updated_at')
-        .eq('status', 'confirmed')
+        .in('status', ['confirmed', 'in_transit', 'out_for_delivery'])
+        .not('driver_id', 'is', null)
         .order('updated_at', { ascending: false })
         .limit(100);
 

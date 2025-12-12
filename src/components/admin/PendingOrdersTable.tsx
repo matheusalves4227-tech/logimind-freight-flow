@@ -50,10 +50,13 @@ export const PendingOrdersTable = ({ onUpdate }: PendingOrdersTableProps) => {
 
   const fetchOrders = async () => {
     try {
+      // Pedidos pendentes = pagamento confirmado MAS ainda sem motorista atribuído
+      // Ou status 'pending' com pagamento confirmado
       const { data, error } = await supabase
         .from('orders')
-        .select('id, tracking_code, origin_address, destination_address, origin_cep, destination_cep, weight_kg, height_cm, width_cm, length_cm, service_type, final_price, base_price, commission_applied, comissao_logimarket_perc, status, carrier_name, driver_id, driver_name, created_at, estimated_delivery, user_id')
-        .eq('status', 'pending')
+        .select('id, tracking_code, origin_address, destination_address, origin_cep, destination_cep, weight_kg, height_cm, width_cm, length_cm, service_type, final_price, base_price, commission_applied, comissao_logimarket_perc, status, carrier_name, driver_id, driver_name, created_at, estimated_delivery, user_id, status_pagamento')
+        .in('status', ['pending', 'awaiting_contact'])
+        .eq('status_pagamento', 'confirmed')
         .order('created_at', { ascending: false })
         .limit(50);
 
