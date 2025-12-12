@@ -102,13 +102,13 @@ const Dashboard = () => {
 
   const handleViewDetails = async (orderId: string) => {
     try {
-      // Buscar detalhes do pedido e eventos de tracking em paralelo
+      // Buscar detalhes do pedido e eventos de tracking reais em paralelo
       const [orderResult, trackingResult] = await Promise.all([
         supabase
           .from('orders')
           .select('*')
           .eq('id', orderId)
-          .single(),
+          .maybeSingle(),
         supabase
           .from('tracking_events')
           .select('*')
