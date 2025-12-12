@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Eye, MapPin, Loader2, CheckCircle2 } from "lucide-react";
+import { Search, Eye, MapPin, Loader2, CheckCircle2, Clock } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -50,15 +50,31 @@ const statusConfig = {
   incident: { label: "Ocorrência", color: "bg-destructive text-destructive-foreground" },
 };
 
-const paymentStatusConfig: Record<string, { label: string; color: string }> = {
-  paid: { label: "Pago", color: "bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20" },
-  PAGO: { label: "Pago", color: "bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20" },
-  pending: { label: "Pendente", color: "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-500/20" },
-  processing: { label: "Processando", color: "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20" },
-  AGUARDANDO_PIX: { label: "Aguardando PIX", color: "bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-500/20" },
-  COMPROVANTE_ENVIADO: { label: "Comprovante Enviado", color: "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20" },
-  failed: { label: "Falhou", color: "bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20" },
-  FALHA_REPASSE: { label: "Falha Repasse", color: "bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20" },
+const paymentStatusConfig: Record<string, { label: string; color: string; icon?: "check" | "clock" | "pulse" }> = {
+  paid: { label: "Pago", color: "bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/30", icon: "check" },
+  PAGO: { label: "Pago", color: "bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/30", icon: "check" },
+  pending: { label: "Pendente", color: "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-500/30" },
+  processing: { label: "Processando", color: "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/30" },
+  AGUARDANDO_PIX: { label: "Aguardando PIX", color: "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-400/40", icon: "clock" },
+  COMPROVANTE_ENVIADO: { label: "Comprovante Enviado", color: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-500/40", icon: "check" },
+  AGUARDANDO_VALIDACAO: { label: "Aguardando Validação", color: "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 border-purple-500/40", icon: "pulse" },
+  failed: { label: "Falhou", color: "bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/30" },
+  FALHA_REPASSE: { label: "Falha Repasse", color: "bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/30" },
+};
+
+// Extrair cidade/UF de endereço completo
+const extractCityState = (address: string) => {
+  // Tenta extrair cidade - UF do formato "Rua X, 123 - Bairro - Cidade - UF"
+  const parts = address.split(' - ');
+  if (parts.length >= 2) {
+    const lastTwo = parts.slice(-2);
+    // Verifica se o último é um estado (2 letras maiúsculas)
+    if (lastTwo[1]?.match(/^[A-Z]{2}$/)) {
+      return `${lastTwo[0]}/${lastTwo[1]}`;
+    }
+    return lastTwo.join(' - ');
+  }
+  return address;
 };
 
 export const ActiveOrdersTable = ({ orders, onViewDetails, onRetryPayment }: ActiveOrdersTableProps) => {
@@ -91,11 +107,6 @@ export const ActiveOrdersTable = ({ orders, onViewDetails, onRetryPayment }: Act
   };
 
   const canRetryPayment = (order: Order) => {
-    // Pode tentar pagamento apenas se:
-    // 1. Pagamento está pendente, processando ou aguardando PIX (sem comprovante)
-    // 2. Pedido não foi entregue
-    // 3. Pedido não tem ocorrência
-    // 4. Não tem comprovante já enviado
     const validPaymentStatus = ['pending', 'processing', 'AGUARDANDO_PIX'].includes(order.payment_status || '');
     const validOrderStatus = order.status !== 'delivered' && order.status !== 'incident';
     const noProofYet = !hasProofUploaded(order);
@@ -112,7 +123,7 @@ export const ActiveOrdersTable = ({ orders, onViewDetails, onRetryPayment }: Act
 
   const getEffectivePaymentStatus = (order: Order) => {
     if (hasProofUploaded(order) && order.payment_status === 'AGUARDANDO_PIX') {
-      return 'COMPROVANTE_ENVIADO';
+      return 'AGUARDANDO_VALIDACAO';
     }
     return order.payment_status;
   };
@@ -128,11 +139,11 @@ export const ActiveOrdersTable = ({ orders, onViewDetails, onRetryPayment }: Act
   };
 
   return (
-    <Card className="p-6">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold mb-4">Pedidos Ativos</h2>
+    <Card className="p-4 md:p-6 shadow-sm">
+      <div className="mb-4 md:mb-6">
+        <h2 className="text-xl md:text-2xl font-bold mb-3 md:mb-4">Pedidos Ativos</h2>
         
-        <div className="flex flex-col md:flex-row gap-4">
+        <div className="flex flex-col md:flex-row gap-3 md:gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -146,7 +157,7 @@ export const ActiveOrdersTable = ({ orders, onViewDetails, onRetryPayment }: Act
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="flex h-10 w-full md:w-48 rounded-md border border-input bg-background px-3 py-2 text-sm"
+            className="flex h-10 w-full md:w-48 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
           >
             <option value="all">Todos os Status</option>
             <option value="in_transit">Em Trânsito</option>
@@ -157,156 +168,147 @@ export const ActiveOrdersTable = ({ orders, onViewDetails, onRetryPayment }: Act
         </div>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto -mx-4 md:mx-0">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>ID do Frete</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Status Pagamento</TableHead>
-              <TableHead>Transportador</TableHead>
-              <TableHead>Rota</TableHead>
-              <TableHead>Preço Final</TableHead>
-              <TableHead>Previsão de Entrega</TableHead>
-              <TableHead className="text-right">Ações</TableHead>
+            <TableRow className="hover:bg-transparent">
+              <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">ID</TableHead>
+              <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Status</TableHead>
+              <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Pagamento</TableHead>
+              <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Transportador</TableHead>
+              <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Rota</TableHead>
+              <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground text-right">Valor</TableHead>
+              <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Previsão</TableHead>
+              <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredOrders.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
                   Nenhum pedido encontrado
                 </TableCell>
               </TableRow>
             ) : (
-              filteredOrders.map((order) => (
-                <TableRow key={order.id} className="hover:bg-muted/50">
-                  <TableCell className="font-mono text-sm">
-                    {order.id.slice(0, 8)}...
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={statusConfig[order.status].color}>
-                      {statusConfig[order.status].label}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {(() => {
-                      const effectiveStatus = getEffectivePaymentStatus(order);
-                      return (
-                        <Badge 
-                          variant="outline" 
-                          className={paymentStatusConfig[effectiveStatus as keyof typeof paymentStatusConfig]?.color || ""}
-                        >
-                          {(effectiveStatus === 'paid' || effectiveStatus === 'PAGO') && <CheckCircle2 className="h-3 w-3 mr-1" />}
-                          {effectiveStatus === 'COMPROVANTE_ENVIADO' && <CheckCircle2 className="h-3 w-3 mr-1" />}
-                          {paymentStatusConfig[effectiveStatus as keyof typeof paymentStatusConfig]?.label || effectiveStatus}
-                        </Badge>
-                      );
-                    })()}
-                  </TableCell>
-                  <TableCell>
-                    <div>
-                      <p className="font-medium">{order.carrier_name}</p>
-                      {order.carrier_type === "autonomous" && order.vehicle_type && (
-                        <p className="text-xs text-muted-foreground">
-                          Autônomo - {order.vehicle_type}
+              filteredOrders.map((order) => {
+                const effectiveStatus = getEffectivePaymentStatus(order);
+                const paymentConfig = paymentStatusConfig[effectiveStatus as keyof typeof paymentStatusConfig];
+                
+                return (
+                  <TableRow key={order.id} className="hover:bg-muted/50 group">
+                    <TableCell className="font-mono text-xs text-muted-foreground">
+                      {order.id.slice(0, 8)}
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={`${statusConfig[order.status].color} text-xs`}>
+                        {statusConfig[order.status].label}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge 
+                        variant="outline" 
+                        className={`${paymentConfig?.color || ""} text-xs flex items-center gap-1 w-fit`}
+                      >
+                        {paymentConfig?.icon === 'check' && <CheckCircle2 className="h-3 w-3" />}
+                        {paymentConfig?.icon === 'clock' && <Clock className="h-3 w-3" />}
+                        {paymentConfig?.icon === 'pulse' && <span className="w-2 h-2 rounded-full bg-current animate-pulse" />}
+                        {paymentConfig?.label || effectiveStatus}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium text-sm">{order.carrier_name}</p>
+                        {order.carrier_type === "autonomous" && order.vehicle_type && (
+                          <p className="text-xs text-muted-foreground">
+                            Autônomo · {order.vehicle_type}
+                          </p>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="space-y-0.5">
+                        <p className="font-medium text-sm">
+                          {extractCityState(order.origin_city)} → {extractCityState(order.destination_city)}
                         </p>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="text-sm">
-                      <p>{order.origin_city}</p>
-                      <p className="text-muted-foreground">→ {order.destination_city}</p>
-                    </div>
-                  </TableCell>
-                  <TableCell className="font-semibold text-primary">
-                    {order.final_price.toLocaleString('pt-BR', {
-                      style: 'currency',
-                      currency: 'BRL',
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2
-                    })}
-                  </TableCell>
-                  <TableCell>
-                    <span className={isNearDeadline(order.estimated_delivery) ? "text-accent font-medium" : ""}>
-                      {new Date(order.estimated_delivery).toLocaleDateString('pt-BR')}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex gap-2 justify-end">
-                      <TooltipProvider>
-                        {/* Botão Pagar Agora com validações */}
-                        {onRetryPayment && (
+                        <p className="text-xs text-muted-foreground truncate max-w-[200px]" title={order.origin_city}>
+                          {order.origin_city.split(' - ').slice(0, 2).join(' - ')}
+                        </p>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <span className="font-mono font-semibold text-primary tabular-nums">
+                        {order.final_price.toLocaleString('pt-BR', {
+                          style: 'currency',
+                          currency: 'BRL',
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2
+                        })}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <span className={`text-sm ${isNearDeadline(order.estimated_delivery) ? "text-amber-600 dark:text-amber-400 font-medium" : ""}`}>
+                        {new Date(order.estimated_delivery).toLocaleDateString('pt-BR')}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex gap-1 justify-end opacity-70 group-hover:opacity-100 transition-opacity">
+                        <TooltipProvider>
+                          {/* Botão Pagar */}
+                          {onRetryPayment && canRetryPayment(order) && (
+                            <Button
+                              variant="default"
+                              size="sm"
+                              onClick={() => handlePaymentClick(order.id)}
+                              disabled={loadingOrderId === order.id}
+                              className="h-8 px-3 text-xs"
+                            >
+                              {loadingOrderId === order.id ? (
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              ) : order.payment_status === 'AGUARDANDO_PIX' ? (
+                                'Enviar'
+                              ) : (
+                                'Pagar'
+                              )}
+                            </Button>
+                          )}
+                        
+                          {/* Botão Rastrear - Ghost Button com ícone */}
+                          {order.tracking_code && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => navigate(`/tracking/${order.tracking_code}`)}
+                                  className="h-8 w-8"
+                                >
+                                  <MapPin className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Rastrear</TooltipContent>
+                            </Tooltip>
+                          )}
+                          
+                          {/* Botão Ver Detalhes - Ghost Button com ícone */}
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <span>
-                                <Button
-                                  variant={(order.payment_status === 'paid' || order.payment_status === 'PAGO' || hasProofUploaded(order)) ? "secondary" : "default"}
-                                  size="sm"
-                                  onClick={() => handlePaymentClick(order.id)}
-                                  disabled={!canRetryPayment(order) || loadingOrderId === order.id}
-                                  className="gap-2"
-                                >
-                                  {loadingOrderId === order.id ? (
-                                    <>
-                                      <Loader2 className="h-4 w-4 animate-spin" />
-                                      Processando...
-                                    </>
-                                  ) : (order.payment_status === 'paid' || order.payment_status === 'PAGO') ? (
-                                    <>
-                                      <CheckCircle2 className="h-4 w-4" />
-                                      Pago ✓
-                                    </>
-                                  ) : hasProofUploaded(order) ? (
-                                    <>
-                                      <CheckCircle2 className="h-4 w-4" />
-                                      Aguardando Validação
-                                    </>
-                                  ) : order.payment_status === 'AGUARDANDO_PIX' ? (
-                                    'Enviar Comprovante'
-                                  ) : (
-                                    'Pagar agora'
-                                  )}
-                                </Button>
-                              </span>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => onViewDetails(order.id)}
+                                className="h-8 w-8"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
                             </TooltipTrigger>
-                            {!canRetryPayment(order) && (
-                              <TooltipContent>
-                                <p>{getPaymentDisabledReason(order)}</p>
-                              </TooltipContent>
-                            )}
+                            <TooltipContent>Ver Detalhes</TooltipContent>
                           </Tooltip>
-                        )}
-                      
-                        {/* Botão Rastrear para pedidos com código de rastreamento */}
-                        {order.tracking_code && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => navigate(`/tracking/${order.tracking_code}`)}
-                            className="gap-2"
-                          >
-                            <MapPin className="h-4 w-4" />
-                            Rastrear
-                          </Button>
-                        )}
-                        
-                        {/* Botão Ver Detalhes sempre visível */}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onViewDetails(order.id)}
-                          className="gap-2"
-                        >
-                          <Eye className="h-4 w-4" />
-                          Ver Detalhes
-                        </Button>
-                      </TooltipProvider>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
+                        </TooltipProvider>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
         </Table>
