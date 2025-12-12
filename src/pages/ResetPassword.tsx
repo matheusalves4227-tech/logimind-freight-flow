@@ -2,11 +2,12 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Package, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { AuthInput } from "@/components/auth/AuthInput";
+import { PasswordStrengthIndicator } from "@/components/auth/PasswordStrengthIndicator";
+import { AuthBranding } from "@/components/auth/AuthBranding";
 
 const ResetPassword = () => {
   const navigate = useNavigate();
@@ -15,7 +16,6 @@ const ResetPassword = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
 
   useEffect(() => {
-    // Check if user has valid recovery session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) {
         toast.error("Link inválido ou expirado");
@@ -23,6 +23,14 @@ const ResetPassword = () => {
       }
     });
   }, [navigate]);
+
+  const validatePassword = () => {
+    if (password.length < 8) return false;
+    if (!/[A-Z]/.test(password)) return false;
+    if (!/[a-z]/.test(password)) return false;
+    if (!/[0-9]/.test(password)) return false;
+    return true;
+  };
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,18 +40,8 @@ const ResetPassword = () => {
       return;
     }
 
-    if (password.length < 8) {
-      toast.error("A senha deve ter pelo menos 8 caracteres");
-      return;
-    }
-
-    // Validação de força da senha
-    const hasUpperCase = /[A-Z]/.test(password);
-    const hasLowerCase = /[a-z]/.test(password);
-    const hasNumber = /[0-9]/.test(password);
-    
-    if (!hasUpperCase || !hasLowerCase || !hasNumber) {
-      toast.error("A senha deve conter letras maiúsculas, minúsculas e números");
+    if (!validatePassword()) {
+      toast.error("A senha não atende aos requisitos de segurança");
       return;
     }
 
@@ -56,7 +54,6 @@ const ResetPassword = () => {
 
       if (error) throw error;
 
-      // Log audit action for password change
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         await supabase.functions.invoke('log-audit-action', {
@@ -79,83 +76,100 @@ const ResetPassword = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md p-8 shadow-xl">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 mb-4">
-            <div className="p-3 bg-gradient-primary rounded-lg">
-              <Package className="h-8 w-8 text-primary-foreground" />
-            </div>
-          </div>
-          <h1 className="text-2xl font-bold mb-2">
-            Redefinir Senha do{" "}
-            <span className="bg-gradient-primary bg-clip-text text-transparent">
-              LogiMarket
-            </span>
-          </h1>
-          <p className="text-muted-foreground">
-            Digite sua nova senha
-          </p>
-        </div>
+    <div className="min-h-screen flex">
+      {/* Left side - Branding (hidden on mobile) */}
+      <AuthBranding />
 
-        <form onSubmit={handleResetPassword} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="password">Nova Senha</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={8}
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              Mínimo 8 caracteres com letras maiúsculas, minúsculas e números
+      {/* Right side - Form */}
+      <div className="flex-1 flex items-center justify-center p-6 lg:p-12 bg-[hsl(210,20%,98%)]">
+        <Card className="w-full max-w-md p-8 lg:p-10 shadow-xl border-0 bg-card">
+          {/* Header */}
+          <div className="text-center mb-8">
+            {/* Mobile logo */}
+            <div className="lg:hidden inline-flex items-center gap-2 mb-4">
+              <div className="p-2.5 bg-gradient-to-br from-primary to-primary/80 rounded-lg">
+                <svg className="h-6 w-6 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
+              </div>
+              <span className="text-xl font-bold">LogiMarket</span>
+            </div>
+
+            <h1 className="text-2xl lg:text-3xl font-bold mb-2 text-foreground">
+              Redefinir Senha
+            </h1>
+            <p className="text-muted-foreground text-sm lg:text-base">
+              Crie uma nova senha segura para sua conta
             </p>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirmar Nova Senha</Label>
-            <Input
+          {/* Form */}
+          <form onSubmit={handleResetPassword} className="space-y-5">
+            <div>
+              <AuthInput
+                id="password"
+                label="Nova Senha"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={setPassword}
+                required
+                minLength={8}
+                icon="password"
+              />
+              {password.length > 0 && (
+                <PasswordStrengthIndicator password={password} />
+              )}
+            </div>
+
+            <AuthInput
               id="confirmPassword"
+              label="Confirmar Nova Senha"
               type="password"
               placeholder="••••••••"
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              onChange={setConfirmPassword}
               required
               minLength={8}
+              icon="password"
             />
-          </div>
 
-          <Button
-            type="submit"
-            variant="hero"
-            size="lg"
-            className="w-full"
-            disabled={loading}
-          >
-            {loading ? (
-              <>
-                <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                Processando...
-              </>
-            ) : (
-              "Redefinir Senha"
+            {/* Password match indicator */}
+            {confirmPassword.length > 0 && (
+              <p className={`text-xs ${password === confirmPassword ? "text-secondary" : "text-destructive"}`}>
+                {password === confirmPassword ? "✓ As senhas coincidem" : "✗ As senhas não coincidem"}
+              </p>
             )}
-          </Button>
-        </form>
 
-        <div className="mt-6 text-center">
-          <button
-            type="button"
-            onClick={() => navigate("/auth")}
-            className="text-sm text-primary hover:underline"
-          >
-            Voltar para login
-          </button>
-        </div>
-      </Card>
+            <Button
+              type="submit"
+              size="lg"
+              className="w-full h-12 text-base font-semibold bg-gradient-to-r from-primary to-[hsl(217,82%,45%)] hover:from-primary/90 hover:to-[hsl(217,82%,40%)] shadow-md hover:shadow-lg transition-all duration-200 rounded-lg"
+              disabled={loading || !validatePassword() || password !== confirmPassword}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                  Processando...
+                </>
+              ) : (
+                "Redefinir Senha"
+              )}
+            </Button>
+          </form>
+
+          {/* Footer */}
+          <div className="mt-6 text-center pt-4 border-t border-border">
+            <button
+              type="button"
+              onClick={() => navigate("/auth")}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              ← Voltar para login
+            </button>
+          </div>
+        </Card>
+      </div>
     </div>
   );
 };
