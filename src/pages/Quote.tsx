@@ -610,22 +610,25 @@ const Quote = () => {
               {/* Step 3: Review */}
               {currentStep === 3 && (
                 <div className="space-y-6">
-                  <div className="bg-muted/50 p-6 rounded-lg space-y-4">
-                    <h3 className="font-semibold text-lg mb-4">Confirme os dados da cotação</h3>
+                  <Card className="bg-slate-50 dark:bg-slate-900/50 p-6 rounded-2xl border-2 border-slate-200 dark:border-slate-700/50 shadow-sm space-y-4">
+                    <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                      <Package className="h-5 w-5 text-primary" />
+                      Confirme os dados da cotação
+                    </h3>
                     
                     <div className="grid md:grid-cols-2 gap-4">
-                      <div>
+                      <div className="p-3 bg-background rounded-lg border border-border/50">
                         <p className="text-sm text-muted-foreground">Tipo de Serviço</p>
                         <p className="font-medium">
                           {formData.service_type === "ltl" ? "Padrão / Econômico (LTL)" : "Dedicado / Expresso (FTL)"}
                         </p>
                       </div>
-                      <div>
+                      <div className="p-3 bg-background rounded-lg border border-border/50">
                         <p className="text-sm text-muted-foreground">Peso</p>
                         <p className="font-medium">{formData.weight_kg} kg</p>
                       </div>
                       {formData.service_type === "ftl" && formData.vehicle_type && (
-                        <div>
+                        <div className="p-3 bg-background rounded-lg border border-border/50">
                           <p className="text-sm text-muted-foreground">Tipo de Veículo</p>
                           <p className="font-medium">
                             {formData.vehicle_type === "moto" && "🏍️ Moto"}
@@ -636,34 +639,38 @@ const Quote = () => {
                           </p>
                         </div>
                       )}
-                      <div>
-                        <p className="text-sm text-muted-foreground">CEP Origem</p>
+                      <div className="p-3 bg-background rounded-lg border border-border/50">
+                        <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+                          <MapPin className="h-3.5 w-3.5 text-primary" /> CEP Origem
+                        </p>
                         <p className="font-medium">{formData.origin_cep} - Nº {formData.origin_number}</p>
                       </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">CEP Destino</p>
+                      <div className="p-3 bg-background rounded-lg border border-border/50">
+                        <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+                          <MapPin className="h-3.5 w-3.5 text-secondary" /> CEP Destino
+                        </p>
                         <p className="font-medium">{formData.destination_cep} - Nº {formData.destination_number}</p>
                       </div>
                       {formData.height_cm && (
-                        <div>
+                        <div className="p-3 bg-background rounded-lg border border-border/50">
                           <p className="text-sm text-muted-foreground">Altura</p>
                           <p className="font-medium">{formData.height_cm} cm</p>
                         </div>
                       )}
                       {formData.width_cm && (
-                        <div>
+                        <div className="p-3 bg-background rounded-lg border border-border/50">
                           <p className="text-sm text-muted-foreground">Largura</p>
                           <p className="font-medium">{formData.width_cm} cm</p>
                         </div>
                       )}
                       {formData.length_cm && (
-                        <div>
+                        <div className="p-3 bg-background rounded-lg border border-border/50">
                           <p className="text-sm text-muted-foreground">Comprimento</p>
                           <p className="font-medium">{formData.length_cm} cm</p>
                         </div>
                       )}
                     </div>
-                  </div>
+                  </Card>
 
                   <div className="flex justify-between pt-4">
                     <Button type="button" variant="outline" onClick={handleBack} className="transition-all duration-300 hover:shadow-md">
@@ -771,9 +778,32 @@ const Quote = () => {
                   return (
                     <div 
                       key={quote.carrier_id}
-                      className="card-quote animate-fade-in"
+                      className="card-quote animate-fade-in relative group transition-all duration-300 hover:shadow-lg hover:border-foreground/20"
                       style={{ animationDelay: `${index * 50}ms` }}
                     >
+                      {/* Badge flutuante Melhor Preço */}
+                      {isBestPrice && (
+                        <div className="absolute -top-3 -left-2 z-10">
+                          <div className="px-3 py-1.5 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground text-xs font-bold rounded-lg shadow-lg transform -rotate-2">
+                            💰 Melhor Preço
+                          </div>
+                        </div>
+                      )}
+                      {isFastest && !isBestPrice && (
+                        <div className="absolute -top-3 -left-2 z-10">
+                          <div className="px-3 py-1.5 bg-gradient-to-r from-accent to-accent/80 text-accent-foreground text-xs font-bold rounded-lg shadow-lg transform -rotate-2">
+                            ⚡ Mais Rápido
+                          </div>
+                        </div>
+                      )}
+                      {isBestQuality && !isBestPrice && !isFastest && (
+                        <div className="absolute -top-3 -left-2 z-10">
+                          <div className="px-3 py-1.5 bg-gradient-to-r from-secondary to-secondary/80 text-secondary-foreground text-xs font-bold rounded-lg shadow-lg transform -rotate-2">
+                            🏆 Melhor Qualidade
+                          </div>
+                        </div>
+                      )}
+
                       {/* Ribbon lateral de destaque */}
                       {(isBestPrice || isFastest || isBestQuality) && (
                         <div className={`absolute left-0 top-0 bottom-0 w-1 ${
@@ -818,23 +848,6 @@ const Quote = () => {
                           </div>
                         </div>
 
-                        {/* Badge de Destaque */}
-                        {(isBestPrice || isFastest || isBestQuality) && (
-                          <div className="mb-3">
-                            <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm ${
-                              isBestPrice 
-                                ? "bg-primary text-primary-foreground" 
-                                : isFastest
-                                ? "bg-accent text-accent-foreground"
-                                : "bg-secondary text-secondary-foreground"
-                            }`}>
-                              <span>
-                                {isBestPrice ? "💰" : isFastest ? "⚡" : "🏆"}
-                              </span>
-                              {isBestPrice ? "Melhor Preço" : isFastest ? "Mais Rápido" : "Melhor Qualidade"}
-                            </div>
-                          </div>
-                        )}
 
                         {/* Preço Final - Destaque Máximo com altura padronizada */}
                         <div className="text-center py-4 mb-4 bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl border-2 border-primary/20" style={{ minHeight: '100px' }}>
@@ -915,11 +928,11 @@ const Quote = () => {
                           </div>
                         )}
 
-                        {/* Botão Contratar - Fixo no bottom com destaque */}
+                        {/* Botão Contratar - Fixo no bottom com destaque e elevação */}
                         <Button 
                           variant="hero" 
                           size="lg" 
-                          className="w-full mt-auto shadow-lg hover:shadow-xl"
+                          className="w-full mt-auto shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1 active:translate-y-0"
                           onClick={() => handleContractFreight(quote)}
                           disabled={contractingCarrierId !== null}
                         >
