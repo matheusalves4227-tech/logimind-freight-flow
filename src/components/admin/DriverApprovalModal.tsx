@@ -8,7 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuditLog } from '@/hooks/useAuditLog';
-import { CheckCircle2, XCircle, FileText, ExternalLink, Loader2 } from 'lucide-react';
+import { CheckCircle2, XCircle, FileText, ExternalLink, Loader2, Eye, AlertCircle, CheckCircle } from 'lucide-react';
 
 interface DriverApprovalModalProps {
   driver: {
@@ -345,13 +345,16 @@ export const DriverApprovalModal = ({ driver, open, onClose, onComplete }: Drive
             <div className="border rounded-lg p-4">
               <h3 className="font-semibold text-lg mb-3">Documentos Enviados</h3>
               {documents.length === 0 ? (
-                <p className="text-muted-foreground text-sm">Nenhum documento enviado</p>
+                <div className="flex items-center gap-2 p-3 bg-red-50 rounded-lg border border-red-200">
+                  <AlertCircle className="h-5 w-5 text-red-500" />
+                  <span className="text-red-700 font-medium">Documentação Pendente - Nenhum documento enviado</span>
+                </div>
               ) : (
                 <div className="space-y-2">
                   {documents.map((doc) => (
                     <div 
                       key={doc.id} 
-                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50"
+                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
                     >
                       <div className="flex items-center gap-3">
                         <FileText className="h-4 w-4 text-primary" />
@@ -364,9 +367,11 @@ export const DriverApprovalModal = ({ driver, open, onClose, onComplete }: Drive
                         size="sm"
                         variant="outline"
                         onClick={() => handleViewDocument(doc.file_path)}
+                        className="gap-1.5"
                       >
-                        Ver Documento
-                        <ExternalLink className="h-3 w-3 ml-2" />
+                        <Eye className="h-3.5 w-3.5" />
+                        Ver
+                        <ExternalLink className="h-3 w-3" />
                       </Button>
                     </div>
                   ))}
@@ -448,30 +453,36 @@ export const DriverApprovalModal = ({ driver, open, onClose, onComplete }: Drive
               <Button
                 onClick={handleApprove}
                 disabled={processing || !checks.rntrc || !checks.cnhValidity || !checks.backgroundCheck}
-                className="flex-1 bg-secondary text-secondary-foreground hover:bg-secondary/90"
+                className="flex-1 bg-emerald-600 text-white hover:bg-emerald-700 gap-2"
               >
                 {processing ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  <CheckCircle2 className="h-4 w-4 mr-2" />
+                  <CheckCircle2 className="h-4 w-4" />
                 )}
                 Aprovar Motorista
               </Button>
               
               <Button
                 onClick={handleReject}
-                disabled={processing}
+                disabled={processing || !rejectionReason.trim()}
                 variant="destructive"
-                className="flex-1"
+                className="flex-1 gap-2"
               >
                 {processing ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  <XCircle className="h-4 w-4 mr-2" />
+                  <XCircle className="h-4 w-4" />
                 )}
                 Rejeitar Motorista
               </Button>
             </div>
+            
+            {!rejectionReason.trim() && (
+              <p className="text-xs text-muted-foreground text-center">
+                💡 Preencha o "Motivo da Rejeição" acima para habilitar o botão de rejeitar
+              </p>
+            )}
           </div>
         )}
       </DialogContent>
