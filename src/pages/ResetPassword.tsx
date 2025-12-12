@@ -32,8 +32,18 @@ const ResetPassword = () => {
       return;
     }
 
-    if (password.length < 6) {
-      toast.error("A senha deve ter pelo menos 6 caracteres");
+    if (password.length < 8) {
+      toast.error("A senha deve ter pelo menos 8 caracteres");
+      return;
+    }
+
+    // Validação de força da senha
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    
+    if (!hasUpperCase || !hasLowerCase || !hasNumber) {
+      toast.error("A senha deve conter letras maiúsculas, minúsculas e números");
       return;
     }
 
@@ -98,8 +108,11 @@ const ResetPassword = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              minLength={6}
+              minLength={8}
             />
+            <p className="text-xs text-muted-foreground mt-1">
+              Mínimo 8 caracteres com letras maiúsculas, minúsculas e números
+            </p>
           </div>
 
           <div className="space-y-2">
@@ -111,7 +124,7 @@ const ResetPassword = () => {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
-              minLength={6}
+              minLength={8}
             />
           </div>
 

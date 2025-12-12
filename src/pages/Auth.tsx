@@ -94,6 +94,23 @@ const Auth = () => {
     setLoading(true);
 
     try {
+      // Validação de força da senha
+      if (password.length < 8) {
+        toast.error("A senha deve ter pelo menos 8 caracteres");
+        setLoading(false);
+        return;
+      }
+
+      const hasUpperCase = /[A-Z]/.test(password);
+      const hasLowerCase = /[a-z]/.test(password);
+      const hasNumber = /[0-9]/.test(password);
+      
+      if (!hasUpperCase || !hasLowerCase || !hasNumber) {
+        toast.error("A senha deve conter letras maiúsculas, minúsculas e números");
+        setLoading(false);
+        return;
+      }
+
       const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -235,8 +252,13 @@ const Auth = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                minLength={6}
+                minLength={8}
               />
+              {isSignUp && (
+                <p className="text-xs text-muted-foreground">
+                  Mínimo 8 caracteres com letras maiúsculas, minúsculas e números
+                </p>
+              )}
             </div>
           )}
 

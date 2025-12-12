@@ -103,14 +103,50 @@ serve(async (req: Request) => {
   }
 });
 
-// Função auxiliar para gerar payload PIX EMV (simplificada)
-function generatePixPayload(key: string, name: string, city: string, amount: string, txid: string): string {
-  // Formato PIX Copia e Cola simplificado
-  // Em produção, usar biblioteca completa de geração de QR Code PIX
-  const merchantAccountInfo = `0014BR.GOV.BCB.PIX01${key.length.toString().padStart(2, '0')}${key}`;
-  const merchantName = `${name.length.toString().padStart(2, '0')}${name}`;
-  const merchantCity = `${city.length.toString().padStart(2, '0')}${city}`;
-  const transactionAmount = `${amount.length.toString().padStart(2, '0')}${amount}`;
+// Função para calcular CRC16 CCITT
+function calculateCRC16(payload: string): string {
+  const polynomial = 0x1021;
+  let crc = 0xFFFF;
   
-  return `00020126${merchantAccountInfo.length.toString().padStart(2, '0')}${merchantAccountInfo}52040000530398654${transactionAmount}5802BR59${merchantName}60${merchantCity}62${(7 + txid.length).toString().padStart(2, '0')}05${txid.length.toString().padStart(2, '0')}${txid}6304`;
+  for (let i = 0; i < payload.length; i++) {
+    crc ^= (payload.charCodeAt(i) << 8);
+    for (let j = 0; j < 8; j++) {
+      if ((crc & 0x8000) !== 0) {
+        crc = ((crc << 1) ^ polynomial) & 0xFFFF;
+      } else {
+        crc = (crc << 1) & 0xFFFF;
+      }
+    }
+  }
+  
+  return crc.toString(16).toUpperCase().padStart(4, '0');
+}
+
+// Função auxiliar para gerar payload PIX EMV com CRC16 válido
+function generatePixPayload(key: string, name: string, city: string, amount: string, txid: string): string {
+  // Limpar e normalizar valores
+  const cleanName = name.replace(/[^a-zA-Z0-9 ]/g, '').substring(0, 25);
+  const cleanCity = city.replace(/[^a-zA-Z0-9 ]/g, '').substring(0, 15);
+  const cleanTxid = txid.replace(/[^a-zA-Z0-9]/g, '').substring(0, 25);
+  
+  // Montar campos do PIX
+  const payloadFormatIndicator = "000201";
+  const merchantAccountInfo = `0014BR.GOV.BCB.PIX01${key.length.toString().padStart(2, '0')}${key}`;
+  const merchantAccountInfoFull = `26${merchantAccountInfo.length.toString().padStart(2, '0')}${merchantAccountInfo}`;
+  const merchantCategoryCode = "52040000";
+  const transactionCurrency = "5303986";
+  const transactionAmount = `54${amount.length.toString().padStart(2, '0')}${amount}`;
+  const countryCode = "5802BR";
+  const merchantName = `59${cleanName.length.toString().padStart(2, '0')}${cleanName}`;
+  const merchantCity = `60${cleanCity.length.toString().padStart(2, '0')}${cleanCity}`;
+  const additionalDataField = `05${cleanTxid.length.toString().padStart(2, '0')}${cleanTxid}`;
+  const additionalDataFieldFull = `62${additionalDataField.length.toString().padStart(2, '0')}${additionalDataField}`;
+  
+  // Montar payload sem CRC
+  const payloadWithoutCRC = `${payloadFormatIndicator}${merchantAccountInfoFull}${merchantCategoryCode}${transactionCurrency}${transactionAmount}${countryCode}${merchantName}${merchantCity}${additionalDataFieldFull}6304`;
+  
+  // Calcular e adicionar CRC16
+  const crc = calculateCRC16(payloadWithoutCRC);
+  
+  return payloadWithoutCRC + crc;
 }
