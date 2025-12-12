@@ -66,7 +66,7 @@ export const PixPaymentModal = ({
     try {
       const fileExt = file.name.split(".").pop();
       const fileName = `${orderId}_${Date.now()}.${fileExt}`;
-      const filePath = `payment-proofs/${fileName}`;
+      const filePath = fileName; // Sem prefixo pois o bucket já é payment-proofs
 
       const { error: uploadError } = await supabase.storage
         .from("payment-proofs")
