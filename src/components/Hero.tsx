@@ -121,7 +121,7 @@ const Hero = () => {
                 variant="default"
                 size="lg" 
                 className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-md hover:shadow-lg transition-all"
-                onClick={() => navigate("/parceiro/cadastro?tipo=transportadora")}
+                onClick={() => navigate("/auth?redirect=/parceiro/cadastro?tipo=transportadora")}
               >
                 Oferecer Fretes
               </Button>
@@ -167,7 +167,7 @@ const Hero = () => {
                 variant="default"
                 size="lg" 
                 className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-md hover:shadow-lg transition-all"
-                onClick={() => navigate("/parceiro/cadastro?tipo=motorista")}
+                onClick={() => navigate("/auth?redirect=/parceiro/cadastro?tipo=motorista")}
               >
                 Ver Fretes Disponíveis
               </Button>

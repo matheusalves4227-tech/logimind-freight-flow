@@ -27,3 +27,5 @@ verify_jwt = true
 [functions.notify-admin-new-registration]
 verify_jwt = false
 
+[functions.send-driver-confirmation]
+verify_jwt = false

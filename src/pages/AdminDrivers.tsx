@@ -517,62 +517,57 @@ const AdminDrivers = () => {
           </Card>
         </div>
 
-        {/* Filtros Avançados */}
-        <DriverFilters
-          statusFilter={statusFilter}
-          setStatusFilter={setStatusFilter}
-          regionFilter={regionFilter}
-          setRegionFilter={setRegionFilter}
-          dateFromFilter={dateFromFilter}
-          setDateFromFilter={setDateFromFilter}
-          dateToFilter={dateToFilter}
-          setDateToFilter={setDateToFilter}
-          searchFilter={searchFilter}
-          setSearchFilter={setSearchFilter}
-          onClearFilters={handleClearFilters}
-          activeFiltersCount={activeFiltersCount}
-        />
-
-        {/* Ações em Lote */}
-        <BulkDriverActions
-          selectedDriverIds={selectedDriverIds}
-          onActionComplete={handleApprovalComplete}
-          onClearSelection={() => setSelectedDriverIds([])}
-        />
-
-        {/* KPIs Financeiros */}
-        <FinancialKPIs />
-
-        {/* Fila de Repasses Pendentes */}
-        <PendingPayoutsTable />
-
-        {/* Painel de Teste de Repasse Financeiro */}
-        <PaymentTestPanel />
-
-        {/* Tabela de Motoristas */}
+        {/* Tabela de Motoristas Pendentes com Filtros Integrados */}
         <Card className="mb-8">
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <AlertCircle className="h-5 w-5 text-accent" />
-                  Motoristas ({filteredDrivers.length})
-                </CardTitle>
-                <CardDescription>
-                  {activeFiltersCount > 0 
-                    ? `Exibindo ${filteredDrivers.length} de ${pendingDrivers.length} motorista(s) com filtros aplicados`
-                    : 'Analise os documentos e aprove ou rejeite os cadastros de motoristas'
-                  }
-                </CardDescription>
-              </div>
-              {filteredDrivers.length > 0 && (
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    checked={selectedDriverIds.length === filteredDrivers.length && filteredDrivers.length > 0}
-                    onCheckedChange={handleToggleAll}
-                  />
-                  <span className="text-sm text-muted-foreground">Selecionar todos</span>
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <AlertCircle className="h-5 w-5 text-accent" />
+                    Motoristas Pendentes de Análise ({filteredDrivers.length})
+                  </CardTitle>
+                  <CardDescription>
+                    {activeFiltersCount > 0 
+                      ? `Exibindo ${filteredDrivers.length} de ${pendingDrivers.length} motorista(s) com filtros aplicados`
+                      : 'Analise os documentos e aprove ou rejeite os cadastros de motoristas'
+                    }
+                  </CardDescription>
                 </div>
+                {filteredDrivers.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      checked={selectedDriverIds.length === filteredDrivers.length && filteredDrivers.length > 0}
+                      onCheckedChange={handleToggleAll}
+                    />
+                    <span className="text-sm text-muted-foreground">Selecionar todos</span>
+                  </div>
+                )}
+              </div>
+              
+              {/* Filtros Inline */}
+              <DriverFilters
+                statusFilter={statusFilter}
+                setStatusFilter={setStatusFilter}
+                regionFilter={regionFilter}
+                setRegionFilter={setRegionFilter}
+                dateFromFilter={dateFromFilter}
+                setDateFromFilter={setDateFromFilter}
+                dateToFilter={dateToFilter}
+                setDateToFilter={setDateToFilter}
+                searchFilter={searchFilter}
+                setSearchFilter={setSearchFilter}
+                onClearFilters={handleClearFilters}
+                activeFiltersCount={activeFiltersCount}
+              />
+              
+              {/* Ações em Lote */}
+              {selectedDriverIds.length > 0 && (
+                <BulkDriverActions
+                  selectedDriverIds={selectedDriverIds}
+                  onActionComplete={handleApprovalComplete}
+                  onClearSelection={() => setSelectedDriverIds([])}
+                />
               )}
             </div>
           </CardHeader>

@@ -205,7 +205,7 @@ export const DriverBankAccount = () => {
               <Label htmlFor="pix_key_type">Tipo de Chave</Label>
               <Select 
                 value={formData.pix_key_type} 
-                onValueChange={(value) => setFormData({...formData, pix_key_type: value})}
+                onValueChange={(value) => setFormData({...formData, pix_key_type: value, pix_key: ''})}
                 disabled={hasData && !editing}
               >
                 <SelectTrigger>
