@@ -21,7 +21,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { CheckCircle, X, ExternalLink } from "lucide-react";
+import { CheckCircle, X, ExternalLink, Eye, FileText, Image as ImageIcon } from "lucide-react";
 import { formatarMoeda } from "@/lib/formatters";
 
 interface PendingPayment {
@@ -42,6 +42,7 @@ export const PendingPaymentsTable = () => {
   const [selectedPayment, setSelectedPayment] = useState<PendingPayment | null>(null);
   const [adminNotes, setAdminNotes] = useState("");
   const [confirming, setConfirming] = useState(false);
+  const [viewingProof, setViewingProof] = useState<{ url: string; type: 'pdf' | 'image' } | null>(null);
 
   useEffect(() => {
     fetchPendingPayments();
@@ -92,9 +93,32 @@ export const PendingPaymentsTable = () => {
     }
   };
 
+  // Extrai e normaliza URL do comprovante (corrige URLs duplicadas antigas)
   const extractProofUrl = (notes: string): string | null => {
     const match = notes?.match(/Comprovante PIX: (https?:\/\/[^\s]+)/);
-    return match ? match[1] : null;
+    if (!match) return null;
+    
+    let url = match[1];
+    
+    // Corrigir URLs antigas com path duplicado: payment-proofs/payment-proofs/ -> payment-proofs/
+    if (url.includes('/payment-proofs/payment-proofs/')) {
+      url = url.replace('/payment-proofs/payment-proofs/', '/payment-proofs/');
+    }
+    
+    return url;
+  };
+
+  // Detectar tipo de arquivo
+  const getFileType = (url: string): 'pdf' | 'image' => {
+    const lowerUrl = url.toLowerCase();
+    if (lowerUrl.endsWith('.pdf')) return 'pdf';
+    return 'image';
+  };
+
+  // Abrir visualizador inline
+  const handleViewProof = (url: string) => {
+    const type = getFileType(url);
+    setViewingProof({ url, type });
   };
 
   if (loading) {
@@ -154,14 +178,25 @@ export const PendingPaymentsTable = () => {
                       </TableCell>
                       <TableCell>
                         {proofUrl ? (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => window.open(proofUrl, "_blank")}
-                          >
-                            <ExternalLink className="w-4 h-4 mr-1" />
-                            Ver
-                          </Button>
+                          <div className="flex gap-1">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleViewProof(proofUrl)}
+                              title="Visualizar no painel"
+                            >
+                              <Eye className="w-4 h-4 mr-1" />
+                              Ver
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => window.open(proofUrl, "_blank")}
+                              title="Abrir em nova aba"
+                            >
+                              <ExternalLink className="w-4 h-4" />
+                            </Button>
+                          </div>
                         ) : (
                           <Badge variant="secondary">Aguardando</Badge>
                         )}
@@ -185,6 +220,55 @@ export const PendingPaymentsTable = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Dialog de Visualização do Comprovante */}
+      <Dialog open={!!viewingProof} onOpenChange={() => setViewingProof(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {viewingProof?.type === 'pdf' ? (
+                <FileText className="w-5 h-5" />
+              ) : (
+                <ImageIcon className="w-5 h-5" />
+              )}
+              Comprovante de Pagamento PIX
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="flex flex-col items-center justify-center min-h-[400px] max-h-[70vh] overflow-auto">
+            {viewingProof?.type === 'pdf' ? (
+              <iframe
+                src={viewingProof.url}
+                className="w-full h-[60vh] border rounded"
+                title="Comprovante PIX PDF"
+              />
+            ) : (
+              <img
+                src={viewingProof?.url}
+                alt="Comprovante PIX"
+                className="max-w-full max-h-[60vh] object-contain rounded shadow-lg"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                  toast.error("Erro ao carregar imagem do comprovante");
+                }}
+              />
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => window.open(viewingProof?.url, "_blank")}
+            >
+              <ExternalLink className="w-4 h-4 mr-1" />
+              Abrir em Nova Aba
+            </Button>
+            <Button onClick={() => setViewingProof(null)}>
+              Fechar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Dialog de Confirmação */}
       <Dialog open={!!selectedPayment} onOpenChange={() => setSelectedPayment(null)}>
