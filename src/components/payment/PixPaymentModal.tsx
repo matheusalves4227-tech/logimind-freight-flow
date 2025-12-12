@@ -63,13 +63,13 @@ export const PixPaymentModal = ({
       const filePath = `payment-proofs/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
-        .from("user-avatars") // Reutilizando bucket público existente
+        .from("payment-proofs")
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
       const { data: urlData } = supabase.storage
-        .from("user-avatars")
+        .from("payment-proofs")
         .getPublicUrl(filePath);
 
       setProofUrl(urlData.publicUrl);
