@@ -3,8 +3,8 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { CpfCnpjInput } from "@/components/ui/cpf-cnpj-input";
+
 import { ArrowLeft, Building2, Truck } from "lucide-react";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
@@ -105,13 +105,11 @@ const PartnerOnboarding = () => {
 
             <div className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="cnpj_cpf">CNPJ ou CPF *</Label>
-                <Input
-                  id="cnpj_cpf"
-                  placeholder="00.000.000/0000-00 ou 000.000.000-00"
+                <CpfCnpjInput
                   value={cnpjCpf}
-                  onChange={(e) => setCnpjCpf(e.target.value)}
-                  maxLength={18}
+                  onChange={setCnpjCpf}
+                  label="CNPJ ou CPF"
+                  required
                 />
                 <p className="text-sm text-muted-foreground">
                   <strong>CNPJ:</strong> Para transportadoras e empresas logísticas<br />
