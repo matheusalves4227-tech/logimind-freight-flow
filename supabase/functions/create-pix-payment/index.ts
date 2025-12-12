@@ -42,7 +42,10 @@ Deno.serve(async (req: Request) => {
       global: { headers: { Authorization: authHeader } },
     });
 
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    // Extrair o token JWT do header
+    const token = authHeader.replace("Bearer ", "");
+    
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
     
     console.log("[Create PIX Payment] User fetch result:", { 
       hasUser: !!user, 
