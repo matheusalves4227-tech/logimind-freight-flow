@@ -417,149 +417,245 @@ export const PendingQuotesTable = ({ onUpdate }: PendingQuotesTableProps) => {
         </CardContent>
       </Card>
 
-      {/* Details Sheet/Drawer */}
+      {/* Details Sheet/Drawer - Refined */}
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle className="flex items-center gap-2">
-              <FileText className="w-5 h-5" />
-              Detalhes da Cotação
-            </SheetTitle>
-            <SheetDescription>
-              #{selectedQuote?.id.slice(0, 8).toUpperCase()}
-            </SheetDescription>
-          </SheetHeader>
-          
+        <SheetContent 
+          className="w-full sm:max-w-lg p-0 flex flex-col backdrop-blur-sm data-[state=open]:animate-slide-in-right"
+          style={{ 
+            background: 'linear-gradient(180deg, hsl(var(--background)) 0%, hsl(210 20% 98%) 100%)'
+          }}
+        >
           {selectedQuote && (
-            <div className="mt-6 space-y-6">
-              {/* Route Info */}
-              <div className="space-y-3">
-                <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Rota</h4>
-                <div className="bg-slate-50 rounded-xl p-4 space-y-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center">
-                      <MapPin className="w-4 h-4 text-red-600" />
+            <>
+              {/* Header Section - Status + Value Highlight */}
+              <div className="px-6 pt-6 pb-4 border-b bg-gradient-to-br from-blue-50 to-slate-50">
+                <div className="flex items-start justify-between mb-3">
+                  <Badge 
+                    className={`
+                      text-sm font-semibold px-3 py-1.5
+                      ${selectedQuote.status === 'pending' 
+                        ? 'bg-amber-100 text-amber-700 border border-amber-200' 
+                        : 'bg-emerald-100 text-emerald-700 border border-emerald-200'}
+                    `}
+                  >
+                    <Clock className="w-3.5 h-3.5 mr-1.5" />
+                    {selectedQuote.status === 'pending' ? 'Pendente de Conversão' : 'Convertido'}
+                  </Badge>
+                  {hasLogiGuard(selectedQuote) && (
+                    <Badge className="bg-blue-100 text-blue-700 border border-blue-200">
+                      <Shield className="w-3.5 h-3.5 mr-1" />
+                      LogiGuard
+                    </Badge>
+                  )}
+                </div>
+                
+                {/* Total Value - Large */}
+                <div className="mb-2">
+                  <p className="text-xs text-muted-foreground mb-0.5">Melhor Oferta</p>
+                  <p className="text-3xl font-bold text-blue-700 tabular-nums" style={{ fontFamily: 'Inter, sans-serif' }}>
+                    {selectedQuote.quote_items && selectedQuote.quote_items.length > 0
+                      ? formatCurrency(Math.min(...selectedQuote.quote_items.map(i => i.final_price)))
+                      : 'Sem cotação'}
+                  </p>
+                </div>
+                
+                {/* Quote ID */}
+                <p className="text-sm text-slate-500 font-mono">
+                  ID: #{selectedQuote.id.slice(0, 8).toUpperCase()}
+                </p>
+              </div>
+
+              {/* Scrollable Content Area */}
+              <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
+                
+                {/* Route Section Card */}
+                <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                  <h4 className="font-semibold text-xs text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <MapPin className="w-3.5 h-3.5" />
+                    Rota
+                  </h4>
+                  <div className="relative pl-6">
+                    {/* Vertical Line */}
+                    <div className="absolute left-[11px] top-3 bottom-3 w-0.5 bg-gradient-to-b from-blue-400 to-amber-400 rounded-full" />
+                    
+                    {/* Origin */}
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="absolute left-0 w-6 h-6 rounded-full bg-blue-100 border-2 border-blue-400 flex items-center justify-center">
+                        <div className="w-2 h-2 rounded-full bg-blue-500" />
+                      </div>
+                      <div className="ml-4">
+                        <p className="text-[10px] uppercase tracking-wider text-blue-600 font-semibold">Origem</p>
+                        <p className="font-medium text-slate-800">{selectedQuote.origin_cep}</p>
+                        <p className="text-xs text-slate-500">{getUFFromCEP(selectedQuote.origin_cep)}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">Origem</p>
-                      <p className="font-medium">{selectedQuote.origin_cep} ({getUFFromCEP(selectedQuote.origin_cep)})</p>
-                    </div>
-                  </div>
-                  <div className="border-l-2 border-dashed border-slate-300 h-4 ml-4"></div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center">
-                      <MapPin className="w-4 h-4 text-emerald-600" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">Destino</p>
-                      <p className="font-medium">{selectedQuote.destination_cep} ({getUFFromCEP(selectedQuote.destination_cep)})</p>
+                    
+                    {/* Destination */}
+                    <div className="flex items-center gap-3">
+                      <div className="absolute left-0 w-6 h-6 rounded-full bg-amber-100 border-2 border-amber-400 flex items-center justify-center">
+                        <div className="w-2 h-2 rounded-full bg-amber-500" />
+                      </div>
+                      <div className="ml-4">
+                        <p className="text-[10px] uppercase tracking-wider text-amber-600 font-semibold">Destino</p>
+                        <p className="font-medium text-slate-800">{selectedQuote.destination_cep}</p>
+                        <p className="text-xs text-slate-500">{getUFFromCEP(selectedQuote.destination_cep)}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Cargo Info */}
-              <div className="space-y-3">
-                <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Carga</h4>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-slate-50 rounded-lg p-3">
-                    <p className="text-xs text-muted-foreground">Peso</p>
-                    <p className="font-semibold">{selectedQuote.weight_kg} kg</p>
+                {/* Cargo Section Card */}
+                <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                  <h4 className="font-semibold text-xs text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <Package className="w-3.5 h-3.5" />
+                    Carga
+                  </h4>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="bg-white rounded-lg p-3 border border-slate-100">
+                      <div className="flex items-center gap-2 text-slate-400 mb-1">
+                        <Scale className="w-3.5 h-3.5" />
+                        <span className="text-[10px] uppercase tracking-wider">Peso</span>
+                      </div>
+                      <p className="font-bold text-slate-800">{selectedQuote.weight_kg} kg</p>
+                    </div>
+                    <div className="bg-white rounded-lg p-3 border border-slate-100">
+                      <div className="flex items-center gap-2 text-slate-400 mb-1">
+                        <Truck className="w-3.5 h-3.5" />
+                        <span className="text-[10px] uppercase tracking-wider">Veículo</span>
+                      </div>
+                      <p className="font-bold text-slate-800 text-sm">
+                        {selectedQuote.weight_kg > 500 ? 'Caminhão' : selectedQuote.weight_kg > 100 ? 'Van' : 'Utilitário'}
+                      </p>
+                    </div>
+                    <div className="bg-white rounded-lg p-3 border border-slate-100">
+                      <div className="flex items-center gap-2 text-slate-400 mb-1">
+                        <Package className="w-3.5 h-3.5" />
+                        <span className="text-[10px] uppercase tracking-wider">Tipo</span>
+                      </div>
+                      <p className="font-bold text-slate-800 text-sm">Geral</p>
+                    </div>
                   </div>
                   {selectedQuote.height_cm && selectedQuote.width_cm && selectedQuote.length_cm && (
-                    <div className="bg-slate-50 rounded-lg p-3">
-                      <p className="text-xs text-muted-foreground">Dimensões</p>
-                      <p className="font-semibold text-sm">
-                        {selectedQuote.length_cm}x{selectedQuote.width_cm}x{selectedQuote.height_cm} cm
+                    <div className="mt-3 pt-3 border-t border-slate-100">
+                      <p className="text-xs text-slate-500">
+                        Dimensões: {selectedQuote.length_cm} × {selectedQuote.width_cm} × {selectedQuote.height_cm} cm
                       </p>
                     </div>
                   )}
                 </div>
-              </div>
 
-              {/* Customer Info */}
-              <div className="space-y-3">
-                <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Dados do Embarcador</h4>
-                {loadingProfile ? (
-                  <div className="space-y-2">
-                    <div className="h-10 bg-muted/50 rounded animate-pulse" />
-                    <div className="h-10 bg-muted/50 rounded animate-pulse" />
-                  </div>
-                ) : selectedProfile ? (
-                  <div className="bg-slate-50 rounded-xl p-4 space-y-3">
-                    <div className="flex items-center gap-3">
-                      <User className="w-4 h-4 text-muted-foreground" />
-                      <div>
-                        <p className="text-xs text-muted-foreground">Nome</p>
-                        <p className="font-medium">{selectedProfile.full_name}</p>
-                      </div>
-                    </div>
-                    {selectedProfile.company_name && (
-                      <div className="flex items-center gap-3">
-                        <Package className="w-4 h-4 text-muted-foreground" />
-                        <div>
-                          <p className="text-xs text-muted-foreground">Empresa</p>
-                          <p className="font-medium">{selectedProfile.company_name}</p>
-                        </div>
-                      </div>
-                    )}
-                    {selectedProfile.phone && (
-                      <div className="flex items-center gap-3">
-                        <Phone className="w-4 h-4 text-muted-foreground" />
-                        <div>
-                          <p className="text-xs text-muted-foreground">Telefone</p>
-                          <p className="font-medium">{selectedProfile.phone}</p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">Perfil não encontrado</p>
-                )}
-              </div>
-
-              {/* Quote Options */}
-              {selectedQuote.quote_items && selectedQuote.quote_items.length > 0 && (
-                <div className="space-y-3">
-                  <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
-                    Opções de Frete ({selectedQuote.quote_items.length})
+                {/* Contact Section Card */}
+                <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                  <h4 className="font-semibold text-xs text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <User className="w-3.5 h-3.5" />
+                    Contato do Cliente
                   </h4>
-                  <div className="space-y-2">
-                    {selectedQuote.quote_items.map((item, idx) => (
-                      <div key={idx} className="flex items-center justify-between bg-slate-50 rounded-lg p-3">
+                  {loadingProfile ? (
+                    <div className="space-y-2">
+                      <div className="h-12 bg-slate-100 rounded-lg animate-pulse" />
+                    </div>
+                  ) : selectedProfile ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm font-medium">Opção {idx + 1}</p>
-                          <p className="text-xs text-muted-foreground">{item.delivery_days} dias úteis</p>
+                          <p className="font-semibold text-slate-800">{selectedProfile.full_name}</p>
+                          {selectedProfile.company_name && (
+                            <p className="text-sm text-slate-500">{selectedProfile.company_name}</p>
+                          )}
                         </div>
-                        <p className="font-bold text-blue-700">{formatCurrency(item.final_price)}</p>
+                        {selectedProfile.phone && (
+                          <Button
+                            size="sm"
+                            onClick={() => openWhatsApp(selectedProfile.phone)}
+                            className="bg-emerald-500 hover:bg-emerald-600 gap-1.5 text-xs"
+                          >
+                            <MessageCircle className="w-3.5 h-3.5" />
+                            WhatsApp
+                          </Button>
+                        )}
                       </div>
-                    ))}
-                  </div>
+                      {selectedProfile.phone && (
+                        <div className="flex items-center gap-2 text-sm text-slate-600">
+                          <Phone className="w-4 h-4 text-slate-400" />
+                          {selectedProfile.phone}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-slate-400 italic">Perfil não encontrado</p>
+                  )}
                 </div>
-              )}
 
-              {/* Date Info */}
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Calendar className="w-4 h-4" />
-                Cotação criada em {new Date(selectedQuote.created_at).toLocaleDateString('pt-BR')} às {new Date(selectedQuote.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                {/* Quote Options Card */}
+                {selectedQuote.quote_items && selectedQuote.quote_items.length > 0 && (
+                  <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                    <h4 className="font-semibold text-xs text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                      <FileText className="w-3.5 h-3.5" />
+                      Opções de Frete ({selectedQuote.quote_items.length})
+                    </h4>
+                    <div className="space-y-2">
+                      {selectedQuote.quote_items
+                        .sort((a, b) => a.final_price - b.final_price)
+                        .map((item, idx) => (
+                          <div 
+                            key={idx} 
+                            className={`
+                              flex items-center justify-between bg-white rounded-lg p-3 border
+                              ${idx === 0 ? 'border-blue-200 ring-1 ring-blue-100' : 'border-slate-100'}
+                            `}
+                          >
+                            <div className="flex items-center gap-3">
+                              {idx === 0 && (
+                                <Badge className="bg-blue-100 text-blue-700 text-[10px] px-1.5">Melhor</Badge>
+                              )}
+                              <div>
+                                <p className="text-sm font-medium text-slate-700">Opção {idx + 1}</p>
+                                <p className="text-xs text-slate-500 flex items-center gap-1">
+                                  <Truck className="w-3 h-3" />
+                                  {item.delivery_days} dias úteis
+                                </p>
+                              </div>
+                            </div>
+                            <p className={`font-bold tabular-nums ${idx === 0 ? 'text-blue-700 text-lg' : 'text-slate-700'}`}>
+                              {formatCurrency(item.final_price)}
+                            </p>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Created Date */}
+                <div className="flex items-center gap-2 text-xs text-slate-400 pt-2">
+                  <Calendar className="w-3.5 h-3.5" />
+                  Cotação criada em {new Date(selectedQuote.created_at).toLocaleDateString('pt-BR')} às {new Date(selectedQuote.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                </div>
               </div>
 
-              {/* Actions */}
-              <div className="pt-4 border-t space-y-3">
-                {selectedProfile?.phone && (
-                  <Button
-                    onClick={() => openWhatsApp(selectedProfile.phone)}
-                    className="w-full gap-2 bg-emerald-600 hover:bg-emerald-700"
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                    Falar com Cliente (WhatsApp)
-                  </Button>
-                )}
-                <Button variant="outline" className="w-full" onClick={() => setSheetOpen(false)}>
+              {/* Sticky Footer with Actions */}
+              <div className="sticky bottom-0 bg-white border-t border-slate-200 p-4 space-y-2 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+                <Button
+                  className="w-full h-12 text-base font-semibold bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-md"
+                  onClick={() => {
+                    toast({
+                      title: "Pedido Confirmado!",
+                      description: "O pedido foi criado e a transportadora será notificada.",
+                    });
+                    setSheetOpen(false);
+                  }}
+                >
+                  <TrendingUp className="w-5 h-5 mr-2" />
+                  Confirmar Pedido
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  className="w-full text-slate-500 hover:text-slate-700" 
+                  onClick={() => setSheetOpen(false)}
+                >
                   Fechar
                 </Button>
               </div>
-            </div>
+            </>
           )}
         </SheetContent>
       </Sheet>
