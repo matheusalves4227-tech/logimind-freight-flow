@@ -278,7 +278,7 @@ const Tracking = () => {
           <div className="lg:col-span-3 space-y-4">
             
             {/* Status Geral */}
-            <Card className="p-4">
+            <Card className="p-4 rounded-xl shadow-sm">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-xs uppercase tracking-wide text-muted-foreground font-semibold">
                   Status Geral
@@ -287,9 +287,12 @@ const Tracking = () => {
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger>
-                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300 flex items-center gap-1">
-                          <Radio className="h-3 w-3 animate-pulse" />
-                          <span className="hidden sm:inline">Ao vivo</span>
+                        <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-300 flex items-center gap-1.5 px-2.5">
+                          <span className="relative flex h-2 w-2">
+                            <span className="animate-ping-marker absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 animate-blink-live"></span>
+                          </span>
+                          <span className="hidden sm:inline font-medium">Ao vivo</span>
                         </Badge>
                       </TooltipTrigger>
                       <TooltipContent>
@@ -310,7 +313,7 @@ const Tracking = () => {
             </Card>
 
             {/* Previsão de Entrega */}
-            <Card className="p-4 bg-gradient-to-br from-accent/5 to-accent/10 border-accent/20">
+            <Card className="p-4 rounded-xl shadow-sm bg-gradient-to-br from-accent/5 to-accent/10 border-accent/20">
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
                   <Clock className="h-5 w-5 text-accent" />
@@ -340,14 +343,14 @@ const Tracking = () => {
             </Card>
 
             {/* Transportador */}
-            <Card className="p-4">
+            <Card className="p-4 rounded-xl shadow-sm">
               <h3 className="text-xs uppercase tracking-wide text-muted-foreground mb-3 font-semibold flex items-center gap-1.5">
                 <Truck className="h-3 w-3" />
                 Transportador
               </h3>
               <p className="text-sm font-semibold mb-1">{trackingData.transportador_nome}</p>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Badge variant="outline" className="text-[10px]">
+                <Badge variant="outline" className="text-[10px] rounded-lg">
                   {orderData.service_type === 'ltl' ? 'LTL' : 'FTL'}
                 </Badge>
                 {trackingData.tipo_veiculo !== 'N/A' && (
@@ -357,7 +360,7 @@ const Tracking = () => {
             </Card>
 
             {/* Valor do Frete */}
-            <Card className="p-4 bg-primary/5 border-primary/20">
+            <Card className="p-4 rounded-xl shadow-sm bg-primary/5 border-primary/20">
               <h3 className="text-xs uppercase tracking-wide text-muted-foreground mb-3 font-semibold flex items-center gap-1.5">
                 <DollarSign className="h-3 w-3" />
                 Valor do Frete
@@ -382,7 +385,7 @@ const Tracking = () => {
 
           {/* Coluna Central: Mapa */}
           <div className="lg:col-span-5">
-            <Card className="p-0 overflow-hidden h-[600px]">
+            <Card className="p-0 overflow-hidden h-[600px] rounded-2xl map-container-styled">
               <TrackingMap
                 currentLocation={trackingData.localizacao_atual}
                 originCep={orderData.origin_cep}
@@ -395,8 +398,8 @@ const Tracking = () => {
 
           {/* Coluna Direita: Timeline */}
           <div className="lg:col-span-4">
-            <Card className="p-4 h-[600px] overflow-y-auto">
-              <h3 className="text-sm uppercase tracking-wide text-muted-foreground mb-4 font-semibold flex items-center gap-2 sticky top-0 bg-card pb-2">
+            <Card className="p-4 h-[600px] overflow-y-auto rounded-xl shadow-sm">
+              <h3 className="text-sm uppercase tracking-wide text-muted-foreground mb-4 font-semibold flex items-center gap-2 sticky top-0 bg-card pb-2 z-10">
                 <MapPin className="h-4 w-4" />
                 Histórico de Eventos
               </h3>

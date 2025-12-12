@@ -74,6 +74,12 @@ export default {
           foreground: "hsl(var(--destructive-foreground))",
         },
         
+        // Navy para headers/footers escuros
+        navy: {
+          DEFAULT: "hsl(var(--navy))",
+          foreground: "hsl(var(--navy-foreground))",
+        },
+        
         // Cores Neutras
         neutral: {
           dark: "hsl(var(--neutral-dark))",
