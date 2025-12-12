@@ -430,6 +430,153 @@ const AutonomousOnboarding = ({ cpf, onBack }: AutonomousOnboardingProps) => {
                       Precisamos validar seus dados para garantir segurança nas operações
                     </p>
 
+                    {/* Grid 2 colunas para campos curtos */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-2 sm:col-span-2">
+                        <Label htmlFor="nome_completo">Nome Completo *</Label>
+                        <Input
+                          id="nome_completo"
+                          value={formData.nome_completo}
+                          onChange={(e) => handleFormChange("nome_completo", e.target.value)}
+                          className={`transition-all duration-300 focus:ring-2 focus:ring-primary/20 ${errors.nome_completo ? "border-destructive" : ""}`}
+                        />
+                        {errors.nome_completo && (
+                          <p className="text-xs text-destructive">{errors.nome_completo}</p>
+                        )}
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="email">E-mail *</Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          value={formData.email}
+                          onChange={(e) => handleFormChange("email", e.target.value)}
+                          className={`transition-all duration-300 focus:ring-2 focus:ring-primary/20 ${errors.email ? "border-destructive" : ""}`}
+                        />
+                        {errors.email && (
+                          <p className="text-xs text-destructive">{errors.email}</p>
+                        )}
+                      </div>
+
+                      <PhoneInput
+                        value={formData.telefone}
+                        onChange={(value) => handleFormChange("telefone", value)}
+                        label="Telefone"
+                        required
+                        error={errors.telefone}
+                      />
+
+                      <PhoneInput
+                        value={formData.whatsapp}
+                        onChange={(value) => handleFormChange("whatsapp", value)}
+                        label="WhatsApp (Opcional)"
+                        error={errors.whatsapp}
+                      />
+                    </div>
+                  </div>
+
+                  <SectionDivider />
+
+                  <div className="space-y-4">
+                    <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">
+                      Foto de Perfil
+                    </h4>
+                    <ProfilePhotoUpload
+                      currentPhotoUrl={profilePhotoUrl}
+                      onUploadComplete={(url) => setProfilePhotoUrl(url)}
+                    />
+                  </div>
+
+                  <SectionDivider />
+
+                  <div className="space-y-4">
+                    <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">
+                      Documentação Legal
+                    </h4>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="cnh_numero">Número da CNH *</Label>
+                        <Input
+                          id="cnh_numero"
+                          placeholder="00000000000"
+                          maxLength={11}
+                          value={formData.cnh_numero}
+                          onChange={(e) => handleFormChange("cnh_numero", e.target.value.replace(/\D/g, ""))}
+                          className={`transition-all duration-300 focus:ring-2 focus:ring-primary/20 ${errors.cnh_numero ? "border-destructive" : ""}`}
+                        />
+                        {errors.cnh_numero && (
+                          <p className="text-xs text-destructive">{errors.cnh_numero}</p>
+                        )}
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="cnh_categoria">Categoria da CNH *</Label>
+                        <Select
+                          value={formData.cnh_categoria || undefined}
+                          onValueChange={(value) => handleFormChange("cnh_categoria", value)}
+                        >
+                          <SelectTrigger className={`transition-all duration-300 ${errors.cnh_categoria ? "border-destructive" : ""}`}>
+                            <SelectValue placeholder="Selecione" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="B">B - Até 3.500kg</SelectItem>
+                            <SelectItem value="C">C - Até 6.000kg</SelectItem>
+                            <SelectItem value="D">D - Até 16.000kg</SelectItem>
+                            <SelectItem value="E">E - Acima de 16.000kg</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {errors.cnh_categoria && (
+                          <p className="text-xs text-destructive">{errors.cnh_categoria}</p>
+                        )}
+                      </div>
+
+                      <div className="space-y-2 sm:col-span-2">
+                        <Label htmlFor="rntrc">RNTRC (Registro Nacional) *</Label>
+                        <Input
+                          id="rntrc"
+                          value={formData.rntrc}
+                          onChange={(e) => handleFormChange("rntrc", e.target.value)}
+                          className={`transition-all duration-300 focus:ring-2 focus:ring-primary/20 ${errors.rntrc ? "border-destructive" : ""}`}
+                        />
+                        {errors.rntrc && (
+                          <p className="text-xs text-destructive">{errors.rntrc}</p>
+                        )}
+                        <p className="text-xs text-muted-foreground">
+                          Necessário para a emissão de documentos fiscais (CIOT, MDF-e)
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                      <div className="flex items-start gap-3">
+                        <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm text-amber-900 dark:text-amber-100">
+                          <p className="font-medium mb-1">Conformidade Legal</p>
+                          <p className="text-xs">
+                            CNH válida e RNTRC ativo são pré-requisitos legais para transportar cargas no Brasil.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end pt-4">
+                    <Button type="button" onClick={handleNext} size="lg" className="px-8 shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
+                      Continuar para Frota
+                    </Button>
+                  </div>
+                </div>
+              )}
+                    <h3 className="font-semibold text-lg flex items-center gap-2 text-accent">
+                      <CheckCircle2 className="h-5 w-5" />
+                      Dados Pessoais e Documentação
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      Precisamos validar seus dados para garantir segurança nas operações
+                    </p>
+
                     <div className="space-y-4">
                       <div className="space-y-2">
                         <Label htmlFor="nome_completo">Nome Completo *</Label>

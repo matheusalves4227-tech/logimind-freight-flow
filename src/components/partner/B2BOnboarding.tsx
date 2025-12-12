@@ -5,14 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Building2, Upload, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Building2, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import { supabase } from "@/integrations/supabase/client";
 import { validateCNPJ } from "@/lib/validators";
-import { CpfCnpjInput } from "@/components/ui/cpf-cnpj-input";
 import { PhoneInput } from "@/components/ui/phone-input";
-import { MoneyInput } from "@/components/ui/money-input";
+import { Dropzone } from "@/components/ui/dropzone";
+import { SectionDivider } from "@/components/ui/section-divider";
+import { ConfirmationAnimation } from "@/components/ui/confirmation-animation";
 
 interface B2BOnboardingProps {
   cnpj: string;
@@ -21,7 +22,8 @@ interface B2BOnboardingProps {
 
 const B2BOnboarding = ({ cnpj, onBack }: B2BOnboardingProps) => {
   const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState(1);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [documentFile, setDocumentFile] = useState<File | null>(null);
   const [formData, setFormData] = useState({
     razao_social: "",
     nome_gestor: "",
@@ -35,7 +37,6 @@ const B2BOnboarding = ({ cnpj, onBack }: B2BOnboardingProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validar CNPJ
     if (!validateCNPJ(cnpj)) {
       toast.error("CNPJ inválido");
       return;
@@ -44,7 +45,6 @@ const B2BOnboarding = ({ cnpj, onBack }: B2BOnboardingProps) => {
     try {
       toast.loading("Validando CNPJ...");
 
-      // NOVO: Verificar duplicidade de CNPJ
       const { data: duplicityCheck, error: duplicityError } = await supabase.functions.invoke(
         'check-cpf-cnpj-duplicity',
         {
@@ -71,10 +71,9 @@ const B2BOnboarding = ({ cnpj, onBack }: B2BOnboardingProps) => {
       toast.dismiss();
       toast.loading("Criando sua conta...");
 
-      // 1. Criar conta de usuário
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
-        password: Math.random().toString(36).slice(-12) + "A1!", // Senha temporária
+        password: Math.random().toString(36).slice(-12) + "A1!",
         options: {
           data: {
             company_name: formData.razao_social,
@@ -86,7 +85,6 @@ const B2BOnboarding = ({ cnpj, onBack }: B2BOnboardingProps) => {
       if (authError) throw authError;
       if (!authData.user) throw new Error("Falha ao criar usuário");
 
-      // 2. Criar perfil da transportadora B2B
       const rotas = formData.rotas_principais.split(",").map(r => r.trim());
       const veiculos = formData.tipos_veiculos.split(",").map(v => v.trim());
 
@@ -99,7 +97,7 @@ const B2BOnboarding = ({ cnpj, onBack }: B2BOnboardingProps) => {
           nome_fantasia: formData.razao_social,
           email: formData.email,
           telefone: formData.telefone,
-          address_cep: "00000-000", // Placeholder - pode ser coletado em etapa futura
+          address_cep: "00000-000",
           address_street: "A definir",
           address_number: "S/N",
           address_neighborhood: "A definir",
@@ -113,7 +111,6 @@ const B2BOnboarding = ({ cnpj, onBack }: B2BOnboardingProps) => {
 
       if (carrierError) throw carrierError;
 
-      // 3. Atribuir role de user (depois será promovido a carrier se aprovado)
       const { error: roleError } = await supabase
         .from("user_roles")
         .insert({
@@ -123,7 +120,6 @@ const B2BOnboarding = ({ cnpj, onBack }: B2BOnboardingProps) => {
 
       if (roleError) throw roleError;
 
-      // 4. Notificar administradores sobre novo cadastro
       try {
         const { data: carrierData } = await supabase
           .from("b2b_carriers")
@@ -140,24 +136,44 @@ const B2BOnboarding = ({ cnpj, onBack }: B2BOnboardingProps) => {
               registrationId: carrierData.id
             }
           });
-          console.log("[ONBOARDING B2B] Notificação enviada aos administradores");
         }
       } catch (notifyError) {
         console.error("[ONBOARDING B2B] Erro ao notificar admins:", notifyError);
-        // Não bloqueamos o fluxo se a notificação falhar
       }
 
       toast.dismiss();
-      toast.success("Cadastro recebido! Entraremos em contato em até 24h para validação.");
+      setIsSubmitted(true);
       
-      // Redirecionar para página de aguardando aprovação
-      setTimeout(() => navigate("/aguardando-aprovacao"), 2000);
     } catch (error: any) {
       toast.dismiss();
       console.error("Erro no cadastro:", error);
       toast.error(error.message || "Erro ao enviar cadastro. Tente novamente.");
     }
   };
+
+  if (isSubmitted) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12">
+          <div className="max-w-2xl mx-auto">
+            <Card className="p-8 shadow-lg rounded-xl">
+              <ConfirmationAnimation
+                title="Cadastro em Análise!"
+                description="Recebemos seus dados com sucesso. Nossa equipe comercial entrará em contato em até 48h úteis para validação e próximos passos."
+                estimatedTime="Prazo: até 48h úteis"
+              />
+              <div className="flex justify-center mt-6">
+                <Button onClick={() => navigate("/")} variant="outline">
+                  Voltar para Home
+                </Button>
+              </div>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -167,7 +183,7 @@ const B2BOnboarding = ({ cnpj, onBack }: B2BOnboardingProps) => {
         <Button
           variant="ghost"
           onClick={onBack}
-          className="mb-6"
+          className="mb-6 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Voltar para Seleção
@@ -187,8 +203,9 @@ const B2BOnboarding = ({ cnpj, onBack }: B2BOnboardingProps) => {
             </p>
           </div>
 
-          <Card className="p-6 shadow-lg">
+          <Card className="p-6 shadow-lg rounded-xl">
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Seção 1: Dados da Empresa */}
               <div className="space-y-4">
                 <h3 className="font-semibold text-lg flex items-center gap-2">
                   <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-bold">
@@ -197,7 +214,7 @@ const B2BOnboarding = ({ cnpj, onBack }: B2BOnboardingProps) => {
                   Dados da Empresa
                 </h3>
 
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="razao_social">Razão Social *</Label>
                     <Input
@@ -205,6 +222,7 @@ const B2BOnboarding = ({ cnpj, onBack }: B2BOnboardingProps) => {
                       value={formData.razao_social}
                       onChange={(e) => setFormData({ ...formData, razao_social: e.target.value })}
                       required
+                      className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
                     />
                   </div>
 
@@ -215,6 +233,7 @@ const B2BOnboarding = ({ cnpj, onBack }: B2BOnboardingProps) => {
                       value={formData.nome_gestor}
                       onChange={(e) => setFormData({ ...formData, nome_gestor: e.target.value })}
                       required
+                      className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
                     />
                   </div>
 
@@ -226,6 +245,7 @@ const B2BOnboarding = ({ cnpj, onBack }: B2BOnboardingProps) => {
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       required
+                      className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
                     />
                   </div>
 
@@ -238,7 +258,10 @@ const B2BOnboarding = ({ cnpj, onBack }: B2BOnboardingProps) => {
                 </div>
               </div>
 
-              <div className="space-y-4 pt-4 border-t">
+              <SectionDivider />
+
+              {/* Seção 2: Capacidade Operacional */}
+              <div className="space-y-4">
                 <h3 className="font-semibold text-lg flex items-center gap-2">
                   <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-bold">
                     2
@@ -246,7 +269,7 @@ const B2BOnboarding = ({ cnpj, onBack }: B2BOnboardingProps) => {
                   Capacidade Operacional
                 </h3>
 
-                <div className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="capacidade_mensal">Capacidade Mensal de Fretes</Label>
                     <Input
@@ -254,17 +277,7 @@ const B2BOnboarding = ({ cnpj, onBack }: B2BOnboardingProps) => {
                       placeholder="Ex: 500 fretes/mês"
                       value={formData.capacidade_mensal}
                       onChange={(e) => setFormData({ ...formData, capacidade_mensal: e.target.value })}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="rotas_principais">Rotas Principais (CEPs ou Estados)</Label>
-                    <Textarea
-                      id="rotas_principais"
-                      placeholder="Ex: SP-MG-RJ, 01000-000 a 30000-000"
-                      value={formData.rotas_principais}
-                      onChange={(e) => setFormData({ ...formData, rotas_principais: e.target.value })}
-                      rows={3}
+                      className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
                     />
                   </div>
 
@@ -275,12 +288,28 @@ const B2BOnboarding = ({ cnpj, onBack }: B2BOnboardingProps) => {
                       placeholder="Ex: VUC, Toco, Truck, Carreta"
                       value={formData.tipos_veiculos}
                       onChange={(e) => setFormData({ ...formData, tipos_veiculos: e.target.value })}
+                      className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
+                    />
+                  </div>
+
+                  <div className="space-y-2 sm:col-span-2">
+                    <Label htmlFor="rotas_principais">Rotas Principais (CEPs ou Estados)</Label>
+                    <Textarea
+                      id="rotas_principais"
+                      placeholder="Ex: SP-MG-RJ, 01000-000 a 30000-000"
+                      value={formData.rotas_principais}
+                      onChange={(e) => setFormData({ ...formData, rotas_principais: e.target.value })}
+                      rows={3}
+                      className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-4 pt-4 border-t">
+              <SectionDivider />
+
+              {/* Seção 3: Documentação com Dropzone */}
+              <div className="space-y-4">
                 <h3 className="font-semibold text-lg flex items-center gap-2">
                   <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-bold">
                     3
@@ -288,30 +317,25 @@ const B2BOnboarding = ({ cnpj, onBack }: B2BOnboardingProps) => {
                   Documentação
                 </h3>
 
-                <div className="p-4 bg-muted/30 rounded-lg border-2 border-dashed border-muted-foreground/20">
-                  <div className="flex flex-col items-center gap-3 py-6">
-                    <Upload className="h-12 w-12 text-muted-foreground" />
-                    <div className="text-center">
-                      <p className="font-medium text-sm mb-1">
-                        Upload de Documentos
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        Certidão Negativa de Débito (CND), Tabela de Frete (CSV/XML)
-                      </p>
-                    </div>
-                    <Button type="button" variant="outline" size="sm">
-                      Selecionar Arquivos
-                    </Button>
-                  </div>
-                </div>
+                <Dropzone
+                  onFileSelect={setDocumentFile}
+                  label="Arraste e solte ou clique para enviar"
+                  description="Certidão Negativa de Débito (CND), Tabela de Frete (CSV/XML)"
+                  uploaded={!!documentFile}
+                  uploadedFileName={documentFile?.name}
+                  onRemove={() => setDocumentFile(null)}
+                />
 
                 <p className="text-xs text-muted-foreground">
                   * Nossa equipe validará os documentos em até 48h úteis
                 </p>
               </div>
 
-              <div className="pt-4 border-t">
-                <div className="flex items-start gap-3 p-4 bg-primary/5 rounded-lg mb-4">
+              <SectionDivider />
+
+              {/* Próximos Passos */}
+              <div>
+                <div className="flex items-start gap-3 p-4 bg-primary/5 rounded-lg mb-4 border border-primary/20">
                   <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                   <div className="text-sm">
                     <p className="font-medium text-primary mb-1">
@@ -325,7 +349,11 @@ const B2BOnboarding = ({ cnpj, onBack }: B2BOnboardingProps) => {
                   </div>
                 </div>
 
-                <Button type="submit" className="w-full" size="lg">
+                <Button 
+                  type="submit" 
+                  className="w-full shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5" 
+                  size="lg"
+                >
                   Enviar Cadastro para Análise
                 </Button>
               </div>

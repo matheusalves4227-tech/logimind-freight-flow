@@ -7,10 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Building2, ArrowLeft, Package, Truck, MapPin, Calendar, Shield, DollarSign, Loader2 } from "lucide-react";
+import { Building2, ArrowLeft, Package, Truck, MapPin, Calendar, Shield, DollarSign, Loader2, CheckCircle2, AlertTriangle, Snowflake, GemIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { SelectableChip } from "@/components/ui/selectable-chip";
+import { SectionDivider } from "@/components/ui/section-divider";
 
 const B2BQuote = () => {
   const navigate = useNavigate();
@@ -63,11 +64,9 @@ const B2BQuote = () => {
     setLoading(true);
     
     try {
-      // Verificar se o usuário está autenticado
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       
       if (authError || !user) {
-        // Se não estiver autenticado, salvar no localStorage e redirecionar para auth
         localStorage.setItem('pendingB2BQuote', JSON.stringify(formData));
         toast({
           title: "Faça login para continuar",
@@ -78,7 +77,6 @@ const B2BQuote = () => {
         return;
       }
       
-      // Inserir a cotação no banco de dados
       const { error: insertError } = await supabase
         .from('b2b_quotes')
         .insert({
@@ -118,7 +116,6 @@ const B2BQuote = () => {
         description: "Nossa equipe comercial entrará em contato em até 24h com uma proposta personalizada.",
       });
       
-      // Limpar o formulário e redirecionar
       navigate("/dashboard");
       
     } catch (error) {
@@ -137,7 +134,6 @@ const B2BQuote = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  // Recuperar dados salvos no localStorage se o usuário voltar do login
   useEffect(() => {
     const pendingQuote = localStorage.getItem('pendingB2BQuote');
     if (pendingQuote) {
@@ -155,6 +151,13 @@ const B2BQuote = () => {
     }
   }, [toast]);
 
+  // Cargo nature chips data
+  const cargoChips = [
+    { id: "necessita_seguro", label: "Seguro Adicional", icon: <Shield className="h-3.5 w-3.5" />, variant: "success" as const },
+    { id: "carga_perigosa", label: "Carga Perigosa", icon: <AlertTriangle className="h-3.5 w-3.5" />, variant: "danger" as const },
+    { id: "carga_fragil", label: "Carga Frágil", icon: <GemIcon className="h-3.5 w-3.5" />, variant: "warning" as const },
+  ];
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -163,7 +166,7 @@ const B2BQuote = () => {
         <Button 
           variant="ghost" 
           onClick={() => navigate("/")}
-          className="mb-6"
+          className="mb-6 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Voltar para Home
@@ -183,19 +186,19 @@ const B2BQuote = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Dados da Empresa */}
-          <Card>
+          {/* Dados da Empresa - Grid Compacto */}
+          <Card className="shadow-lg border-border/50 rounded-xl">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Building2 className="h-5 w-5" />
+                <Building2 className="h-5 w-5 text-primary" />
                 Dados da Empresa
               </CardTitle>
               <CardDescription>
                 Informações cadastrais da sua empresa
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="razao_social">Razão Social *</Label>
                   <Input
@@ -204,6 +207,7 @@ const B2BQuote = () => {
                     value={formData.razao_social}
                     onChange={(e) => handleInputChange("razao_social", e.target.value)}
                     placeholder="Nome da Empresa Ltda"
+                    className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
                 <div className="space-y-2">
@@ -214,6 +218,7 @@ const B2BQuote = () => {
                     value={formData.cnpj}
                     onChange={(e) => handleInputChange("cnpj", e.target.value)}
                     placeholder="00.000.000/0000-00"
+                    className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
                 <div className="space-y-2">
@@ -225,6 +230,7 @@ const B2BQuote = () => {
                     value={formData.email}
                     onChange={(e) => handleInputChange("email", e.target.value)}
                     placeholder="contato@empresa.com.br"
+                    className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
                 <div className="space-y-2">
@@ -235,9 +241,10 @@ const B2BQuote = () => {
                     value={formData.telefone}
                     onChange={(e) => handleInputChange("telefone", e.target.value)}
                     placeholder="(11) 98765-4321"
+                    className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
-                <div className="space-y-2 md:col-span-2">
+                <div className="space-y-2 sm:col-span-2">
                   <Label htmlFor="contato_responsavel">Nome do Responsável *</Label>
                   <Input
                     id="contato_responsavel"
@@ -245,25 +252,26 @@ const B2BQuote = () => {
                     value={formData.contato_responsavel}
                     onChange={(e) => handleInputChange("contato_responsavel", e.target.value)}
                     placeholder="João Silva"
+                    className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Volume e Recorrência */}
-          <Card>
+          {/* Volume e Recorrência - Grid Compacto */}
+          <Card className="shadow-lg border-border/50 rounded-xl">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Package className="h-5 w-5" />
+                <Package className="h-5 w-5 text-primary" />
                 Volume e Recorrência
               </CardTitle>
               <CardDescription>
                 Quanto maior o volume, maior o desconto na tarifa unitária
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="volume_mensal_estimado">Volume Mensal Estimado (Entregas) *</Label>
                   <Input
@@ -273,6 +281,7 @@ const B2BQuote = () => {
                     value={formData.volume_mensal_estimado}
                     onChange={(e) => handleInputChange("volume_mensal_estimado", e.target.value)}
                     placeholder="Ex: 50"
+                    className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
                 <div className="space-y-2">
@@ -281,7 +290,7 @@ const B2BQuote = () => {
                     value={formData.frequencia_envios}
                     onValueChange={(value) => handleInputChange("frequencia_envios", value)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="transition-all duration-300 focus:ring-2 focus:ring-primary/20">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -297,18 +306,18 @@ const B2BQuote = () => {
           </Card>
 
           {/* Rotas e Distância */}
-          <Card>
+          <Card className="shadow-lg border-border/50 rounded-xl">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <MapPin className="h-5 w-5" />
+                <MapPin className="h-5 w-5 text-primary" />
                 Rotas e Localização
               </CardTitle>
               <CardDescription>
                 Valor base por km rodado, com fator de dificuldade para regiões específicas
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="rotas_origem">Principais Origens (CEPs ou Cidades) *</Label>
                   <Textarea
@@ -318,6 +327,7 @@ const B2BQuote = () => {
                     onChange={(e) => handleInputChange("rotas_origem", e.target.value)}
                     placeholder="Ex: São Paulo - SP, 01310-100"
                     rows={3}
+                    className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
                 <div className="space-y-2">
@@ -329,32 +339,33 @@ const B2BQuote = () => {
                     onChange={(e) => handleInputChange("rotas_destino", e.target.value)}
                     placeholder="Ex: Rio de Janeiro - RJ, 20040-020"
                     rows={3}
+                    className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Características da Carga */}
-          <Card>
+          {/* Natureza da Carga com Chips Selecionáveis */}
+          <Card className="shadow-lg border-border/50 rounded-xl">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Truck className="h-5 w-5" />
+                <Truck className="h-5 w-5 text-primary" />
                 Natureza da Carga
               </CardTitle>
               <CardDescription>
                 Cargas especiais exigem seguro e manuseio diferenciado, elevando o custo
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid md:grid-cols-3 gap-4">
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="tipo_carga">Tipo de Carga *</Label>
                   <Select
                     value={formData.tipo_carga}
                     onValueChange={(value) => handleInputChange("tipo_carga", value)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="transition-all duration-300 focus:ring-2 focus:ring-primary/20">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -375,6 +386,7 @@ const B2BQuote = () => {
                     value={formData.peso_medio_kg}
                     onChange={(e) => handleInputChange("peso_medio_kg", e.target.value)}
                     placeholder="Ex: 500"
+                    className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
                 <div className="space-y-2">
@@ -385,65 +397,52 @@ const B2BQuote = () => {
                     value={formData.valor_medio_carga}
                     onChange={(e) => handleInputChange("valor_medio_carga", e.target.value)}
                     placeholder="Ex: 10000"
+                    className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
               </div>
               
-              <div className="space-y-3 pt-2">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="necessita_seguro"
-                    checked={formData.necessita_seguro}
-                    onCheckedChange={(checked) => handleInputChange("necessita_seguro", checked)}
-                  />
-                  <Label htmlFor="necessita_seguro" className="cursor-pointer">
-                    Necessita seguro adicional
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="carga_perigosa"
-                    checked={formData.carga_perigosa}
-                    onCheckedChange={(checked) => handleInputChange("carga_perigosa", checked)}
-                  />
-                  <Label htmlFor="carga_perigosa" className="cursor-pointer">
-                    Carga perigosa (requer certificações)
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="carga_fragil"
-                    checked={formData.carga_fragil}
-                    onCheckedChange={(checked) => handleInputChange("carga_fragil", checked)}
-                  />
-                  <Label htmlFor="carga_fragil" className="cursor-pointer">
-                    Carga frágil (manuseio especial)
-                  </Label>
+              <SectionDivider />
+              
+              {/* Selectable Chips para características da carga */}
+              <div className="space-y-3">
+                <Label className="text-sm font-medium">Características Especiais</Label>
+                <div className="flex flex-wrap gap-3">
+                  {cargoChips.map((chip) => (
+                    <SelectableChip
+                      key={chip.id}
+                      label={chip.label}
+                      selected={formData[chip.id as keyof typeof formData] as boolean}
+                      onSelect={() => handleInputChange(chip.id, !formData[chip.id as keyof typeof formData])}
+                      icon={chip.icon}
+                      variant={chip.variant}
+                    />
+                  ))}
                 </div>
               </div>
             </CardContent>
           </Card>
 
           {/* Prazo de Entrega (SLA) */}
-          <Card>
+          <Card className="shadow-lg border-border/50 rounded-xl">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
+                <Calendar className="h-5 w-5 text-primary" />
                 Prazo de Entrega (SLA)
               </CardTitle>
               <CardDescription>
                 Entregas expressas são significativamente mais caras que prazos estendidos
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="sla_desejado">Tipo de SLA *</Label>
                   <Select
                     value={formData.sla_desejado}
                     onValueChange={(value) => handleInputChange("sla_desejado", value)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="transition-all duration-300 focus:ring-2 focus:ring-primary/20">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -463,94 +462,79 @@ const B2BQuote = () => {
                     value={formData.prazo_entrega_dias}
                     onChange={(e) => handleInputChange("prazo_entrega_dias", e.target.value)}
                     placeholder="Ex: 5"
+                    className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Otimização de Rota */}
-          <Card>
+          {/* Otimização de Rota com Chips */}
+          <Card className="shadow-lg border-border/50 rounded-xl">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <DollarSign className="h-5 w-5" />
+                <DollarSign className="h-5 w-5 text-primary" />
                 Otimização e Economia
               </CardTitle>
               <CardDescription>
                 Rotas de retorno otimizadas reduzem significativamente o custo
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="aceita_rota_retorno"
-                  checked={formData.aceita_rota_retorno}
-                  onCheckedChange={(checked) => handleInputChange("aceita_rota_retorno", checked)}
+            <CardContent>
+              <div className="flex flex-wrap gap-3">
+                <SelectableChip
+                  label="Aceita rota de retorno (economia até 40%)"
+                  selected={formData.aceita_rota_retorno}
+                  onSelect={() => handleInputChange("aceita_rota_retorno", !formData.aceita_rota_retorno)}
+                  variant="success"
                 />
-                <Label htmlFor="aceita_rota_retorno" className="cursor-pointer">
-                  Aceita otimização de rota de retorno (pode reduzir custo em até 40%)
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="flexibilidade_horario"
-                  checked={formData.flexibilidade_horario}
-                  onCheckedChange={(checked) => handleInputChange("flexibilidade_horario", checked)}
+                <SelectableChip
+                  label="Flexibilidade de horário"
+                  selected={formData.flexibilidade_horario}
+                  onSelect={() => handleInputChange("flexibilidade_horario", !formData.flexibilidade_horario)}
+                  variant="default"
                 />
-                <Label htmlFor="flexibilidade_horario" className="cursor-pointer">
-                  Flexibilidade de horário de coleta/entrega
-                </Label>
               </div>
             </CardContent>
           </Card>
 
-          {/* Custos Adicionais */}
-          <Card>
+          {/* Custos Adicionais com Chips */}
+          <Card className="shadow-lg border-border/50 rounded-xl">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5" />
+                <Shield className="h-5 w-5 text-primary" />
                 Custos Adicionais e Responsabilidades
               </CardTitle>
               <CardDescription>
                 Defina quem arca com pedágios, armazenagem e logística reversa
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="pedagios_cliente"
-                  checked={formData.pedagios_cliente}
-                  onCheckedChange={(checked) => handleInputChange("pedagios_cliente", checked)}
+            <CardContent>
+              <div className="flex flex-wrap gap-3">
+                <SelectableChip
+                  label="Cliente arca com pedágios"
+                  selected={formData.pedagios_cliente}
+                  onSelect={() => handleInputChange("pedagios_cliente", !formData.pedagios_cliente)}
+                  variant="default"
                 />
-                <Label htmlFor="pedagios_cliente" className="cursor-pointer">
-                  Cliente arca com pedágios
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="armazenagem_cliente"
-                  checked={formData.armazenagem_cliente}
-                  onCheckedChange={(checked) => handleInputChange("armazenagem_cliente", checked)}
+                <SelectableChip
+                  label="Cliente arca com armazenagem"
+                  selected={formData.armazenagem_cliente}
+                  onSelect={() => handleInputChange("armazenagem_cliente", !formData.armazenagem_cliente)}
+                  variant="default"
                 />
-                <Label htmlFor="armazenagem_cliente" className="cursor-pointer">
-                  Cliente arca com armazenagem (se necessário)
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="logistica_reversa"
-                  checked={formData.logistica_reversa}
-                  onCheckedChange={(checked) => handleInputChange("logistica_reversa", checked)}
+                <SelectableChip
+                  label="Logística reversa necessária"
+                  selected={formData.logistica_reversa}
+                  onSelect={() => handleInputChange("logistica_reversa", !formData.logistica_reversa)}
+                  variant="warning"
                 />
-                <Label htmlFor="logistica_reversa" className="cursor-pointer">
-                  Necessita logística reversa (devolução de produtos)
-                </Label>
               </div>
             </CardContent>
           </Card>
 
           {/* Observações Adicionais */}
-          <Card>
+          <Card className="shadow-lg border-border/50 rounded-xl">
             <CardHeader>
               <CardTitle>Informações Adicionais</CardTitle>
               <CardDescription>
@@ -564,40 +548,53 @@ const B2BQuote = () => {
                 onChange={(e) => handleInputChange("observacoes", e.target.value)}
                 placeholder="Ex: Necessitamos de veículos refrigerados certificados, horário de entrega restrito entre 8h-12h, etc."
                 rows={4}
+                className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
               />
             </CardContent>
           </Card>
 
-          {/* Resumo dos Benefícios */}
-          <Card className="bg-primary/5 border-primary/20">
+          {/* Resumo dos Benefícios - Card Estilizado */}
+          <Card className="bg-[#F0F7FF] dark:bg-primary/5 border-2 border-primary/30 rounded-xl shadow-lg">
             <CardHeader>
-              <CardTitle>Benefícios do Contrato B2B</CardTitle>
+              <CardTitle className="text-primary">Benefícios do Contrato B2B</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <h4 className="font-semibold">✓ Tabela de Preços Diferenciada</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Descontos progressivos baseados no volume mensal contratado
-                  </p>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-secondary flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="font-semibold text-foreground">Tabela de Preços Diferenciada</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Descontos progressivos baseados no volume mensal contratado
+                    </p>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <h4 className="font-semibold">✓ SLA Garantido</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Prazos de entrega assegurados com penalidades em caso de descumprimento
-                  </p>
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-secondary flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="font-semibold text-foreground">SLA Garantido</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Prazos de entrega assegurados com penalidades em caso de descumprimento
+                    </p>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <h4 className="font-semibold">✓ Relatórios Personalizados</h4>
-                  <p className="text-sm text-muted-foreground">
-                    KPIs customizados e dashboards exclusivos para acompanhamento
-                  </p>
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-secondary flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="font-semibold text-foreground">Relatórios Personalizados</h4>
+                    <p className="text-sm text-muted-foreground">
+                      KPIs customizados e dashboards exclusivos para acompanhamento
+                    </p>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <h4 className="font-semibold">✓ Prioridade na Plataforma</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Acesso prioritário a novos veículos e rotas otimizadas
-                  </p>
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-secondary flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="font-semibold text-foreground">Prioridade na Plataforma</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Acesso prioritário a novos veículos e rotas otimizadas
+                    </p>
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -608,7 +605,7 @@ const B2BQuote = () => {
             <Button 
               type="submit" 
               size="lg" 
-              className="min-w-[300px]"
+              className="min-w-[300px] shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5"
               disabled={loading}
             >
               {loading ? (
