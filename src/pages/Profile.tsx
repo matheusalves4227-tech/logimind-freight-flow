@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PhoneInput } from "@/components/ui/phone-input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { UserAvatarUpload } from "@/components/profile/UserAvatarUpload";
@@ -405,15 +406,11 @@ export default function Profile() {
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="phone">Telefone</Label>
-                <Input
-                  id="phone"
-                  value={profile.phone}
-                  onChange={(e) => setProfile(prev => ({ ...prev, phone: e.target.value }))}
-                  placeholder="(00) 00000-0000"
-                />
-              </div>
+              <PhoneInput
+                value={profile.phone}
+                onChange={(value) => setProfile(prev => ({ ...prev, phone: value }))}
+                label="Telefone"
+              />
             </div>
 
             <Separator />
