@@ -34,6 +34,7 @@ export interface Order {
   estimated_delivery: string;
   created_at: string;
   payment_status?: string;
+  operational_notes?: string;
 }
 
 interface ActiveOrdersTableProps {
@@ -55,6 +56,7 @@ const paymentStatusConfig: Record<string, { label: string; color: string }> = {
   pending: { label: "Pendente", color: "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-500/20" },
   processing: { label: "Processando", color: "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20" },
   AGUARDANDO_PIX: { label: "Aguardando PIX", color: "bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-500/20" },
+  COMPROVANTE_ENVIADO: { label: "Comprovante Enviado", color: "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20" },
   failed: { label: "Falhou", color: "bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20" },
   FALHA_REPASSE: { label: "Falha Repasse", color: "bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20" },
 };
@@ -84,21 +86,35 @@ export const ActiveOrdersTable = ({ orders, onViewDetails, onRetryPayment }: Act
     return daysUntil <= 2 && daysUntil >= 0;
   };
 
+  const hasProofUploaded = (order: Order) => {
+    return order.operational_notes?.includes("Comprovante PIX:");
+  };
+
   const canRetryPayment = (order: Order) => {
     // Pode tentar pagamento apenas se:
-    // 1. Pagamento está pendente, processando ou aguardando PIX
+    // 1. Pagamento está pendente, processando ou aguardando PIX (sem comprovante)
     // 2. Pedido não foi entregue
     // 3. Pedido não tem ocorrência
+    // 4. Não tem comprovante já enviado
     const validPaymentStatus = ['pending', 'processing', 'AGUARDANDO_PIX'].includes(order.payment_status || '');
     const validOrderStatus = order.status !== 'delivered' && order.status !== 'incident';
-    return validPaymentStatus && validOrderStatus;
+    const noProofYet = !hasProofUploaded(order);
+    return validPaymentStatus && validOrderStatus && noProofYet;
   };
 
   const getPaymentDisabledReason = (order: Order) => {
     if (order.payment_status === 'paid' || order.payment_status === 'PAGO') return "Pedido já foi pago";
+    if (hasProofUploaded(order)) return "Comprovante já enviado - aguardando validação";
     if (order.status === 'delivered') return "Pedido já foi entregue";
     if (order.status === 'incident') return "Pedido tem ocorrência";
     return "";
+  };
+
+  const getEffectivePaymentStatus = (order: Order) => {
+    if (hasProofUploaded(order) && order.payment_status === 'AGUARDANDO_PIX') {
+      return 'COMPROVANTE_ENVIADO';
+    }
+    return order.payment_status;
   };
 
   const handlePaymentClick = async (orderId: string) => {
@@ -174,13 +190,19 @@ export const ActiveOrdersTable = ({ orders, onViewDetails, onRetryPayment }: Act
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge 
-                      variant="outline" 
-                      className={paymentStatusConfig[order.payment_status as keyof typeof paymentStatusConfig]?.color || ""}
-                    >
-                      {order.payment_status === 'paid' && <CheckCircle2 className="h-3 w-3 mr-1" />}
-                      {paymentStatusConfig[order.payment_status as keyof typeof paymentStatusConfig]?.label || order.payment_status}
-                    </Badge>
+                    {(() => {
+                      const effectiveStatus = getEffectivePaymentStatus(order);
+                      return (
+                        <Badge 
+                          variant="outline" 
+                          className={paymentStatusConfig[effectiveStatus as keyof typeof paymentStatusConfig]?.color || ""}
+                        >
+                          {(effectiveStatus === 'paid' || effectiveStatus === 'PAGO') && <CheckCircle2 className="h-3 w-3 mr-1" />}
+                          {effectiveStatus === 'COMPROVANTE_ENVIADO' && <CheckCircle2 className="h-3 w-3 mr-1" />}
+                          {paymentStatusConfig[effectiveStatus as keyof typeof paymentStatusConfig]?.label || effectiveStatus}
+                        </Badge>
+                      );
+                    })()}
                   </TableCell>
                   <TableCell>
                     <div>
@@ -220,7 +242,7 @@ export const ActiveOrdersTable = ({ orders, onViewDetails, onRetryPayment }: Act
                             <TooltipTrigger asChild>
                               <span>
                                 <Button
-                                  variant={(order.payment_status === 'paid' || order.payment_status === 'PAGO') ? "secondary" : "default"}
+                                  variant={(order.payment_status === 'paid' || order.payment_status === 'PAGO' || hasProofUploaded(order)) ? "secondary" : "default"}
                                   size="sm"
                                   onClick={() => handlePaymentClick(order.id)}
                                   disabled={!canRetryPayment(order) || loadingOrderId === order.id}
@@ -235,6 +257,11 @@ export const ActiveOrdersTable = ({ orders, onViewDetails, onRetryPayment }: Act
                                     <>
                                       <CheckCircle2 className="h-4 w-4" />
                                       Pago ✓
+                                    </>
+                                  ) : hasProofUploaded(order) ? (
+                                    <>
+                                      <CheckCircle2 className="h-4 w-4" />
+                                      Aguardando Validação
                                     </>
                                   ) : order.payment_status === 'AGUARDANDO_PIX' ? (
                                     'Enviar Comprovante'
