@@ -161,9 +161,13 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground font-sans;
+    @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
 }
+
+/* Import Inter font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 @layer components {
   /* === COMPONENTES LOGIMARKET === */
@@ -410,5 +414,73 @@ All colors MUST be HSL.
   .animate-gradient-x {
     background-size: 200% 200%;
     animation: gradient-x 3s ease infinite;
+  }
+
+  /* Brain glow animation for LogiMind */
+  @keyframes brain-glow {
+    0%, 100% {
+      filter: drop-shadow(0 0 8px hsl(217 82% 51% / 0.4));
+    }
+    50% {
+      filter: drop-shadow(0 0 20px hsl(217 82% 51% / 0.7));
+    }
+  }
+
+  .animate-brain-glow {
+    animation: brain-glow 2s ease-in-out infinite;
+  }
+
+  /* 3D Hover effect for cards */
+  .card-3d-hover {
+    @apply transition-all duration-300;
+  }
+
+  .card-3d-hover:hover {
+    transform: translateY(-5px) perspective(1000px) rotateX(2deg);
+    box-shadow: 0 20px 40px hsl(217 82% 51% / 0.15);
+  }
+
+  /* Gradient button animation */
+  @keyframes gradient-shift {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+
+  .btn-gradient-primary {
+    @apply bg-gradient-to-r from-primary via-[hsl(217,82%,55%)] to-primary;
+    background-size: 200% 200%;
+    transition: all 0.3s ease;
+  }
+
+  .btn-gradient-primary:hover {
+    animation: gradient-shift 2s ease infinite;
+  }
+
+  /* Header scroll effect */
+  .header-scrolled {
+    @apply backdrop-blur-md;
+    border-bottom: 1px solid hsl(var(--border) / 0.5);
+    box-shadow: 0 4px 20px hsl(0 0% 0% / 0.05);
+  }
+
+  /* Pulsing aura for active stepper */
+  @keyframes pulse-aura {
+    0%, 100% {
+      box-shadow: 0 0 0 0 hsl(217 82% 51% / 0.4);
+    }
+    50% {
+      box-shadow: 0 0 0 8px hsl(217 82% 51% / 0);
+    }
+  }
+
+  .animate-pulse-aura {
+    animation: pulse-aura 2s ease-in-out infinite;
   }
 }
