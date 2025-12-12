@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { RealtimeChannel } from '@supabase/supabase-js';
 
@@ -31,11 +31,29 @@ export const useRealtimeTracking = ({
   onEventUpdate, 
   onLocationUpdate 
 }: UseRealtimeTrackingProps) => {
-  const [channel, setChannel] = useState<RealtimeChannel | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const channelRef = useRef<RealtimeChannel | null>(null);
+  
+  // Use refs para callbacks para evitar re-subscriptions
+  const onEventUpdateRef = useRef(onEventUpdate);
+  const onLocationUpdateRef = useRef(onLocationUpdate);
+  
+  // Atualizar refs quando callbacks mudarem
+  useEffect(() => {
+    onEventUpdateRef.current = onEventUpdate;
+  }, [onEventUpdate]);
+  
+  useEffect(() => {
+    onLocationUpdateRef.current = onLocationUpdate;
+  }, [onLocationUpdate]);
 
   useEffect(() => {
     if (!orderId) return;
+
+    // Evitar re-subscription se já conectado ao mesmo orderId
+    if (channelRef.current) {
+      return;
+    }
 
     console.log(`🔄 Iniciando Realtime tracking para pedido: ${orderId}`);
 
@@ -58,8 +76,8 @@ export const useRealtimeTracking = ({
         },
         (payload) => {
           console.log('📍 Novo evento de tracking recebido:', payload.new);
-          if (onEventUpdate && payload.new) {
-            onEventUpdate(payload.new as TrackingEvent);
+          if (onEventUpdateRef.current && payload.new) {
+            onEventUpdateRef.current(payload.new as TrackingEvent);
           }
         }
       )
@@ -74,14 +92,14 @@ export const useRealtimeTracking = ({
         },
         (payload) => {
           console.log('📍 Atualização de localização recebida:', payload.new);
-          if (onLocationUpdate && payload.new) {
+          if (onLocationUpdateRef.current && payload.new) {
             const location: OrderLocation = {
               current_latitude: (payload.new as any).current_latitude,
               current_longitude: (payload.new as any).current_longitude,
               last_location_update: (payload.new as any).last_location_update,
               status: (payload.new as any).status
             };
-            onLocationUpdate(location);
+            onLocationUpdateRef.current(location);
           }
         }
       )
@@ -90,22 +108,26 @@ export const useRealtimeTracking = ({
         setIsConnected(status === 'SUBSCRIBED');
       });
 
-    setChannel(realtimeChannel);
+    channelRef.current = realtimeChannel;
 
     // Cleanup ao desmontar
     return () => {
       console.log(`❌ Desconectando Realtime para pedido: ${orderId}`);
       realtimeChannel.unsubscribe();
+      channelRef.current = null;
     };
-  }, [orderId, onEventUpdate, onLocationUpdate]);
+  }, [orderId]); // Apenas orderId como dependência
+
+  const disconnect = useCallback(() => {
+    if (channelRef.current) {
+      channelRef.current.unsubscribe();
+      channelRef.current = null;
+      setIsConnected(false);
+    }
+  }, []);
 
   return {
     isConnected,
-    disconnect: () => {
-      if (channel) {
-        channel.unsubscribe();
-        setIsConnected(false);
-      }
-    }
+    disconnect
   };
 };
