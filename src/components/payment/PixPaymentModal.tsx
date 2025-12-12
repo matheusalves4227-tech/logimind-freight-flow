@@ -49,9 +49,10 @@ export const PixPaymentModal = ({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validar tipo de arquivo
-    if (!file.type.startsWith("image/")) {
-      toast.error("Apenas imagens são aceitas como comprovante");
+    // Validar tipo de arquivo (imagens e PDF)
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif", "application/pdf"];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error("Apenas imagens (JPG, PNG, WebP) ou PDF são aceitos");
       return;
     }
 
@@ -171,7 +172,7 @@ export const PixPaymentModal = ({
               <input
                 id="proof-upload"
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp,image/gif,application/pdf"
                 onChange={handleUploadProof}
                 className="hidden"
                 disabled={uploading || !!proofUrl}
