@@ -88,6 +88,7 @@ const Dashboard = () => {
         estimated_delivery: order.estimated_delivery,
         created_at: order.created_at,
         payment_status: order.status_pagamento,
+        operational_notes: order.operational_notes || undefined,
       })) || [];
 
       setOrders(mappedOrders);
