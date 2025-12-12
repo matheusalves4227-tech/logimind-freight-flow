@@ -13,7 +13,8 @@ export type AuditAction =
   | "driver_rejection"
   | "freight_assignment"
   | "delivery_confirmation"
-  | "order_rejection";
+  | "order_rejection"
+  | "order_approval";
 
 interface AuditLogParams {
   action: AuditAction;

@@ -71,10 +71,35 @@ export const PendingOrderDetail = ({ order, open, onOpenChange, onUpdate }: Pend
   const [carrierDetails, setCarrierDetails] = useState<any>(null);
   const [availableDrivers, setAvailableDrivers] = useState<any[]>([]);
   const [selectedDriverId, setSelectedDriverId] = useState<string>('');
+  const [currentOrderId, setCurrentOrderId] = useState<string | null>(null);
 
-  // Buscar detalhes do usuário e transportadora quando o modal abrir
+  // Resetar estados quando o modal fecha ou quando muda de pedido
   useEffect(() => {
-    if (order && open) {
+    if (!open) {
+      // Limpar todos os estados quando fecha o modal
+      setApprovalNotes('');
+      setRejectionReason('');
+      setDriverInstructions('');
+      setOperationalNotes('');
+      setSelectedDriverId('');
+      setUserDetails(null);
+      setCarrierDetails(null);
+      setCurrentOrderId(null);
+    }
+  }, [open]);
+
+  // Buscar detalhes do usuário e transportadora quando o modal abrir ou mudar de pedido
+  useEffect(() => {
+    if (order && open && order.id !== currentOrderId) {
+      // Limpar estados do pedido anterior
+      setApprovalNotes('');
+      setRejectionReason('');
+      setDriverInstructions('');
+      setOperationalNotes('');
+      setSelectedDriverId('');
+      setCarrierDetails(null);
+      setCurrentOrderId(order.id);
+      
       const fetchDetails = async () => {
         // Buscar motoristas aprovados disponíveis
         const { data: drivers } = await supabase
@@ -99,10 +124,10 @@ export const PendingOrderDetail = ({ order, open, onOpenChange, onUpdate }: Pend
           }
         }
 
-        // Buscar notas operacionais existentes do pedido
+        // Buscar dados completos do pedido (incluindo driver_id existente)
         const { data: orderData } = await supabase
           .from('orders')
-          .select('operational_notes')
+          .select('operational_notes, driver_id')
           .eq('id', order.id)
           .single();
 
@@ -110,12 +135,11 @@ export const PendingOrderDetail = ({ order, open, onOpenChange, onUpdate }: Pend
           setOperationalNotes(orderData.operational_notes);
         }
         
-        // Buscar email do auth.users via RPC ou usar os dados do order
-        // Como não temos acesso direto a auth.users, vamos usar uma abordagem alternativa
-        const { data: { user } } = await supabase.auth.getUser();
+        if (orderData?.driver_id) {
+          setSelectedDriverId(orderData.driver_id);
+        }
         
-        // Por enquanto, vamos apenas setar um placeholder
-        // Em produção, seria necessário criar uma view ou RPC para buscar dados do usuário
+        // Por enquanto, placeholder para dados do usuário
         setUserDetails({
           full_name: 'Embarcador',
           email: 'contato@example.com',
@@ -125,7 +149,7 @@ export const PendingOrderDetail = ({ order, open, onOpenChange, onUpdate }: Pend
       };
       fetchDetails();
     }
-  }, [order, open]);
+  }, [order, open, currentOrderId]);
 
   if (!order) return null;
 
@@ -149,18 +173,46 @@ export const PendingOrderDetail = ({ order, open, onOpenChange, onUpdate }: Pend
       return;
     }
 
+    // Validação de motorista atribuído
+    if (!selectedDriverId) {
+      toast({
+        title: 'Motorista Não Atribuído',
+        description: 'Por favor, atribua um motorista ao frete antes de confirmar',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setProcessing(true);
     try {
+      const selectedDriver = availableDrivers.find(d => d.id === selectedDriverId);
+      
       const { error } = await supabase
         .from('orders')
         .update({
           status: 'confirmed',
           operational_notes: operationalNotes,
+          driver_id: selectedDriverId,
+          driver_name: selectedDriver?.full_name,
+          driver_phone: selectedDriver?.phone,
           updated_at: new Date().toISOString(),
         })
         .eq('id', order.id);
 
       if (error) throw error;
+
+      // Registrar auditoria
+      await logAction({
+        action: 'order_approval',
+        metadata: {
+          order_id: order.id,
+          tracking_code: order.tracking_code,
+          carrier_name: order.carrier_name,
+          driver_id: selectedDriverId,
+          driver_name: selectedDriver?.full_name,
+          approved_at: new Date().toISOString(),
+        },
+      });
 
       toast({
         title: 'Pedido Aprovado',
