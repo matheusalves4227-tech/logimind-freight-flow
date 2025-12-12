@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CpfCnpjInput } from "@/components/ui/cpf-cnpj-input";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
@@ -429,16 +430,12 @@ export default function Profile() {
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="cnpj">CNPJ</Label>
-                  <Input
-                    id="cnpj"
-                    value={profile.cnpj}
-                    onChange={(e) => setProfile(prev => ({ ...prev, cnpj: formatCNPJ(e.target.value) }))}
-                    placeholder="00.000.000/0000-00"
-                    maxLength={18}
-                  />
-                </div>
+                <CpfCnpjInput
+                  value={profile.cnpj}
+                  onChange={(value) => setProfile(prev => ({ ...prev, cnpj: value }))}
+                  label="CNPJ"
+                  placeholder="00.000.000/0000-00"
+                />
               </div>
             </div>
 
