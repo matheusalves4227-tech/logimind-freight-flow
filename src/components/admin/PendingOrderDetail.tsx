@@ -607,23 +607,14 @@ export const PendingOrderDetail = ({ order, open, onOpenChange, onUpdate }: Pend
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <DollarSign className="h-5 w-5" />
-                Detalhamento Financeiro LogiMind
+                Detalhamento Financeiro
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid md:grid-cols-3 gap-4">
+              <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground">Preço Base</p>
                   <p className="font-semibold text-lg">{formatCurrency(basePrice)}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Comissão LogiMind</p>
-                  <p className="font-semibold text-lg text-primary">
-                    {(commissionPerc * 100).toFixed(2)}%
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {formatCurrency(order.final_price - basePrice)}
-                  </p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Preço Final (Cliente)</p>
