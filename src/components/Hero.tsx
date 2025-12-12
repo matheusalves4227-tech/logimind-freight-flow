@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Truck, Building2, User, TrendingUp, BarChart3, Map } from "lucide-react";
+import { Truck, Building2, User, TrendingUp, BarChart3, Map, Sparkles } from "lucide-react";
 import heroIllustration from "@/assets/hero-logistics-illustration.png";
 
 const Hero = () => {
@@ -38,21 +38,22 @@ const Hero = () => {
           </div>
         </div>
 
-        {/* 4 Cards de Direcionamento com Hierarquia */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 max-w-7xl mx-auto mb-12 md:mb-20 px-4 md:px-0 items-stretch">
+        {/* 4 Cards de Direcionamento com Hierarquia e Hover Effects Melhorados */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10 max-w-7xl mx-auto mb-12 md:mb-20 px-4 md:px-0 items-stretch">
           {/* Card 1: Embarcador (DESTAQUE PRINCIPAL) */}
-          <div className="group bg-card rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-xl border-2 border-primary hover:border-primary hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 md:hover:scale-[1.08] relative animate-fade-in hover:animate-pulse-subtle">
+          <div className="group bg-card/80 backdrop-blur-md rounded-[20px] p-6 md:p-8 shadow-xl border-2 border-primary hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 relative animate-fade-in">
             {/* Badge de Destaque */}
             <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
-              <span className="inline-flex items-center gap-1 px-3 py-1 bg-primary text-primary-foreground text-xs font-bold rounded-full shadow-lg">
-                ⭐ Mais Popular
+              <span className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-r from-primary to-[hsl(217,82%,45%)] text-primary-foreground text-xs font-bold rounded-full shadow-lg">
+                <Sparkles className="h-3 w-3" />
+                Mais Popular
               </span>
             </div>
             
             <div className="flex flex-col items-center text-center space-y-6">
               <div className="relative">
                 <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl" />
-                <div className="relative p-6 bg-gradient-to-br from-primary to-primary/80 rounded-2xl">
+                <div className="relative p-6 bg-gradient-to-br from-primary to-[hsl(217,82%,45%)] rounded-2xl shadow-lg">
                   <Truck className="h-12 w-12 text-primary-foreground" />
                 </div>
               </div>
@@ -61,7 +62,7 @@ const Hero = () => {
                 <h3 className="text-2xl font-bold text-foreground">
                   Quero Cotação Preditiva
                 </h3>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground leading-relaxed">
                   LogiMind AI analisa risco e preço em tempo real garantindo o melhor custo-benefício
                 </p>
               </div>
@@ -72,15 +73,14 @@ const Hero = () => {
               </div>
 
               <Button 
-                variant="hero"
                 size="lg" 
-                className="w-full shadow-lg hover:shadow-xl"
+                className="w-full h-12 bg-gradient-to-r from-primary to-[hsl(217,82%,45%)] hover:from-primary/90 hover:to-[hsl(217,82%,40%)] text-primary-foreground font-semibold shadow-lg hover:shadow-xl transition-all duration-300 rounded-lg animate-pulse-subtle"
                 onClick={() => navigate("/quote")}
               >
                 Cote e Economize Agora
               </Button>
 
-              <div className="pt-4 space-y-1 text-xs text-muted-foreground border-t border-border w-full">
+              <div className="pt-4 space-y-2 text-xs text-muted-foreground border-t border-border w-full">
                 <div className="flex items-center gap-2">
                   <div className="w-1.5 h-1.5 rounded-full bg-primary" />
                   <span>Compare 500+ transportadoras</span>
@@ -94,11 +94,11 @@ const Hero = () => {
           </div>
 
           {/* Card 2: Transportadora */}
-          <div className="group bg-card rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-lg border-2 border-border hover:border-primary/50 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+          <div className="group bg-card/80 backdrop-blur-md rounded-[20px] p-6 md:p-8 shadow-lg border-2 border-border hover:border-secondary/50 hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
             <div className="flex flex-col items-center text-center space-y-6">
               <div className="relative">
-                <div className="absolute inset-0 bg-secondary/20 rounded-2xl blur-xl" />
-                <div className="relative p-6 bg-gradient-to-br from-secondary to-secondary/80 rounded-2xl">
+                <div className="absolute inset-0 bg-secondary/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className="relative p-6 bg-gradient-to-br from-secondary to-secondary/80 rounded-2xl shadow-md group-hover:shadow-lg transition-shadow">
                   <Building2 className="h-12 w-12 text-secondary-foreground" />
                 </div>
               </div>
@@ -107,7 +107,7 @@ const Hero = () => {
                 <h3 className="text-2xl font-bold text-foreground">
                   Quero Ofertar Meus Fretes
                 </h3>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground leading-relaxed">
                   Acesse milhares de embarcadores e maximize a ocupação da sua frota
                 </p>
               </div>
@@ -118,15 +118,14 @@ const Hero = () => {
               </div>
 
               <Button 
-                variant="default"
                 size="lg" 
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-md hover:shadow-lg transition-all"
+                className="w-full h-12 bg-gradient-to-r from-primary to-[hsl(217,82%,45%)] hover:from-primary/90 hover:to-[hsl(217,82%,40%)] text-primary-foreground font-semibold shadow-md hover:shadow-lg transition-all rounded-lg"
                 onClick={() => navigate("/auth?redirect=/parceiro/cadastro?tipo=transportadora")}
               >
                 Oferecer Fretes
               </Button>
 
-              <div className="pt-4 space-y-1 text-xs text-muted-foreground border-t border-border w-full">
+              <div className="pt-4 space-y-2 text-xs text-muted-foreground border-t border-border w-full">
                 <div className="flex items-center gap-2">
                   <div className="w-1.5 h-1.5 rounded-full bg-secondary" />
                   <span>Otimização de rotas de retorno</span>
@@ -140,11 +139,11 @@ const Hero = () => {
           </div>
 
           {/* Card 3: Motorista Autônomo */}
-          <div className="group bg-card rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-lg border-2 border-border hover:border-primary/50 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+          <div className="group bg-card/80 backdrop-blur-md rounded-[20px] p-6 md:p-8 shadow-lg border-2 border-border hover:border-accent/50 hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
             <div className="flex flex-col items-center text-center space-y-6">
               <div className="relative">
-                <div className="absolute inset-0 bg-accent/20 rounded-2xl blur-xl" />
-                <div className="relative p-6 bg-gradient-to-br from-accent to-accent/80 rounded-2xl">
+                <div className="absolute inset-0 bg-accent/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className="relative p-6 bg-gradient-to-br from-accent to-accent/80 rounded-2xl shadow-md group-hover:shadow-lg transition-shadow">
                   <User className="h-12 w-12 text-accent-foreground" />
                 </div>
               </div>
@@ -153,7 +152,7 @@ const Hero = () => {
                 <h3 className="text-2xl font-bold text-foreground">
                   Quero Encontrar Fretes
                 </h3>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground leading-relaxed">
                   Fretes spot, dedicados e last-mile na sua região com pagamento rápido
                 </p>
               </div>
@@ -164,15 +163,14 @@ const Hero = () => {
               </div>
 
               <Button 
-                variant="default"
                 size="lg" 
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-md hover:shadow-lg transition-all"
+                className="w-full h-12 bg-gradient-to-r from-primary to-[hsl(217,82%,45%)] hover:from-primary/90 hover:to-[hsl(217,82%,40%)] text-primary-foreground font-semibold shadow-md hover:shadow-lg transition-all rounded-lg"
                 onClick={() => navigate("/auth?redirect=/parceiro/cadastro?tipo=motorista")}
               >
                 Ver Fretes Disponíveis
               </Button>
 
-              <div className="pt-4 space-y-1 text-xs text-muted-foreground border-t border-border w-full">
+              <div className="pt-4 space-y-2 text-xs text-muted-foreground border-t border-border w-full">
                 <div className="flex items-center gap-2">
                   <div className="w-1.5 h-1.5 rounded-full bg-accent" />
                   <span>Margem otimizada por rota</span>
@@ -185,12 +183,12 @@ const Hero = () => {
             </div>
           </div>
 
-          {/* Card 4: Empresas B2B - Contratos Recorrentes (NOVO) */}
-          <div className="group bg-card rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-xl border-2 border-accent hover:border-accent hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 md:hover:scale-[1.08] relative animate-fade-in bg-gradient-to-br from-accent/5 to-accent/10">
+          {/* Card 4: Empresas B2B */}
+          <div className="group bg-card/80 backdrop-blur-md rounded-[20px] p-6 md:p-8 shadow-xl border-2 border-accent hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 relative animate-fade-in bg-gradient-to-br from-accent/5 to-accent/10">
             <div className="flex flex-col items-center text-center space-y-6">
               <div className="relative">
                 <div className="absolute inset-0 bg-accent/20 rounded-2xl blur-xl" />
-                <div className="relative p-6 bg-gradient-to-br from-accent to-accent/80 rounded-2xl">
+                <div className="relative p-6 bg-gradient-to-br from-accent to-accent/80 rounded-2xl shadow-lg">
                   <Building2 className="h-12 w-12 text-primary-foreground" />
                 </div>
               </div>
@@ -199,7 +197,7 @@ const Hero = () => {
                 <h3 className="text-2xl font-bold text-foreground">
                   Contrato B2B Recorrente
                 </h3>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground leading-relaxed">
                   Tabela diferenciada, SLA garantido e prioridade para empresas com volume
                 </p>
               </div>
@@ -210,15 +208,14 @@ const Hero = () => {
               </div>
 
               <Button 
-                variant="default"
                 size="lg" 
-                className="w-full bg-accent hover:bg-accent/90 text-primary-foreground shadow-md hover:shadow-lg transition-all"
+                className="w-full h-12 bg-gradient-to-r from-accent to-accent/80 hover:from-accent/90 hover:to-accent/70 text-primary-foreground font-semibold shadow-md hover:shadow-lg transition-all rounded-lg"
                 onClick={() => navigate("/cotacao-b2b")}
               >
                 Solicitar Cotação B2B
               </Button>
 
-              <div className="pt-4 space-y-1 text-xs text-muted-foreground border-t border-border w-full">
+              <div className="pt-4 space-y-2 text-xs text-muted-foreground border-t border-border w-full">
                 <div className="flex items-center gap-2">
                   <div className="w-1.5 h-1.5 rounded-full bg-accent" />
                   <span>Descontos por volume</span>

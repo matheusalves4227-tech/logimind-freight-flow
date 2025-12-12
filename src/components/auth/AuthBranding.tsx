@@ -2,7 +2,7 @@ import { Brain, Truck, Shield, Zap } from "lucide-react";
 
 export const AuthBranding = () => {
   return (
-    <div className="hidden lg:flex flex-col justify-center items-center p-12 bg-gradient-to-br from-[hsl(215,50%,15%)] via-[hsl(217,45%,20%)] to-[hsl(220,40%,25%)] text-white relative overflow-hidden">
+    <div className="hidden lg:flex lg:w-1/2 flex-col justify-center items-center p-12 bg-gradient-to-br from-[hsl(222,47%,11%)] via-[hsl(217,45%,18%)] to-[hsl(220,40%,22%)] text-white relative overflow-hidden">
       {/* Background pattern */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-20 left-10 w-72 h-72 bg-white rounded-full blur-3xl" />

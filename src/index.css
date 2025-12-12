@@ -372,11 +372,11 @@ All colors MUST be HSL.
   @keyframes pulse-subtle {
     0%, 100% {
       opacity: 1;
-      transform: scale(1);
+      box-shadow: 0 4px 15px hsl(217 82% 51% / 0.2);
     }
     50% {
       opacity: 0.95;
-      transform: scale(1.01);
+      box-shadow: 0 4px 25px hsl(217 82% 51% / 0.4);
     }
   }
   
@@ -388,12 +388,27 @@ All colors MUST be HSL.
       opacity: 0.6;
     }
   }
+
+  /* Animated gradient border for AI-powered elements */
+  @keyframes gradient-x {
+    0%, 100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
   
   .animate-pulse-subtle {
-    animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) 1;
+    animation: pulse-subtle 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
   
   .animate-pulse-slow {
     animation: pulse-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .animate-gradient-x {
+    background-size: 200% 200%;
+    animation: gradient-x 3s ease infinite;
   }
 }
