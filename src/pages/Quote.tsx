@@ -16,6 +16,8 @@ import { WeightInput } from "@/components/ui/weight-input";
 import { MoneyInput } from "@/components/ui/money-input";
 import { DimensionInput } from "@/components/ui/dimension-input";
 import { PixPaymentModal } from "@/components/payment/PixPaymentModal";
+import { ServiceTypeSelector } from "@/components/quote/ServiceTypeSelector";
+import { AddressForm } from "@/components/quote/AddressForm";
 
 interface QuoteResult {
   carrier_id: string;
@@ -489,250 +491,31 @@ const Quote = () => {
             </p>
           </div>
 
-          {/* Seletor de Serviço - Antes do Stepper */}
-          <Card className="p-4 md:p-6 mb-4 md:mb-6 shadow-md">
-            <h3 className="font-semibold text-base md:text-lg mb-3 md:mb-4">Escolha o tipo de serviço</h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-              <button
-                type="button"
-                onClick={() => setFormData({ ...formData, service_type: "ltl" })}
-                className={`p-4 md:p-6 rounded-lg border-2 transition-all text-left ${
-                  formData.service_type === "ltl"
-                    ? "border-primary bg-primary/5"
-                    : "border-border hover:border-primary/50"
-                }`}
-              >
-                <div className="flex items-start gap-2 md:gap-3 mb-2 md:mb-3">
-                  <Package className="h-5 w-5 md:h-6 md:w-6 text-primary mt-1" />
-                  <div>
-                    <h4 className="font-bold text-base md:text-lg">Frete Padrão (LTL)</h4>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Carga Fracionada
-                    </p>
-                  </div>
-                </div>
-                <p className="text-sm">
-                  Consolidado, econômico. Ideal para caixas e pallets.
-                </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <span className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-md">
-                    📦 Caixas
-                  </span>
-                  <span className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-md">
-                    🏭 Pallets
-                  </span>
-                  <span className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-md">
-                    💰 Econômico
-                  </span>
-                </div>
-              </button>
+          {/* Seletor de Serviço - Componente refatorado */}
+          <ServiceTypeSelector 
+            serviceType={formData.service_type}
+            onServiceTypeChange={(type) => setFormData({ ...formData, service_type: type })}
+          />
 
-              <button
-                type="button"
-                onClick={() => setFormData({ ...formData, service_type: "ftl" })}
-                className={`p-4 md:p-6 rounded-lg border-2 transition-all text-left ${
-                  formData.service_type === "ftl"
-                    ? "border-accent bg-accent/5"
-                    : "border-border hover:border-accent/50"
-                }`}
-              >
-                <div className="flex items-start gap-2 md:gap-3 mb-2 md:mb-3">
-                  <Package className="h-5 w-5 md:h-6 md:w-6 text-accent mt-1" />
-                  <div>
-                    <h4 className="font-bold text-base md:text-lg">Frete Dedicado (FTL)</h4>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Veículo Exclusivo
-                    </p>
-                  </div>
-                </div>
-                <p className="text-sm">
-                  Veículo exclusivo, urgência. Motoristas e Veículos Dedicados.
-                </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <span className="px-2 py-1 bg-accent/10 text-accent text-xs rounded-md">
-                    🚚 Caminhão Completo
-                  </span>
-                  <span className="px-2 py-1 bg-accent/10 text-accent text-xs rounded-md">
-                    🏍️ Entregas Rápidas
-                  </span>
-                  <span className="px-2 py-1 bg-accent/10 text-accent text-xs rounded-md">
-                    ⚡ Urgente
-                  </span>
-                </div>
-              </button>
-            </div>
-
-            {formData.service_type === "ftl" && (
-              <div className="mt-4 p-4 bg-accent/5 border-2 border-accent/30 rounded-lg animate-fade-in shadow-sm">
-                <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center">
-                    <Lightbulb className="h-5 w-5 text-accent" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-foreground mb-1">
-                      <strong className="text-accent">Novo Recurso:</strong> Sistema de Lances para FTL
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      No serviço Dedicado, você receberá ofertas de motoristas autônomos qualificados 
-                      que darão lances de preço e prazo para sua carga em tempo real.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-          </Card>
-
-          <Card className="p-4 md:p-6 mb-6 md:mb-8 shadow-md">
-            <Stepper steps={steps} currentStep={currentStep} className="mb-6 md:mb-8" />
+          <Card className="p-4 md:p-6 mb-6 md:mb-8 shadow-md rounded-xl border-border/50">
+            <Stepper steps={steps} currentStep={currentStep} className="mb-8 md:mb-10" />
             
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Step 1: Localidades (Origin/Destination) */}
               {currentStep === 1 && (
                 <div className="space-y-6">
-                  <div className="space-y-6">
-                    {/* CEP e Endereço de Origem */}
-                    <div className="space-y-4 p-4 bg-muted/30 rounded-lg">
-                      <h3 className="font-semibold flex items-center gap-2">
-                        <MapPin className="h-4 w-4" />
-                        Endereço de Origem
-                      </h3>
-                      
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="origin_cep">CEP *</Label>
-                          <Input
-                            id="origin_cep"
-                            placeholder="00000-000"
-                            value={formData.origin_cep}
-                            onChange={(e) => {
-                              setFormData({ ...formData, origin_cep: e.target.value });
-                              if (e.target.value.replace(/\D/g, "").length === 8) {
-                                fetchCepData(e.target.value, "origin");
-                              }
-                            }}
-                            disabled={loadingCep === "origin"}
-                            required
-                          />
-                        </div>
+                  <AddressForm
+                    formData={formData}
+                    loadingCep={loadingCep}
+                    onFormChange={(updates) => setFormData({ ...formData, ...updates })}
+                    onCepChange={(cep, type) => fetchCepData(cep, type)}
+                  />
 
-                        <div className="space-y-2">
-                          <Label htmlFor="origin_number">Número *</Label>
-                          <Input
-                            id="origin_number"
-                            placeholder="123"
-                            value={formData.origin_number}
-                            onChange={(e) => setFormData({ ...formData, origin_number: e.target.value })}
-                            required
-                          />
-                        </div>
-                      </div>
-
-                      {formData.origin_address && (
-                        <div className="grid md:grid-cols-3 gap-4">
-                          <div className="space-y-2">
-                            <Label>Logradouro</Label>
-                            <Input value={formData.origin_address} disabled />
-                          </div>
-                          <div className="space-y-2">
-                            <Label>Bairro</Label>
-                            <Input value={formData.origin_neighborhood} disabled />
-                          </div>
-                          <div className="space-y-2">
-                            <Label>Cidade</Label>
-                            <Input value={formData.origin_city} disabled />
-                          </div>
-                        </div>
-                      )}
-
-                      <div className="space-y-2">
-                        <Label htmlFor="origin_type">Tipo de Local</Label>
-                        <select
-                          id="origin_type"
-                          value={formData.origin_type}
-                          onChange={(e) => setFormData({ ...formData, origin_type: e.target.value })}
-                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                        >
-                          <option value="commercial">Comercial</option>
-                          <option value="residential">Residencial</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    {/* CEP e Endereço de Destino */}
-                    <div className="space-y-4 p-4 bg-muted/30 rounded-lg">
-                      <h3 className="font-semibold flex items-center gap-2">
-                        <MapPin className="h-4 w-4" />
-                        Endereço de Destino
-                      </h3>
-                      
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="destination_cep">CEP *</Label>
-                          <Input
-                            id="destination_cep"
-                            placeholder="00000-000"
-                            value={formData.destination_cep}
-                            onChange={(e) => {
-                              setFormData({ ...formData, destination_cep: e.target.value });
-                              if (e.target.value.replace(/\D/g, "").length === 8) {
-                                fetchCepData(e.target.value, "destination");
-                              }
-                            }}
-                            disabled={loadingCep === "destination"}
-                            required
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="destination_number">Número *</Label>
-                          <Input
-                            id="destination_number"
-                            placeholder="123"
-                            value={formData.destination_number}
-                            onChange={(e) => setFormData({ ...formData, destination_number: e.target.value })}
-                            required
-                          />
-                        </div>
-                      </div>
-
-                      {formData.destination_address && (
-                        <div className="grid md:grid-cols-3 gap-4">
-                          <div className="space-y-2">
-                            <Label>Logradouro</Label>
-                            <Input value={formData.destination_address} disabled />
-                          </div>
-                          <div className="space-y-2">
-                            <Label>Bairro</Label>
-                            <Input value={formData.destination_neighborhood} disabled />
-                          </div>
-                          <div className="space-y-2">
-                            <Label>Cidade</Label>
-                            <Input value={formData.destination_city} disabled />
-                          </div>
-                        </div>
-                      )}
-
-                      <div className="space-y-2">
-                        <Label htmlFor="destination_type">Tipo de Local</Label>
-                        <select
-                          id="destination_type"
-                          value={formData.destination_type}
-                          onChange={(e) => setFormData({ ...formData, destination_type: e.target.value })}
-                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                        >
-                          <option value="commercial">Comercial</option>
-                          <option value="residential">Residencial</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-between">
-                    <Button type="button" variant="outline" onClick={handleBack}>
+                  <div className="flex justify-between pt-4">
+                    <Button type="button" variant="outline" onClick={handleBack} className="transition-all duration-300 hover:shadow-md">
                       Voltar
                     </Button>
-                    <Button type="button" onClick={handleNext}>
+                    <Button type="button" onClick={handleNext} className="transition-all duration-300 hover:shadow-md hover:-translate-y-0.5">
                       Próximo
                     </Button>
                   </div>
@@ -813,11 +596,11 @@ const Quote = () => {
                   />
                   </div>
 
-                  <div className="flex justify-between">
-                    <Button type="button" variant="outline" onClick={handleBack}>
+                  <div className="flex justify-between pt-4">
+                    <Button type="button" variant="outline" onClick={handleBack} className="transition-all duration-300 hover:shadow-md">
                       Voltar
                     </Button>
-                    <Button type="button" onClick={handleNext}>
+                    <Button type="button" onClick={handleNext} className="transition-all duration-300 hover:shadow-md hover:-translate-y-0.5">
                       Próximo
                     </Button>
                   </div>
@@ -882,8 +665,8 @@ const Quote = () => {
                     </div>
                   </div>
 
-                  <div className="flex justify-between">
-                    <Button type="button" variant="outline" onClick={handleBack}>
+                  <div className="flex justify-between pt-4">
+                    <Button type="button" variant="outline" onClick={handleBack} className="transition-all duration-300 hover:shadow-md">
                       Voltar
                     </Button>
                     <Button
@@ -891,7 +674,7 @@ const Quote = () => {
                       variant="hero" 
                       size="lg" 
                       disabled={loading}
-                      className="w-full sm:w-auto"
+                      className="w-full sm:w-auto transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5"
                     >
                       {loading ? (
                         <>
@@ -919,12 +702,12 @@ const Quote = () => {
                 {/* Segmented Control de Ordenação - Melhorado */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-center gap-3">
                   <span className="text-sm text-muted-foreground font-semibold">Ordenar por:</span>
-                  <div className="inline-flex p-1 bg-muted/50 rounded-lg border border-border shadow-sm">
+                  <div className="inline-flex p-1.5 bg-muted/50 rounded-xl border border-border shadow-sm">
                     <button
                       onClick={() => setSortBy("price")}
-                      className={`px-4 sm:px-6 py-2.5 rounded-md text-sm font-semibold transition-all duration-200 ${
+                      className={`px-4 sm:px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 ${
                         sortBy === "price"
-                          ? "bg-primary text-primary-foreground shadow-md"
+                          ? "bg-primary text-primary-foreground shadow-md -translate-y-0.5"
                           : "text-muted-foreground hover:text-foreground hover:bg-background/50"
                       }`}
                     >
@@ -936,9 +719,9 @@ const Quote = () => {
                     </button>
                     <button
                       onClick={() => setSortBy("delivery")}
-                      className={`px-4 sm:px-6 py-2.5 rounded-md text-sm font-semibold transition-all duration-200 ${
+                      className={`px-4 sm:px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 ${
                         sortBy === "delivery"
-                          ? "bg-accent text-accent-foreground shadow-md"
+                          ? "bg-accent text-accent-foreground shadow-md -translate-y-0.5"
                           : "text-muted-foreground hover:text-foreground hover:bg-background/50"
                       }`}
                     >
@@ -950,9 +733,9 @@ const Quote = () => {
                     </button>
                     <button
                       onClick={() => setSortBy("quality")}
-                      className={`px-4 sm:px-6 py-2.5 rounded-md text-sm font-semibold transition-all duration-200 ${
+                      className={`px-4 sm:px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 ${
                         sortBy === "quality"
-                          ? "bg-secondary text-secondary-foreground shadow-md"
+                          ? "bg-secondary text-secondary-foreground shadow-md -translate-y-0.5"
                           : "text-muted-foreground hover:text-foreground hover:bg-background/50"
                       }`}
                     >

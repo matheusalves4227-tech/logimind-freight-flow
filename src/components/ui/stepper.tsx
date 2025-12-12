@@ -1,4 +1,4 @@
-import { CheckCircle2, Circle } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Step {
@@ -26,41 +26,48 @@ export const Stepper = ({ steps, currentStep, className }: StepperProps) => {
               <div className="flex flex-col items-center flex-1">
                 <div className="flex items-center w-full">
                   <div className="flex flex-col items-center">
+                    {/* Círculo maior e mais proeminente */}
                     <div
                       className={cn(
-                        "flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all",
-                        isCompleted && "bg-primary border-primary text-primary-foreground",
-                        isCurrent && "border-primary text-primary bg-primary/10",
-                        !isCompleted && !isCurrent && "border-muted text-muted-foreground"
+                        "flex items-center justify-center w-12 h-12 rounded-full border-3 transition-all duration-300 font-bold text-lg shadow-sm",
+                        isCompleted && "bg-secondary border-secondary text-secondary-foreground shadow-md",
+                        isCurrent && "border-primary text-primary bg-primary/10 ring-4 ring-primary/20",
+                        !isCompleted && !isCurrent && "border-muted-foreground/30 text-muted-foreground bg-muted/50"
                       )}
                     >
                       {isCompleted ? (
-                        <CheckCircle2 className="w-6 h-6" />
+                        <CheckCircle2 className="w-7 h-7" />
                       ) : (
-                        <Circle className="w-6 h-6" fill={isCurrent ? "currentColor" : "none"} />
+                        <span>{stepNumber}</span>
                       )}
                     </div>
-                    <div className="mt-2 text-center">
+                    <div className="mt-3 text-center">
                       <p
                         className={cn(
-                          "text-sm font-medium",
-                          (isCompleted || isCurrent) ? "text-foreground" : "text-muted-foreground"
+                          "text-sm font-semibold transition-colors duration-300",
+                          isCompleted && "text-secondary",
+                          isCurrent && "text-primary",
+                          !isCompleted && !isCurrent && "text-muted-foreground"
                         )}
                       >
                         {step.label}
                       </p>
                       {step.description && (
-                        <p className="text-xs text-muted-foreground mt-1">
+                        <p className={cn(
+                          "text-xs mt-1 transition-colors duration-300",
+                          isCompleted ? "text-secondary/70" : "text-muted-foreground"
+                        )}>
                           {step.description}
                         </p>
                       )}
                     </div>
                   </div>
+                  {/* Linha de conexão entre steps */}
                   {index < steps.length - 1 && (
                     <div
                       className={cn(
-                        "flex-1 h-0.5 mx-2 transition-all",
-                        isCompleted ? "bg-primary" : "bg-muted"
+                        "flex-1 h-1 mx-3 rounded-full transition-all duration-500",
+                        isCompleted ? "bg-secondary" : "bg-muted"
                       )}
                     />
                   )}
