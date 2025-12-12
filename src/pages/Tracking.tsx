@@ -356,33 +356,15 @@ const Tracking = () => {
               </div>
             </Card>
 
-            {/* Box LogiMind */}
-            <Card className="p-4 bg-muted/30">
+            {/* Valor do Frete */}
+            <Card className="p-4 bg-primary/5 border-primary/20">
               <h3 className="text-xs uppercase tracking-wide text-muted-foreground mb-3 font-semibold flex items-center gap-1.5">
-                <Info className="h-3 w-3" />
-                Detalhes LogiMind
+                <DollarSign className="h-3 w-3" />
+                Valor do Frete
               </h3>
-              
-              <div className="space-y-2 text-xs">
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Preço Base:</span>
-                  <span className="font-medium">{formatarMoeda(orderData.base_price)}</span>
-                </div>
-                
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Comissão:</span>
-                  <span className="font-medium text-primary/80">
-                    {formatarPorcentagemSimples(orderData.commission_applied)}
-                  </span>
-                </div>
-                
-                <div className="pt-2 border-t border-border flex justify-between items-center">
-                  <span className="text-muted-foreground font-semibold">Preço Final:</span>
-                  <span className="font-bold text-primary text-sm">
-                    {formatarMoeda(orderData.final_price)}
-                  </span>
-                </div>
-              </div>
+              <p className="text-xl font-bold text-primary">
+                {formatarMoeda(orderData.final_price)}
+              </p>
             </Card>
 
             {/* CTA Ocorrência */}
