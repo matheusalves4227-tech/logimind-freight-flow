@@ -38,10 +38,10 @@ const Hero = () => {
           </div>
         </div>
 
-        {/* 4 Cards de Direcionamento com Hierarquia e Hover Effects Melhorados */}
+        {/* 4 Cards de Direcionamento com 3D Hover Effect */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10 max-w-7xl mx-auto mb-12 md:mb-20 px-4 md:px-0 items-stretch">
           {/* Card 1: Embarcador (DESTAQUE PRINCIPAL) */}
-          <div className="group bg-card/80 backdrop-blur-md rounded-[20px] p-6 md:p-8 shadow-xl border-2 border-primary hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 relative animate-fade-in">
+          <div className="group bg-card/80 backdrop-blur-md rounded-[20px] p-6 md:p-8 shadow-xl border-2 border-primary card-3d-hover relative animate-fade-in">
             {/* Badge de Destaque */}
             <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
               <span className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-r from-primary to-[hsl(217,82%,45%)] text-primary-foreground text-xs font-bold rounded-full shadow-lg">
@@ -52,8 +52,8 @@ const Hero = () => {
             
             <div className="flex flex-col items-center text-center space-y-6">
               <div className="relative">
-                <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl" />
-                <div className="relative p-6 bg-gradient-to-br from-primary to-[hsl(217,82%,45%)] rounded-2xl shadow-lg">
+                <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl group-hover:bg-primary/30 transition-all duration-300" />
+                <div className="relative p-6 bg-gradient-to-br from-primary to-[hsl(217,82%,45%)] rounded-2xl shadow-lg group-hover:shadow-xl transition-all duration-300">
                   <Truck className="h-12 w-12 text-primary-foreground" />
                 </div>
               </div>
@@ -74,7 +74,7 @@ const Hero = () => {
 
               <Button 
                 size="lg" 
-                className="w-full h-12 bg-gradient-to-r from-primary to-[hsl(217,82%,45%)] hover:from-primary/90 hover:to-[hsl(217,82%,40%)] text-primary-foreground font-semibold shadow-lg hover:shadow-xl transition-all duration-300 rounded-lg animate-pulse-subtle"
+                className="w-full h-12 btn-gradient-primary text-primary-foreground font-semibold shadow-lg hover:shadow-xl transition-all duration-300 rounded-lg animate-pulse-subtle"
                 onClick={() => navigate("/quote")}
               >
                 Cote e Economize Agora
@@ -94,7 +94,7 @@ const Hero = () => {
           </div>
 
           {/* Card 2: Transportadora */}
-          <div className="group bg-card/80 backdrop-blur-md rounded-[20px] p-6 md:p-8 shadow-lg border-2 border-border hover:border-secondary/50 hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
+          <div className="group bg-card/80 backdrop-blur-md rounded-[20px] p-6 md:p-8 shadow-lg border-2 border-border hover:border-secondary/50 card-3d-hover">
             <div className="flex flex-col items-center text-center space-y-6">
               <div className="relative">
                 <div className="absolute inset-0 bg-secondary/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -119,7 +119,7 @@ const Hero = () => {
 
               <Button 
                 size="lg" 
-                className="w-full h-12 bg-gradient-to-r from-primary to-[hsl(217,82%,45%)] hover:from-primary/90 hover:to-[hsl(217,82%,40%)] text-primary-foreground font-semibold shadow-md hover:shadow-lg transition-all rounded-lg"
+                className="w-full h-12 btn-gradient-primary text-primary-foreground font-semibold shadow-md hover:shadow-lg transition-all duration-300 rounded-lg"
                 onClick={() => navigate("/auth?redirect=/parceiro/cadastro?tipo=transportadora")}
               >
                 Oferecer Fretes
@@ -139,7 +139,7 @@ const Hero = () => {
           </div>
 
           {/* Card 3: Motorista Autônomo */}
-          <div className="group bg-card/80 backdrop-blur-md rounded-[20px] p-6 md:p-8 shadow-lg border-2 border-border hover:border-accent/50 hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
+          <div className="group bg-card/80 backdrop-blur-md rounded-[20px] p-6 md:p-8 shadow-lg border-2 border-border hover:border-accent/50 card-3d-hover">
             <div className="flex flex-col items-center text-center space-y-6">
               <div className="relative">
                 <div className="absolute inset-0 bg-accent/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -164,7 +164,7 @@ const Hero = () => {
 
               <Button 
                 size="lg" 
-                className="w-full h-12 bg-gradient-to-r from-primary to-[hsl(217,82%,45%)] hover:from-primary/90 hover:to-[hsl(217,82%,40%)] text-primary-foreground font-semibold shadow-md hover:shadow-lg transition-all rounded-lg"
+                className="w-full h-12 btn-gradient-primary text-primary-foreground font-semibold shadow-md hover:shadow-lg transition-all duration-300 rounded-lg"
                 onClick={() => navigate("/auth?redirect=/parceiro/cadastro?tipo=motorista")}
               >
                 Ver Fretes Disponíveis
@@ -184,11 +184,11 @@ const Hero = () => {
           </div>
 
           {/* Card 4: Empresas B2B */}
-          <div className="group bg-card/80 backdrop-blur-md rounded-[20px] p-6 md:p-8 shadow-xl border-2 border-accent hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 relative animate-fade-in bg-gradient-to-br from-accent/5 to-accent/10">
+          <div className="group bg-card/80 backdrop-blur-md rounded-[20px] p-6 md:p-8 shadow-xl border-2 border-accent card-3d-hover relative animate-fade-in bg-gradient-to-br from-accent/5 to-accent/10">
             <div className="flex flex-col items-center text-center space-y-6">
               <div className="relative">
-                <div className="absolute inset-0 bg-accent/20 rounded-2xl blur-xl" />
-                <div className="relative p-6 bg-gradient-to-br from-accent to-accent/80 rounded-2xl shadow-lg">
+                <div className="absolute inset-0 bg-accent/20 rounded-2xl blur-xl group-hover:bg-accent/30 transition-all duration-300" />
+                <div className="relative p-6 bg-gradient-to-br from-accent to-accent/80 rounded-2xl shadow-lg group-hover:shadow-xl transition-all duration-300">
                   <Building2 className="h-12 w-12 text-primary-foreground" />
                 </div>
               </div>
@@ -209,7 +209,7 @@ const Hero = () => {
 
               <Button 
                 size="lg" 
-                className="w-full h-12 bg-gradient-to-r from-accent to-accent/80 hover:from-accent/90 hover:to-accent/70 text-primary-foreground font-semibold shadow-md hover:shadow-lg transition-all rounded-lg"
+                className="w-full h-12 bg-gradient-to-r from-accent to-accent/80 hover:from-accent/90 hover:to-accent/70 text-primary-foreground font-semibold shadow-md hover:shadow-lg transition-all duration-300 rounded-lg"
                 onClick={() => navigate("/cotacao-b2b")}
               >
                 Solicitar Cotação B2B

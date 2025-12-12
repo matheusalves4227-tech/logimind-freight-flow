@@ -63,26 +63,26 @@ const Features = () => {
           </div>
         </div>
 
-        {/* Banner LogiMind com Glassmorphism e Animated Border */}
+        {/* Banner LogiMind com Glassmorphism, Radial Gradient e Animated Border */}
         <div className="max-w-5xl mx-auto px-4 md:px-0">
           <div className="relative overflow-hidden">
             {/* Animated gradient border */}
             <div className="absolute -inset-[2px] bg-gradient-to-r from-primary via-[hsl(190,80%,50%)] to-primary rounded-[22px] animate-gradient-x opacity-75" />
             
-            {/* Card content with glassmorphism */}
-            <div className="relative bg-card/90 backdrop-blur-xl rounded-[20px] p-6 md:p-10 shadow-2xl">
+            {/* Card content with glassmorphism and radial gradient */}
+            <div className="relative bg-card/90 backdrop-blur-xl rounded-[20px] p-6 md:p-10 shadow-2xl" style={{ background: 'radial-gradient(ellipse at top right, hsl(217 82% 51% / 0.08), transparent 50%), radial-gradient(ellipse at bottom left, hsl(142 53% 43% / 0.08), transparent 50%), hsl(var(--card) / 0.9)' }}>
               {/* Background decorativo */}
               <div className="absolute inset-0 bg-gradient-hero opacity-5 rounded-[20px]" />
               <div className="absolute top-0 right-0 w-64 h-64 bg-secondary/20 rounded-full blur-3xl" />
               <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary/20 rounded-full blur-3xl" />
               
               <div className="relative flex flex-col md:flex-row items-center gap-6 md:gap-8">
-                {/* Ícone LogiMind */}
+                {/* Ícone LogiMind com brilho pulsante */}
                 <div className="flex-shrink-0">
                   <div className="relative">
                     <div className="absolute inset-0 bg-gradient-hero opacity-30 rounded-2xl blur-xl animate-pulse" />
                     <div className="relative p-6 md:p-8 bg-gradient-to-br from-primary to-secondary rounded-2xl shadow-2xl">
-                      <Brain className="h-12 w-12 md:h-16 md:w-16 text-primary-foreground" />
+                      <Brain className="h-12 w-12 md:h-16 md:w-16 text-primary-foreground animate-brain-glow" />
                     </div>
                   </div>
                 </div>
