@@ -33,6 +33,11 @@ export const PixPaymentModal = ({
   const [uploading, setUploading] = useState(false);
   const [proofUrl, setProofUrl] = useState<string>("");
 
+  // Proteção contra pixData nulo
+  if (!pixData) {
+    return null;
+  }
+
   const handleCopyPixKey = () => {
     navigator.clipboard.writeText(pixData.payload);
     setCopied(true);
