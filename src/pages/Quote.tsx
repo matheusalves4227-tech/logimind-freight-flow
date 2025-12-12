@@ -807,7 +807,7 @@ const Quote = () => {
                   <div className="space-y-2 p-4 bg-accent/5 border border-accent/30 rounded-lg">
                   <MoneyInput
                     value={formData.cargo_value}
-                    onChange={(value) => setFormData({ ...formData, cargo_value: value.replace(/\D/g, "") })}
+                    onChange={(value) => setFormData({ ...formData, cargo_value: value })}
                     label="Valor da Carga"
                     placeholder="10.000,00"
                   />
