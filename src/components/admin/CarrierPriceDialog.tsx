@@ -11,6 +11,31 @@ import { Badge } from '@/components/ui/badge';
 import { Pencil, Trash2, Plus, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
+// Utility functions for formatting
+const formatNumber = (value: string): string => {
+  const numbers = value.replace(/\D/g, '');
+  if (!numbers) return '';
+  return parseInt(numbers).toLocaleString('pt-BR');
+};
+
+const parseFormattedNumber = (value: string): string => {
+  return value.replace(/\./g, '');
+};
+
+const formatMoney = (value: string): string => {
+  const numbers = value.replace(/\D/g, '');
+  if (!numbers) return '';
+  const amount = parseInt(numbers) / 100;
+  return amount.toLocaleString('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+};
+
+const parseFormattedMoney = (value: string): string => {
+  return value.replace(/\./g, '').replace(',', '.');
+};
+
 const BRAZILIAN_STATES = [
   'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO',
   'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI',
@@ -108,14 +133,14 @@ export function CarrierPriceDialog({ open, onOpenChange, carrier }: CarrierPrice
         destination_region: formData.destination_state || formData.destination_region,
         origin_state: formData.origin_state || null,
         destination_state: formData.destination_state || null,
-        min_distance_km: formData.min_distance_km ? parseFloat(formData.min_distance_km) : null,
-        max_distance_km: formData.max_distance_km ? parseFloat(formData.max_distance_km) : null,
-        min_weight_kg: parseFloat(formData.min_weight_kg),
-        max_weight_kg: parseFloat(formData.max_weight_kg),
-        base_price: parseFloat(formData.base_price),
-        price_per_kg: parseFloat(formData.price_per_kg),
-        rate_per_km: formData.rate_per_km ? parseFloat(formData.rate_per_km) : null,
-        fixed_cost: formData.fixed_cost ? parseFloat(formData.fixed_cost) : null,
+        min_distance_km: formData.min_distance_km ? parseFloat(parseFormattedNumber(formData.min_distance_km)) : null,
+        max_distance_km: formData.max_distance_km ? parseFloat(parseFormattedNumber(formData.max_distance_km)) : null,
+        min_weight_kg: parseFloat(parseFormattedNumber(formData.min_weight_kg)),
+        max_weight_kg: parseFloat(parseFormattedNumber(formData.max_weight_kg)),
+        base_price: parseFloat(parseFormattedMoney(formData.base_price)),
+        price_per_kg: parseFloat(parseFormattedMoney(formData.price_per_kg)),
+        rate_per_km: formData.rate_per_km ? parseFloat(parseFormattedMoney(formData.rate_per_km)) : null,
+        fixed_cost: formData.fixed_cost ? parseFloat(parseFormattedMoney(formData.fixed_cost)) : null,
         delivery_days: parseInt(formData.delivery_days),
         is_active: formData.is_active,
       };
@@ -194,14 +219,14 @@ export function CarrierPriceDialog({ open, onOpenChange, carrier }: CarrierPrice
       destination_region: price.destination_region,
       origin_state: price.origin_state || '',
       destination_state: price.destination_state || '',
-      min_distance_km: price.min_distance_km?.toString() || '',
-      max_distance_km: price.max_distance_km?.toString() || '',
-      min_weight_kg: price.min_weight_kg.toString(),
-      max_weight_kg: price.max_weight_kg.toString(),
-      base_price: price.base_price.toString(),
-      price_per_kg: price.price_per_kg.toString(),
-      rate_per_km: price.rate_per_km?.toString() || '',
-      fixed_cost: price.fixed_cost?.toString() || '',
+      min_distance_km: price.min_distance_km ? formatNumber(price.min_distance_km.toString()) : '',
+      max_distance_km: price.max_distance_km ? formatNumber(price.max_distance_km.toString()) : '',
+      min_weight_kg: formatNumber(price.min_weight_kg.toString()),
+      max_weight_kg: formatNumber(price.max_weight_kg.toString()),
+      base_price: formatMoney((price.base_price * 100).toFixed(0)),
+      price_per_kg: formatMoney((price.price_per_kg * 100).toFixed(0)),
+      rate_per_km: price.rate_per_km ? formatMoney((price.rate_per_km * 100).toFixed(0)) : '',
+      fixed_cost: price.fixed_cost ? formatMoney((price.fixed_cost * 100).toFixed(0)) : '',
       delivery_days: price.delivery_days.toString(),
       is_active: price.is_active,
     });
@@ -376,10 +401,10 @@ export function CarrierPriceDialog({ open, onOpenChange, carrier }: CarrierPrice
                   <Label htmlFor="min_distance_km">Distância Mínima (KM)</Label>
                   <Input
                     id="min_distance_km"
-                    type="number"
-                    step="0.1"
+                    type="text"
+                    inputMode="numeric"
                     value={formData.min_distance_km}
-                    onChange={(e) => setFormData({ ...formData, min_distance_km: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, min_distance_km: formatNumber(e.target.value) })}
                     placeholder="Ex: 0"
                   />
                 </div>
@@ -388,10 +413,10 @@ export function CarrierPriceDialog({ open, onOpenChange, carrier }: CarrierPrice
                   <Label htmlFor="max_distance_km">Distância Máxima (KM)</Label>
                   <Input
                     id="max_distance_km"
-                    type="number"
-                    step="0.1"
+                    type="text"
+                    inputMode="numeric"
                     value={formData.max_distance_km}
-                    onChange={(e) => setFormData({ ...formData, max_distance_km: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, max_distance_km: formatNumber(e.target.value) })}
                     placeholder="Ex: 500"
                   />
                 </div>
@@ -402,10 +427,10 @@ export function CarrierPriceDialog({ open, onOpenChange, carrier }: CarrierPrice
                   <Label htmlFor="min_weight_kg">Peso Mínimo (KG) *</Label>
                   <Input
                     id="min_weight_kg"
-                    type="number"
-                    step="0.1"
+                    type="text"
+                    inputMode="numeric"
                     value={formData.min_weight_kg}
-                    onChange={(e) => setFormData({ ...formData, min_weight_kg: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, min_weight_kg: formatNumber(e.target.value) })}
                     required
                     placeholder="Ex: 0"
                   />
@@ -415,12 +440,12 @@ export function CarrierPriceDialog({ open, onOpenChange, carrier }: CarrierPrice
                   <Label htmlFor="max_weight_kg">Peso Máximo (KG) *</Label>
                   <Input
                     id="max_weight_kg"
-                    type="number"
-                    step="0.1"
+                    type="text"
+                    inputMode="numeric"
                     value={formData.max_weight_kg}
-                    onChange={(e) => setFormData({ ...formData, max_weight_kg: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, max_weight_kg: formatNumber(e.target.value) })}
                     required
-                    placeholder="Ex: 1000"
+                    placeholder="Ex: 1.000"
                   />
                 </div>
               </div>
@@ -428,54 +453,70 @@ export function CarrierPriceDialog({ open, onOpenChange, carrier }: CarrierPrice
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="rate_per_km">Taxa por KM (R$)</Label>
-                  <Input
-                    id="rate_per_km"
-                    type="number"
-                    step="0.01"
-                    value={formData.rate_per_km}
-                    onChange={(e) => setFormData({ ...formData, rate_per_km: e.target.value })}
-                    placeholder="Ex: 1.50"
-                  />
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">R$</span>
+                    <Input
+                      id="rate_per_km"
+                      type="text"
+                      inputMode="decimal"
+                      value={formData.rate_per_km}
+                      onChange={(e) => setFormData({ ...formData, rate_per_km: formatMoney(e.target.value) })}
+                      placeholder="0,00"
+                      className="pl-10"
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="fixed_cost">Custo Fixo (R$)</Label>
-                  <Input
-                    id="fixed_cost"
-                    type="number"
-                    step="0.01"
-                    value={formData.fixed_cost}
-                    onChange={(e) => setFormData({ ...formData, fixed_cost: e.target.value })}
-                    placeholder="Ex: 50.00"
-                  />
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">R$</span>
+                    <Input
+                      id="fixed_cost"
+                      type="text"
+                      inputMode="decimal"
+                      value={formData.fixed_cost}
+                      onChange={(e) => setFormData({ ...formData, fixed_cost: formatMoney(e.target.value) })}
+                      placeholder="0,00"
+                      className="pl-10"
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="price_per_kg">Preço por KG (R$)</Label>
-                  <Input
-                    id="price_per_kg"
-                    type="number"
-                    step="0.01"
-                    value={formData.price_per_kg}
-                    onChange={(e) => setFormData({ ...formData, price_per_kg: e.target.value })}
-                    required
-                    placeholder="Ex: 0.80"
-                  />
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">R$</span>
+                    <Input
+                      id="price_per_kg"
+                      type="text"
+                      inputMode="decimal"
+                      value={formData.price_per_kg}
+                      onChange={(e) => setFormData({ ...formData, price_per_kg: formatMoney(e.target.value) })}
+                      required
+                      placeholder="0,00"
+                      className="pl-10"
+                    />
+                  </div>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="base_price">Preço Base Total (R$)</Label>
-                  <Input
-                    id="base_price"
-                    type="number"
-                    step="0.01"
-                    value={formData.base_price}
-                    onChange={(e) => setFormData({ ...formData, base_price: e.target.value })}
-                    required
-                    placeholder="Ex: 150.00"
-                  />
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">R$</span>
+                    <Input
+                      id="base_price"
+                      type="text"
+                      inputMode="decimal"
+                      value={formData.base_price}
+                      onChange={(e) => setFormData({ ...formData, base_price: formatMoney(e.target.value) })}
+                      required
+                      placeholder="0,00"
+                      className="pl-10"
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-2">
