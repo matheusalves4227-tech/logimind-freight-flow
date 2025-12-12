@@ -11,6 +11,7 @@ interface MoneyInputProps {
   disabled?: boolean;
   className?: string;
   error?: string;
+  maxValue?: number;
 }
 
 export const MoneyInput = ({
@@ -22,6 +23,7 @@ export const MoneyInput = ({
   disabled = false,
   className,
   error,
+  maxValue = 100000000, // R$ 100 milhões por padrão
 }: MoneyInputProps) => {
   const formatMoney = (money: string) => {
     // Remove tudo que não é dígito
@@ -30,7 +32,12 @@ export const MoneyInput = ({
     if (!numbers) return "";
     
     // Converte para número considerando os últimos 2 dígitos como centavos
-    const amount = parseInt(numbers) / 100;
+    let amount = parseInt(numbers) / 100;
+    
+    // Limita ao valor máximo
+    if (maxValue && amount > maxValue) {
+      amount = maxValue;
+    }
     
     // Formata com separador de milhares e decimais
     return amount.toLocaleString("pt-BR", {
