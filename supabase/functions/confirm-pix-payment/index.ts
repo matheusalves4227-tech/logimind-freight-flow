@@ -19,7 +19,15 @@ serve(async (req: Request) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const authHeader = req.headers.get("Authorization")!;
+    const authHeader = req.headers.get("Authorization");
+    
+    if (!authHeader) {
+      console.log("No authorization header provided");
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
     
     const supabase = createClient(supabaseUrl, supabaseKey, {
       global: { headers: { Authorization: authHeader } },
@@ -27,11 +35,14 @@ serve(async (req: Request) => {
 
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) {
+      console.log("User auth error:", userError);
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    console.log("User authenticated:", user.id, user.email);
 
     // Verificar se é admin
     const { data: roleData, error: roleError } = await supabase.rpc("has_role", {
@@ -39,7 +50,10 @@ serve(async (req: Request) => {
       _role: "admin",
     });
 
+    console.log("Role check result:", { roleData, roleError });
+
     if (roleError || !roleData) {
+      console.log("Access denied - not admin");
       return new Response(
         JSON.stringify({ error: "Access denied: Admin privileges required" }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
