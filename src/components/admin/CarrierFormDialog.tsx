@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { PhoneInput } from '@/components/ui/phone-input';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -206,15 +207,11 @@ export function CarrierFormDialog({ open, onOpenChange, carrier, onSuccess }: Ca
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="contact_phone">Telefone Comercial</Label>
-              <Input
-                id="contact_phone"
-                value={formData.contact_phone}
-                onChange={(e) => setFormData({ ...formData, contact_phone: e.target.value })}
-                placeholder="(11) 3000-0000"
-              />
-            </div>
+            <PhoneInput
+              value={formData.contact_phone}
+              onChange={(value) => setFormData({ ...formData, contact_phone: value })}
+              label="Telefone Comercial"
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -229,15 +226,11 @@ export function CarrierFormDialog({ open, onOpenChange, carrier, onSuccess }: Ca
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="contact_whatsapp">WhatsApp</Label>
-              <Input
-                id="contact_whatsapp"
-                value={formData.contact_whatsapp}
-                onChange={(e) => setFormData({ ...formData, contact_whatsapp: e.target.value })}
-                placeholder="(11) 99999-9999"
-              />
-            </div>
+            <PhoneInput
+              value={formData.contact_whatsapp}
+              onChange={(value) => setFormData({ ...formData, contact_whatsapp: value })}
+              label="WhatsApp"
+            />
           </div>
 
           <div className="space-y-2">
