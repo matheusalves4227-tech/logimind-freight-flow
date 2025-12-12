@@ -346,8 +346,22 @@ const AutonomousOnboarding = ({ cpf, onBack }: AutonomousOnboardingProps) => {
         // Não bloqueamos o fluxo se a notificação falhar
       }
 
+      // 6. Enviar email de confirmação para o motorista (função sem JWT)
+      try {
+        await supabase.functions.invoke('send-driver-confirmation', {
+          body: {
+            email: formData.email,
+            name: formData.nome_completo
+          }
+        });
+        console.log("[ONBOARDING] Email de confirmação enviado ao motorista");
+      } catch (emailError) {
+        console.error("[ONBOARDING] Erro ao enviar email ao motorista:", emailError);
+        // Não bloqueamos o fluxo se o email falhar
+      }
+
       toast.dismiss();
-      toast.success("Cadastro enviado com sucesso! Aguarde aprovação da equipe.");
+      toast.success("Cadastro enviado com sucesso! Verifique seu email para confirmação.");
       
       // Redirecionar para página de aguardando aprovação
       setTimeout(() => navigate("/aguardando-aprovacao"), 2000);

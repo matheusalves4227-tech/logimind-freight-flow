@@ -25,21 +25,69 @@ const Auth = () => {
 
   useEffect(() => {
     // Check if user is already logged in
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session) {
-        navigate(redirectUrl);
+        // Check if user is a driver and redirect accordingly
+        const targetUrl = await getRedirectBasedOnRole(session.user.id);
+        navigate(targetUrl);
       }
     });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session) {
-        navigate(redirectUrl);
+        // Use setTimeout to defer the role check
+        setTimeout(async () => {
+          const targetUrl = await getRedirectBasedOnRole(session.user.id);
+          navigate(targetUrl);
+        }, 0);
       }
     });
 
     return () => subscription.unsubscribe();
   }, [navigate, redirectUrl]);
+
+  const getRedirectBasedOnRole = async (userId: string): Promise<string> => {
+    // If there's a specific redirect, use it
+    if (redirectUrl !== "/") {
+      return redirectUrl;
+    }
+
+    try {
+      // Check if user is a driver
+      const { data: driverProfile } = await supabase
+        .from('driver_profiles')
+        .select('id, status')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (driverProfile) {
+        if (driverProfile.status === 'approved') {
+          return '/motorista/dashboard';
+        } else if (driverProfile.status === 'pending') {
+          return '/aguardando-aprovacao';
+        }
+      }
+
+      // Check if user is admin
+      const { data: adminRole } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .eq('role', 'admin')
+        .maybeSingle();
+
+      if (adminRole) {
+        return '/dashboard';
+      }
+
+      // Default: user dashboard
+      return '/dashboard';
+    } catch (error) {
+      console.error('Error checking user role:', error);
+      return '/dashboard';
+    }
+  };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();

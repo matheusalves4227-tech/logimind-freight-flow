@@ -189,6 +189,15 @@ export const DriverApprovalModal = ({ driver, open, onClose, onComplete }: Drive
       return;
     }
 
+    if (rejectionReason.trim().length < 10) {
+      toast({
+        title: 'Motivo muito curto',
+        description: 'O motivo da rejeição deve ter pelo menos 10 caracteres',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setProcessing(true);
     try {
       const { data, error } = await supabase.functions.invoke('approve-driver', {
@@ -199,7 +208,23 @@ export const DriverApprovalModal = ({ driver, open, onClose, onComplete }: Drive
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        // Parse error message from edge function
+        let errorMessage = 'Erro ao rejeitar motorista. Tente novamente.';
+        if (error.message) {
+          try {
+            const parsed = JSON.parse(error.message);
+            if (parsed.details?.rejection_reason) {
+              errorMessage = parsed.details.rejection_reason[0];
+            } else if (parsed.error) {
+              errorMessage = parsed.error;
+            }
+          } catch {
+            errorMessage = error.message;
+          }
+        }
+        throw new Error(errorMessage);
+      }
 
       // Registrar auditoria
       await logAction({
@@ -219,11 +244,11 @@ export const DriverApprovalModal = ({ driver, open, onClose, onComplete }: Drive
       });
 
       onComplete();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao rejeitar motorista:', error);
       toast({
         title: 'Erro',
-        description: 'Erro ao rejeitar motorista. Tente novamente.',
+        description: error.message || 'Erro ao rejeitar motorista. Tente novamente.',
         variant: 'destructive',
       });
     } finally {

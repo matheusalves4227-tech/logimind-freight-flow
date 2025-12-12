@@ -97,6 +97,19 @@ const Quote = () => {
         navigate("/auth?redirect=/quote&reason=quote");
         return;
       }
+
+      // Verificar se é motorista - motoristas não podem fazer cotações
+      const { data: driverProfile } = await supabase
+        .from('driver_profiles')
+        .select('id, status')
+        .eq('user_id', session.user.id)
+        .maybeSingle();
+
+      if (driverProfile) {
+        toast.error("Motoristas não têm acesso à área de cotações. Acesse o Dashboard do Motorista.");
+        navigate("/motorista/dashboard");
+        return;
+      }
       
       setCheckingAuth(false);
     };

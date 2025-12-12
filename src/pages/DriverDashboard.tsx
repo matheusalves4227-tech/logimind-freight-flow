@@ -46,17 +46,31 @@ const DriverDashboard = () => {
     //   return;
     // }
     
-    const mockProfile = {
-      id: 'mock-driver-id',
-      user_id: session.user.id,
-      full_name: 'João Silva',
-      status: 'approved',
-      cpf: '000.000.000-00',
-      email: session.user.email || 'joao@exemplo.com',
-      phone: '(11) 99999-9999'
-    };
+    // Buscar perfil real do motorista
+    const { data: profile, error } = await supabase
+      .from('driver_profiles')
+      .select('*')
+      .eq('user_id', session.user.id)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Erro ao buscar perfil:', error);
+      navigate('/');
+      return;
+    }
+
+    if (!profile) {
+      // Sem perfil de motorista, redirecionar para cadastro
+      navigate('/parceiro/cadastro?tipo=motorista');
+      return;
+    }
+
+    if (profile.status !== 'approved') {
+      navigate('/aguardando-aprovacao');
+      return;
+    }
     
-    setDriverProfile(mockProfile);
+    setDriverProfile(profile);
     setLoading(false);
   };
 

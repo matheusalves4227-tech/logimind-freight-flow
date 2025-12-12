@@ -31,21 +31,35 @@ export const DriverActive = ({ driverProfile }: DriverActiveProps) => {
   }, []);
 
   const loadActiveLoads = async () => {
-    // Mock data - em produção, buscar ordens onde o motorista foi selecionado
-    const mockLoads: ActiveLoad[] = [
-      {
-        id: "ORD-001",
-        tracking_code: "LM-FTL-2024-001",
-        origin_address: "Av. Paulista, 1000 - São Paulo/SP",
-        destination_address: "Centro - Rio de Janeiro/RJ",
-        weight_kg: 5000,
-        final_price: 4950,
-        status: "aguardando_coleta",
-        pickup_deadline: new Date(Date.now() + 6 * 60 * 60 * 1000)
-      }
-    ];
+    if (!driverProfile?.id) return;
 
-    setActiveLoads(mockLoads);
+    try {
+      // Buscar ordens reais onde o motorista foi atribuído
+      const { data: orders, error } = await supabase
+        .from('orders')
+        .select('id, tracking_code, origin_address, destination_address, weight_kg, final_price, status')
+        .eq('driver_id', driverProfile.id)
+        .in('status', ['aguardando_coleta', 'em_coleta', 'carga_no_veiculo', 'em_transito'])
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const loads: ActiveLoad[] = (orders || []).map(order => ({
+        id: order.id,
+        tracking_code: order.tracking_code,
+        origin_address: order.origin_address,
+        destination_address: order.destination_address,
+        weight_kg: order.weight_kg,
+        final_price: order.final_price,
+        status: order.status,
+        pickup_deadline: new Date(Date.now() + 6 * 60 * 60 * 1000)
+      }));
+
+      setActiveLoads(loads);
+    } catch (error) {
+      console.error('Erro ao carregar cargas ativas:', error);
+      setActiveLoads([]);
+    }
   };
 
   const handleNavigateToPickup = (load: ActiveLoad) => {
