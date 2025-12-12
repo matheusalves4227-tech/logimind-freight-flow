@@ -93,19 +93,11 @@ export const PendingPaymentsTable = () => {
     }
   };
 
-  // Extrai e normaliza URL do comprovante (corrige URLs duplicadas antigas)
+  // Extrai URL do comprovante (retorna a URL exatamente como está no banco)
   const extractProofUrl = (notes: string): string | null => {
     const match = notes?.match(/Comprovante PIX: (https?:\/\/[^\s]+)/);
     if (!match) return null;
-    
-    let url = match[1];
-    
-    // Corrigir URLs antigas com path duplicado: payment-proofs/payment-proofs/ -> payment-proofs/
-    if (url.includes('/payment-proofs/payment-proofs/')) {
-      url = url.replace('/payment-proofs/payment-proofs/', '/payment-proofs/');
-    }
-    
-    return url;
+    return match[1];
   };
 
   // Detectar tipo de arquivo
