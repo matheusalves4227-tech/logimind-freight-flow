@@ -81,8 +81,8 @@ const ResetPassword = () => {
       <AuthBranding />
 
       {/* Right side - Form */}
-      <div className="flex-1 flex items-center justify-center p-6 lg:p-12 bg-[hsl(210,20%,98%)]">
-        <Card className="w-full max-w-md p-8 lg:p-10 shadow-xl border-0 bg-card">
+      <div className="flex-1 lg:w-1/2 flex items-center justify-center p-6 lg:p-12 bg-[hsl(210,20%,98%)]">
+        <Card className="w-full max-w-md p-8 lg:p-10 shadow-xl border-0 bg-card rounded-[16px]">
           {/* Header */}
           <div className="text-center mb-8">
             {/* Mobile logo */}

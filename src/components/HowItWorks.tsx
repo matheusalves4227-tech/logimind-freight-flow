@@ -48,7 +48,7 @@ const HowItWorks = () => {
           {/* Connection lines */}
           <div className="hidden lg:block absolute top-20 left-0 right-0 h-0.5 bg-gradient-to-r from-secondary via-primary via-accent to-primary -z-10" />
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {steps.map((step, index) => {
               const Icon = step.icon;
               const colorClasses = {
@@ -74,8 +74,9 @@ const HowItWorks = () => {
               const colors = colorClasses[step.color as keyof typeof colorClasses];
 
               return (
-                <div key={index} className="relative">
-                  <div className={`bg-gradient-to-b ${colors.gradient} rounded-2xl p-6 shadow-md border-2 ${colors.border} hover:shadow-xl transition-all duration-300 hover:-translate-y-1 h-full`}>
+                <div key={index} className="relative group">
+                  {/* Glassmorphism card */}
+                  <div className={`bg-card/60 backdrop-blur-md bg-gradient-to-b ${colors.gradient} rounded-[20px] p-6 shadow-lg border-2 ${colors.border} hover:shadow-xl transition-all duration-300 hover:-translate-y-2 h-full`}>
                     {/* Número do passo */}
                     <div className={`absolute -top-4 -left-4 w-12 h-12 ${colors.bg} rounded-full flex items-center justify-center shadow-lg border-4 border-background`}>
                       <span className="text-xl font-bold text-primary-foreground">{step.number}</span>
@@ -92,7 +93,7 @@ const HowItWorks = () => {
                   </div>
                   
                   {index < steps.length - 1 && (
-                    <div className="hidden lg:flex absolute top-16 -right-3 z-10">
+                    <div className="hidden lg:flex absolute top-16 -right-4 z-10">
                       <ArrowRight className={`h-6 w-6 ${colors.text}`} />
                     </div>
                   )}
@@ -107,7 +108,7 @@ const HowItWorks = () => {
           <p className="text-lg text-muted-foreground mb-2">
             Junte-se aos milhares de profissionais que otimizam sua logística com inteligência
           </p>
-          <div className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-secondary/10 via-primary/10 to-accent/10 rounded-full border border-border">
+          <div className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-secondary/10 via-primary/10 to-accent/10 rounded-full border border-border backdrop-blur-sm">
             <Brain className="h-5 w-5 text-primary" />
             <span className="text-sm font-bold text-foreground">
               Marketplace Triplo + IA Preditiva = Decisões Imbatíveis
