@@ -45,7 +45,7 @@ Deno.serve(async (req) => {
     const appUrl = "https://xrerhrqxfvvwiefzlkux.lovableproject.com";
 
     const emailData = {
-      from: "LogiMarket <onboarding@resend.dev>",
+      from: "LogiMarket <noreply@logimarket.com.br>",
       to: [email],
       subject: "📦 Cadastro Recebido - LogiMarket",
       html: `

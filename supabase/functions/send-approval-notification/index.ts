@@ -78,7 +78,7 @@ serve(async (req) => {
     const dashboardPath = userType === "driver" ? "motorista/dashboard" : "dashboard";
 
     let emailData = {
-      from: "LogiMarket <onboarding@resend.dev>",
+      from: "LogiMarket <noreply@logimarket.com.br>",
       to: [email],
       subject: "",
       html: "",

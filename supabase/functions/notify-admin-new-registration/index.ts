@@ -94,7 +94,7 @@ serve(async (req) => {
 
     // Envia o email via API do Resend
     const emailData = {
-      from: "LogiMarket Notificações <notifications@resend.dev>",
+      from: "LogiMarket <admin@logimarket.com.br>",
       to: [adminEmail],
       subject: `🔔 Novo Cadastro Pendente: ${typeLabel}`,
       html: `
