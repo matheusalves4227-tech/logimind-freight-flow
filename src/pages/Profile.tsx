@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { UserAvatarUpload } from "@/components/profile/UserAvatarUpload";
-import { Loader2, Save, User, Trash2 } from "lucide-react";
+import { Loader2, Save, User, Trash2, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { formatCNPJ } from "@/lib/validators";
 import { useAuditLog } from "@/hooks/useAuditLog";
@@ -349,6 +349,15 @@ export default function Profile() {
       </Helmet>
       <div className="container max-w-4xl py-8 px-4">
       <div className="mb-8">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate("/")}
+          className="mb-4 -ml-2 text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Voltar para Home
+        </Button>
         <h1 className="text-3xl font-bold flex items-center gap-2">
           <User className="h-8 w-8 text-primary" />
           Meu Perfil
