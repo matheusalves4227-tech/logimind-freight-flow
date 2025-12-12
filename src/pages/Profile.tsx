@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,8 +9,23 @@ import { CpfCnpjInput } from "@/components/ui/cpf-cnpj-input";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import { UserAvatarUpload } from "@/components/profile/UserAvatarUpload";
-import { Loader2, Save, User, Trash2, ArrowLeft } from "lucide-react";
+import { 
+  Loader2, 
+  Save, 
+  User, 
+  Trash2, 
+  ArrowLeft, 
+  Shield, 
+  Lock, 
+  Download, 
+  Building2, 
+  Phone as PhoneIcon,
+  CheckCircle,
+  AlertTriangle
+} from "lucide-react";
 import { toast } from "sonner";
 import { formatCNPJ } from "@/lib/validators";
 import { useAuditLog } from "@/hooks/useAuditLog";
@@ -52,6 +67,13 @@ export default function Profile() {
   const [exporting, setExporting] = useState(false);
   const [userId, setUserId] = useState<string>("");
   const [userEmail, setUserEmail] = useState<string>("");
+  const [originalProfile, setOriginalProfile] = useState({
+    full_name: "",
+    phone: "",
+    avatar_url: "",
+    company_name: "",
+    cnpj: "",
+  });
   const [profile, setProfile] = useState({
     full_name: "",
     phone: "",
@@ -59,6 +81,16 @@ export default function Profile() {
     company_name: "",
     cnpj: "",
   });
+
+  // Check if profile has been modified
+  const hasChanges = useMemo(() => {
+    return (
+      profile.full_name !== originalProfile.full_name ||
+      profile.phone !== originalProfile.phone ||
+      profile.company_name !== originalProfile.company_name ||
+      profile.cnpj !== originalProfile.cnpj
+    );
+  }, [profile, originalProfile]);
 
   useEffect(() => {
     checkAuthAndLoadProfile();
@@ -68,7 +100,6 @@ export default function Profile() {
     try {
       setLoading(true);
       
-      // Verificar se o usuário está autenticado
       const { data: { session } } = await supabase.auth.getSession();
 
       if (!session) {
@@ -90,7 +121,6 @@ export default function Profile() {
 
   const loadProfile = async (userId: string) => {
     try {
-
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
@@ -102,13 +132,15 @@ export default function Profile() {
       }
 
       if (data) {
-        setProfile({
+        const profileData = {
           full_name: data.full_name || "",
           phone: data.phone || "",
           avatar_url: data.avatar_url || "",
           company_name: data.company_name || "",
           cnpj: data.cnpj || "",
-        });
+        };
+        setProfile(profileData);
+        setOriginalProfile(profileData);
       }
     } catch (error: any) {
       console.error("Erro ao carregar perfil:", error);
@@ -157,7 +189,6 @@ export default function Profile() {
         if (error) throw error;
       }
 
-      // Registrar log de auditoria
       await logAction({
         action: "profile_update",
         metadata: {
@@ -165,6 +196,7 @@ export default function Profile() {
         }
       });
 
+      setOriginalProfile(profile);
       toast.success("Perfil atualizado com sucesso!");
     } catch (error: any) {
       console.error("Erro ao salvar perfil:", error);
@@ -190,7 +222,6 @@ export default function Profile() {
       return;
     }
 
-    // Validação de força da senha
     const hasUpperCase = /[A-Z]/.test(newPassword);
     const hasLowerCase = /[a-z]/.test(newPassword);
     const hasNumber = /[0-9]/.test(newPassword);
@@ -203,7 +234,6 @@ export default function Profile() {
     try {
       setChangingPassword(true);
 
-      // Supabase não verifica senha atual diretamente, mas podemos tentar re-autenticar
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: userEmail,
         password: currentPassword,
@@ -214,14 +244,12 @@ export default function Profile() {
         return;
       }
 
-      // Atualizar senha
       const { error } = await supabase.auth.updateUser({
         password: newPassword
       });
 
       if (error) throw error;
 
-      // Registrar log de auditoria
       await logAction({
         action: "password_change",
         metadata: {
@@ -246,7 +274,6 @@ export default function Profile() {
     try {
       setExporting(true);
 
-      // Buscar todos os dados do usuário
       const [profileData, ordersData, quotesData] = await Promise.all([
         supabase.from("profiles").select("*").eq("user_id", userId).maybeSingle(),
         supabase.from("orders").select("*").eq("user_id", userId),
@@ -262,7 +289,6 @@ export default function Profile() {
         quotes: quotesData.data || [],
       };
 
-      // Criar arquivo JSON para download
       const dataStr = JSON.stringify(exportData, null, 2);
       const dataBlob = new Blob([dataStr], { type: "application/json" });
       const url = URL.createObjectURL(dataBlob);
@@ -274,7 +300,6 @@ export default function Profile() {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      // Registrar log de auditoria
       await logAction({
         action: "data_export",
         metadata: {
@@ -321,7 +346,6 @@ export default function Profile() {
 
       toast.success("Conta excluída com sucesso. Você será redirecionado.");
       
-      // Fazer logout e redirecionar
       await supabase.auth.signOut();
       setTimeout(() => navigate("/"), 1500);
     } catch (error: any) {
@@ -349,101 +373,182 @@ export default function Profile() {
         <title>Meu Perfil - LogiMarket</title>
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
+      
       <div className="container max-w-4xl py-8 px-4">
-      <div className="mb-8">
+        {/* Back Button */}
         <Button
           variant="ghost"
           size="sm"
           onClick={() => navigate("/")}
-          className="mb-4 -ml-2 text-muted-foreground hover:text-foreground"
+          className="mb-6 -ml-2 text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Voltar para Home
         </Button>
-        <h1 className="text-3xl font-bold flex items-center gap-2">
-          <User className="h-8 w-8 text-primary" />
-          Meu Perfil
-        </h1>
-        <p className="text-muted-foreground mt-2">
-          Gerencie suas informações pessoais e preferências da conta
-        </p>
-      </div>
 
-      <div className="grid gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Foto de Perfil</CardTitle>
-            <CardDescription>
-              Atualize sua foto de perfil para personalizar sua conta
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex justify-center py-8">
-            <UserAvatarUpload
-              userId={userId}
-              currentAvatarUrl={profile.avatar_url}
-              onUploadComplete={handleAvatarUploadComplete}
-            />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Informações Pessoais</CardTitle>
-            <CardDescription>
-              Atualize seus dados pessoais e informações de contato
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="full_name">
-                  Nome Completo <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id="full_name"
-                  value={profile.full_name}
-                  onChange={(e) => setProfile(prev => ({ ...prev, full_name: e.target.value }))}
-                  placeholder="Seu nome completo"
+        {/* Profile Header with Gradient */}
+        <div className="relative rounded-2xl bg-gradient-to-r from-primary/10 via-primary/5 to-accent/10 p-6 mb-8 overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
+          
+          <div className="relative flex flex-col sm:flex-row items-center gap-6">
+            {/* Avatar with Double Border */}
+            <div className="relative">
+              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary to-accent opacity-50 blur-sm scale-110" />
+              <div className="relative ring-4 ring-background rounded-full shadow-xl">
+                <UserAvatarUpload
+                  userId={userId}
+                  currentAvatarUrl={profile.avatar_url}
+                  onUploadComplete={handleAvatarUploadComplete}
                 />
               </div>
-
-              <PhoneInput
-                value={profile.phone}
-                onChange={(value) => setProfile(prev => ({ ...prev, phone: value }))}
-                label="Telefone"
-              />
             </div>
 
-            <Separator />
+            {/* User Info */}
+            <div className="flex-1 text-center sm:text-left">
+              <div className="flex flex-col sm:flex-row items-center gap-3 mb-2">
+                <h1 className="text-2xl font-bold text-foreground">
+                  {profile.full_name || "Usuário"}
+                </h1>
+                <Badge 
+                  variant="outline" 
+                  className="bg-emerald-50 text-emerald-700 border-emerald-200 gap-1.5 px-3"
+                >
+                  <CheckCircle className="h-3.5 w-3.5" />
+                  Conta Verificada
+                </Badge>
+              </div>
+              <p className="text-muted-foreground">{userEmail}</p>
+              {profile.company_name && (
+                <p className="text-sm text-muted-foreground flex items-center gap-1.5 justify-center sm:justify-start mt-1">
+                  <Building2 className="h-4 w-4" />
+                  {profile.company_name}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
 
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Dados da Empresa (Opcional)</h3>
-              
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="company_name">Nome da Empresa</Label>
-                  <Input
-                    id="company_name"
-                    value={profile.company_name}
-                    onChange={(e) => setProfile(prev => ({ ...prev, company_name: e.target.value }))}
-                    placeholder="Razão Social"
-                  />
+        {/* Tabs with Icons */}
+        <Tabs defaultValue="personal" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2 h-12 p-1 gap-2">
+            <TabsTrigger 
+              value="personal" 
+              className="flex items-center gap-2 text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200"
+            >
+              <User className="h-4 w-4" />
+              Dados Pessoais
+            </TabsTrigger>
+            <TabsTrigger 
+              value="security" 
+              className="flex items-center gap-2 text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200"
+            >
+              <Shield className="h-4 w-4" />
+              Segurança
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Personal Data Tab */}
+          <TabsContent value="personal" className="space-y-6 animate-fade-in">
+            {/* Personal Info Card */}
+            <Card className="shadow-sm border-border/50">
+              <CardHeader className="pb-4">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <User className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg">Informações Pessoais</CardTitle>
+                    <CardDescription>Seus dados de contato e identificação</CardDescription>
+                  </div>
                 </div>
+              </CardHeader>
+              <CardContent>
+                <div className="bg-slate-50 rounded-xl p-5 space-y-5">
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="full_name" className="text-sm font-medium">
+                        Nome Completo <span className="text-destructive">*</span>
+                      </Label>
+                      <Input
+                        id="full_name"
+                        value={profile.full_name}
+                        onChange={(e) => setProfile(prev => ({ ...prev, full_name: e.target.value }))}
+                        placeholder="Seu nome completo"
+                        className="bg-white"
+                      />
+                    </div>
 
-                <CpfCnpjInput
-                  value={profile.cnpj}
-                  onChange={(value) => setProfile(prev => ({ ...prev, cnpj: value }))}
-                  label="CNPJ"
-                  placeholder="00.000.000/0000-00"
-                />
-              </div>
-            </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium flex items-center gap-1.5">
+                        <PhoneIcon className="h-3.5 w-3.5" />
+                        Telefone
+                      </Label>
+                      <PhoneInput
+                        value={profile.phone}
+                        onChange={(value) => setProfile(prev => ({ ...prev, phone: value }))}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-            <div className="flex justify-end gap-3 pt-4">
-              <Button variant="outline" onClick={() => navigate("/dashboard")}>
+            {/* Company Info Card */}
+            <Card className="shadow-sm border-border/50">
+              <CardHeader className="pb-4">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 rounded-lg bg-accent/30">
+                    <Building2 className="h-5 w-5 text-accent-foreground" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg">Dados da Empresa</CardTitle>
+                    <CardDescription>Informações comerciais (opcional)</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="bg-slate-50 rounded-xl p-5">
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="company_name" className="text-sm font-medium">
+                        Nome da Empresa
+                      </Label>
+                      <Input
+                        id="company_name"
+                        value={profile.company_name}
+                        onChange={(e) => setProfile(prev => ({ ...prev, company_name: e.target.value }))}
+                        placeholder="Razão Social"
+                        className="bg-white"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">CNPJ</Label>
+                      <CpfCnpjInput
+                        value={profile.cnpj}
+                        onChange={(value) => setProfile(prev => ({ ...prev, cnpj: value }))}
+                        placeholder="00.000.000/0000-00"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Save Button */}
+            <div className="flex justify-end gap-3 pt-2">
+              <Button 
+                variant="outline" 
+                onClick={() => navigate("/dashboard")}
+                className="min-w-[120px]"
+              >
                 Cancelar
               </Button>
-              <Button onClick={handleSave} disabled={saving}>
+              <Button 
+                onClick={handleSave} 
+                disabled={saving || !hasChanges}
+                className="min-w-[160px] transition-all duration-200"
+              >
                 {saving ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -457,74 +562,100 @@ export default function Profile() {
                 )}
               </Button>
             </div>
-          </CardContent>
-        </Card>
+          </TabsContent>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Segurança e Privacidade</CardTitle>
-            <CardDescription>
-              Gerencie sua senha e exporte seus dados pessoais
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Button
-                variant="outline"
-                onClick={() => setShowPasswordDialog(true)}
-                className="w-full sm:w-auto"
-              >
-                Alterar Senha
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setShowExportDialog(true)}
-                className="w-full sm:w-auto"
-              >
-                Exportar Meus Dados
-              </Button>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Você pode exportar todos os seus dados pessoais em formato JSON para fins de portabilidade (LGPD).
-            </p>
-          </CardContent>
-        </Card>
+          {/* Security Tab */}
+          <TabsContent value="security" className="space-y-6 animate-fade-in">
+            {/* Security Options Card */}
+            <Card className="shadow-sm border-border/50">
+              <CardHeader className="pb-4">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <Lock className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg">Segurança da Conta</CardTitle>
+                    <CardDescription>Gerencie sua senha e dados pessoais</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="bg-slate-50 rounded-xl p-5 space-y-4">
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowPasswordDialog(true)}
+                      className="flex-1 justify-start gap-3 h-12 bg-white hover:bg-slate-100"
+                    >
+                      <Lock className="h-4 w-4 text-muted-foreground" />
+                      <div className="text-left">
+                        <p className="font-medium">Alterar Senha</p>
+                        <p className="text-xs text-muted-foreground">Atualize sua senha de acesso</p>
+                      </div>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowExportDialog(true)}
+                      className="flex-1 justify-start gap-3 h-12 bg-white hover:bg-slate-100"
+                    >
+                      <Download className="h-4 w-4 text-muted-foreground" />
+                      <div className="text-left">
+                        <p className="font-medium">Exportar Dados</p>
+                        <p className="text-xs text-muted-foreground">Baixe seus dados (LGPD)</p>
+                      </div>
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-        <Card className="border-destructive">
-          <CardHeader>
-            <CardTitle className="text-destructive">Zona de Perigo</CardTitle>
-            <CardDescription>
-              Ações irreversíveis que afetam permanentemente sua conta
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Ao excluir sua conta, todos os seus dados serão permanentemente removidos, incluindo:
-              </p>
-              <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1 ml-2">
-                <li>Perfil e informações pessoais</li>
-                <li>Histórico de cotações e pedidos</li>
-                <li>Documentos e uploads</li>
-                <li>Configurações e preferências</li>
-              </ul>
-              <p className="text-sm font-semibold text-destructive">
-                Esta ação não pode ser desfeita.
-              </p>
-              <Button
-                variant="destructive"
-                onClick={() => setShowDeleteDialog(true)}
-                className="w-full sm:w-auto"
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Excluir Minha Conta
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+            {/* Danger Zone Card */}
+            <Card className="shadow-sm border-destructive/30 bg-destructive/5">
+              <CardHeader className="pb-4">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 rounded-lg bg-destructive/10">
+                    <AlertTriangle className="h-5 w-5 text-destructive" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg text-destructive">Zona de Perigo</CardTitle>
+                    <CardDescription>Ações irreversíveis que afetam permanentemente sua conta</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="bg-white/80 rounded-xl p-5 border border-destructive/20">
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Ao excluir sua conta, todos os seus dados serão permanentemente removidos:
+                    </p>
+                    <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1 ml-2 mb-4">
+                      <li>Perfil e informações pessoais</li>
+                      <li>Histórico de cotações e pedidos</li>
+                      <li>Documentos e uploads</li>
+                      <li>Configurações e preferências</li>
+                    </ul>
+                    <p className="text-sm font-semibold text-destructive mb-4">
+                      Esta ação não pode ser desfeita.
+                    </p>
+                    
+                    {/* Ghost Red Button */}
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowDeleteDialog(true)}
+                      className="border-destructive text-destructive bg-transparent hover:bg-destructive hover:text-destructive-foreground transition-all duration-200"
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Excluir Minha Conta
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
 
-      {/* Primeiro Dialog - Confirmação Inicial */}
+      {/* First Dialog - Initial Confirmation */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -554,7 +685,7 @@ export default function Profile() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Segundo Dialog - Confirmação com Digitação */}
+      {/* Second Dialog - Type Confirmation */}
       <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -622,11 +753,14 @@ export default function Profile() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Dialog - Alteração de Senha */}
+      {/* Dialog - Password Change */}
       <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Alterar Senha</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <Lock className="h-5 w-5 text-primary" />
+              Alterar Senha
+            </DialogTitle>
             <DialogDescription>
               Digite sua senha atual e escolha uma nova senha segura.
             </DialogDescription>
@@ -649,7 +783,7 @@ export default function Profile() {
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="Mínimo 6 caracteres"
+                placeholder="Mínimo 8 caracteres, maiúsculas, minúsculas e números"
               />
             </div>
             <div className="space-y-2">
@@ -689,25 +823,30 @@ export default function Profile() {
         </DialogContent>
       </Dialog>
 
-      {/* Dialog - Exportação de Dados */}
+      {/* Dialog - Data Export */}
       <Dialog open={showExportDialog} onOpenChange={setShowExportDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Exportar Meus Dados</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <Download className="h-5 w-5 text-primary" />
+              Exportar Meus Dados
+            </DialogTitle>
             <DialogDescription>
               Baixe uma cópia de todos os seus dados pessoais em formato JSON.
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
-            <p className="text-sm text-muted-foreground mb-4">
-              O arquivo incluirá:
-            </p>
-            <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1 ml-2">
-              <li>Informações do perfil</li>
-              <li>Histórico de pedidos</li>
-              <li>Cotações realizadas</li>
-              <li>Data e horário da exportação</li>
-            </ul>
+            <div className="bg-slate-50 rounded-lg p-4">
+              <p className="text-sm text-muted-foreground mb-3">
+                O arquivo incluirá:
+              </p>
+              <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1 ml-2">
+                <li>Informações do perfil</li>
+                <li>Histórico de pedidos</li>
+                <li>Cotações realizadas</li>
+                <li>Data e horário da exportação</li>
+              </ul>
+            </div>
             <p className="text-xs text-muted-foreground mt-4">
               Esta exportação é fornecida de acordo com a LGPD (Lei Geral de Proteção de Dados).
             </p>
@@ -723,13 +862,15 @@ export default function Profile() {
                   Exportando...
                 </>
               ) : (
-                "Exportar Dados"
+                <>
+                  <Download className="mr-2 h-4 w-4" />
+                  Exportar Dados
+                </>
               )}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      </div>
     </>
   );
 }
