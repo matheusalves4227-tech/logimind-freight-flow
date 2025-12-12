@@ -35,24 +35,30 @@ serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } }
     );
 
-    // Verify user has admin role
+    // Verify user authentication
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+    
+    console.log("[SEND-APPROVAL] Auth check:", { 
+      hasUser: !!user, 
+      userId: user?.id,
+      authError: authError?.message 
+    });
+    
     if (authError || !user) {
+      console.error("[SEND-APPROVAL] Auth failed:", authError?.message);
       return new Response(
-        JSON.stringify({ success: false, message: "Invalid authentication" }),
+        JSON.stringify({ success: false, message: "Invalid authentication", details: authError?.message }),
         { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
 
-    // Check if user has admin role
-    const { data: roleData, error: roleError } = await supabaseClient
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .eq("role", "admin")
-      .single();
+    // Check if user has admin role using has_role function
+    const { data: hasAdminRole, error: roleError } = await supabaseClient
+      .rpc('has_role', { _user_id: user.id, _role: 'admin' });
 
-    if (roleError || !roleData) {
+    console.log("[SEND-APPROVAL] Role check:", { hasAdminRole, roleError: roleError?.message });
+
+    if (roleError || !hasAdminRole) {
       console.warn(`[SEND-APPROVAL] Unauthorized access attempt by user ${user.id}`);
       return new Response(
         JSON.stringify({ success: false, message: "Admin access required" }),
