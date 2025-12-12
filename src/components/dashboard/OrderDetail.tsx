@@ -1,14 +1,7 @@
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Package, MapPin, Clock, DollarSign, Info } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { ArrowLeft, Package, MapPin, Clock, DollarSign } from "lucide-react";
 
 export interface OrderDetails {
   id: string;
@@ -102,70 +95,16 @@ export const OrderDetail = ({ order, onBack }: OrderDetailProps) => {
           </div>
         </Card>
 
-        {/* Detalhamento de Custos LogiMind */}
+        {/* Resumo do Pagamento - Apenas preço final */}
         <Card className="p-6 space-y-4">
           <h3 className="font-semibold text-lg flex items-center gap-2">
             <DollarSign className="h-5 w-5 text-primary" />
-            Detalhamento de Custo LogiMind
+            Valor do Frete
           </h3>
           
           <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <p className="text-sm text-muted-foreground">Preço Base</p>
-              <p className="font-medium">
-                {order.base_price.toLocaleString('pt-BR', {
-                  style: 'currency',
-                  currency: 'BRL',
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2
-                })}
-              </p>
-            </div>
-
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-2">
-                <p className="text-sm text-muted-foreground">Comissão Aplicada</p>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <Info className="h-4 w-4 text-muted-foreground" />
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-xs">
-                      <p className="text-sm">
-                        {order.adjustment_reason === "COMPETITION" && 
-                          "Comissão reduzida para manter competitividade de mercado"}
-                        {order.adjustment_reason === "ROUTE_OPTIMIZED" && 
-                          "Rota de retorno otimizada - margem aumentada"}
-                        {(!order.adjustment_reason || order.adjustment_reason === "STANDARD") && 
-                          "Comissão padrão aplicada"}
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
-              <p className="font-medium text-primary">
-                {((order.commission_applied * 100).toLocaleString('pt-BR', {
-                  minimumFractionDigits: 1,
-                  maximumFractionDigits: 1
-                }))}%
-              </p>
-            </div>
-
-            {order.adjustment_reason && (
-              <div className="p-3 bg-muted/50 rounded-lg">
-                <p className="text-xs text-muted-foreground">Motivo do Ajuste:</p>
-                <p className="text-sm font-medium">
-                  {order.adjustment_reason === "COMPETITION" && "🎯 Otimização por Competição"}
-                  {order.adjustment_reason === "ROUTE_OPTIMIZED" && "🚚 Rota de Retorno"}
-                  {order.adjustment_reason === "STANDARD" && "📊 Comissão Padrão"}
-                </p>
-              </div>
-            )}
-
-            <Separator />
-
             <div className="flex justify-between items-center pt-2">
-              <p className="font-semibold">Preço Final</p>
+              <p className="font-semibold">Valor Total</p>
               <p className="text-2xl font-bold text-primary">
                 {order.final_price.toLocaleString('pt-BR', {
                   style: 'currency',
