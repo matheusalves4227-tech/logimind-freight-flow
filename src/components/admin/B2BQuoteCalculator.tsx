@@ -6,7 +6,13 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
-import { Calculator, TrendingDown, DollarSign, Package, Truck, Clock, MapPin, Loader2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { 
+  Calculator, TrendingDown, DollarSign, Package, Truck, Clock, 
+  Loader2, Flame, Wine, Snowflake, Gem, BoxIcon,
+  FileDown, FolderPlus, Lightbulb, Target, Zap
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -47,6 +53,14 @@ interface PricingResult {
 interface B2BQuoteCalculatorProps {
   quoteId?: string;
 }
+
+const cargoTypes = [
+  { value: "geral", label: "Geral", icon: BoxIcon, color: "bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200", activeColor: "bg-slate-600 text-white border-slate-600" },
+  { value: "refrigerada", label: "Refrigerada", icon: Snowflake, color: "bg-sky-50 text-sky-700 border-sky-300 hover:bg-sky-100", activeColor: "bg-sky-600 text-white border-sky-600", badge: "+30%" },
+  { value: "perigosa", label: "Perigosa", icon: Flame, color: "bg-red-50 text-red-700 border-red-300 hover:bg-red-100", activeColor: "bg-red-600 text-white border-red-600", badge: "+50%" },
+  { value: "fragil", label: "Frágil", icon: Wine, color: "bg-amber-50 text-amber-700 border-amber-300 hover:bg-amber-100", activeColor: "bg-amber-600 text-white border-amber-600", badge: "+20%" },
+  { value: "alto_valor", label: "Alto Valor", icon: Gem, color: "bg-violet-50 text-violet-700 border-violet-300 hover:bg-violet-100", activeColor: "bg-violet-600 text-white border-violet-600", badge: "+40%" },
+];
 
 const B2BQuoteCalculator = ({ quoteId }: B2BQuoteCalculatorProps) => {
   const { toast } = useToast();
@@ -127,81 +141,150 @@ const B2BQuoteCalculator = ({ quoteId }: B2BQuoteCalculatorProps) => {
     }).format(value);
   };
 
+  // Calcular margem LogiMind (estimativa baseada no desconto)
+  const calculateMargin = () => {
+    if (!resultado) return 12; // Default margin
+    const baseMargin = 15;
+    const adjustedMargin = baseMargin - (resultado.desconto_total_percentual * 0.3);
+    return Math.max(adjustedMargin, 5);
+  };
+
+  const margin = calculateMargin();
+  const marginHealthColor = margin < 8 ? "bg-amber-500" : "bg-emerald-500";
+  const marginTextColor = margin < 8 ? "text-amber-600" : "text-emerald-600";
+
+  // Sugestão LogiMind baseada nos parâmetros
+  const getSuggestion = () => {
+    if (!resultado) return null;
+    
+    if (margin < 8) {
+      return {
+        type: "warning",
+        text: "Margem abaixo do ideal. Considere aumentar volume ou aceitar rotas de retorno para melhorar rentabilidade.",
+        markup: "12%"
+      };
+    }
+    if (formData.aceita_rota_retorno) {
+      return {
+        type: "success",
+        text: "Excelente! Otimização de rotas ativada. Markup sugerido mantém competitividade.",
+        markup: "10%"
+      };
+    }
+    return {
+      type: "info",
+      text: "Proposta equilibrada. Ativar 'Aceita Rota de Retorno' pode aumentar desconto em 35%.",
+      markup: "15%"
+    };
+  };
+
+  const suggestion = getSuggestion();
+
   return (
-    <div className="space-y-6">
-      {/* Formulário de Entrada */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calculator className="h-5 w-5" />
-            Calculadora de Precificação B2B
-          </CardTitle>
-          <CardDescription>
-            Insira os dados da operação para calcular automaticamente a proposta comercial
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="volume">Volume Mensal Estimado *</Label>
-              <div className="relative">
-                <Package className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="volume"
-                  type="number"
-                  placeholder="Ex: 50"
-                  className="pl-10"
-                  value={formData.volume_mensal_estimado}
-                  onChange={(e) => handleInputChange("volume_mensal_estimado", e.target.value)}
-                />
+    <div className="grid lg:grid-cols-2 gap-6">
+      {/* Lado Esquerdo - Formulário */}
+      <div className="space-y-6">
+        <Card className="border-slate-200">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Calculator className="h-5 w-5 text-primary" />
+              Simulador de Proposta B2B
+            </CardTitle>
+            <CardDescription>
+              Configure os parâmetros para gerar proposta comercial
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Volume e Peso com máscaras */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="volume" className="text-sm font-medium">Volume Mensal *</Label>
+                <div className="relative">
+                  <Package className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="volume"
+                    type="number"
+                    placeholder="50"
+                    className="pl-10 pr-16"
+                    value={formData.volume_mensal_estimado}
+                    onChange={(e) => handleInputChange("volume_mensal_estimado", e.target.value)}
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-medium bg-slate-100 px-2 py-0.5 rounded">
+                    entregas
+                  </span>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="peso" className="text-sm font-medium">Peso Médio *</Label>
+                <div className="relative">
+                  <Truck className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="peso"
+                    type="number"
+                    placeholder="500"
+                    className="pl-10 pr-12"
+                    value={formData.peso_medio_kg}
+                    onChange={(e) => handleInputChange("peso_medio_kg", e.target.value)}
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-medium bg-slate-100 px-2 py-0.5 rounded">
+                    kg
+                  </span>
+                </div>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="peso">Peso Médio (kg) *</Label>
-              <div className="relative">
-                <Truck className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="peso"
-                  type="number"
-                  placeholder="Ex: 500"
-                  className="pl-10"
-                  value={formData.peso_medio_kg}
-                  onChange={(e) => handleInputChange("peso_medio_kg", e.target.value)}
-                />
+            {/* Chips de Natureza da Carga */}
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">Natureza da Carga</Label>
+              <div className="flex flex-wrap gap-2">
+                {cargoTypes.map((cargo) => {
+                  const Icon = cargo.icon;
+                  const isActive = formData.tipo_carga === cargo.value;
+                  return (
+                    <button
+                      key={cargo.value}
+                      type="button"
+                      onClick={() => handleInputChange("tipo_carga", cargo.value)}
+                      className={`
+                        inline-flex items-center gap-2 px-3 py-2 rounded-full border-2 text-sm font-medium
+                        transition-all duration-200 cursor-pointer
+                        ${isActive ? cargo.activeColor : cargo.color}
+                      `}
+                    >
+                      <Icon className="h-4 w-4" />
+                      <span>{cargo.label}</span>
+                      {cargo.badge && (
+                        <Badge variant="secondary" className={`text-[10px] px-1.5 py-0 ${isActive ? 'bg-white/20 text-white' : ''}`}>
+                          {cargo.badge}
+                        </Badge>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
+            {/* SLA */}
             <div className="space-y-2">
-              <Label htmlFor="tipo_carga">Tipo de Carga</Label>
-              <Select
-                value={formData.tipo_carga}
-                onValueChange={(value) => handleInputChange("tipo_carga", value)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="geral">Carga Geral</SelectItem>
-                  <SelectItem value="refrigerada">Refrigerada (+30%)</SelectItem>
-                  <SelectItem value="perigosa">Perigosa (+50%)</SelectItem>
-                  <SelectItem value="fragil">Frágil (+20%)</SelectItem>
-                  <SelectItem value="alto_valor">Alto Valor (+40%)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="sla">SLA Desejado</Label>
+              <Label htmlFor="sla" className="text-sm font-medium flex items-center gap-2">
+                <Clock className="h-4 w-4 text-muted-foreground" />
+                SLA de Entrega
+              </Label>
               <Select
                 value={formData.sla_desejado}
                 onValueChange={(value) => handleInputChange("sla_desejado", value)}
               >
-                <SelectTrigger>
+                <SelectTrigger className="h-11">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="same_day">Same Day (2x preço)</SelectItem>
+                  <SelectItem value="same_day">
+                    <span className="flex items-center gap-2">
+                      <Zap className="h-4 w-4 text-amber-500" />
+                      Same Day (2x preço)
+                    </span>
+                  </SelectItem>
                   <SelectItem value="express">Express 24-48h (+50%)</SelectItem>
                   <SelectItem value="standard">Standard 3-5 dias</SelectItem>
                   <SelectItem value="economico">Econômico 7-10 dias (-20%)</SelectItem>
@@ -209,222 +292,256 @@ const B2BQuoteCalculator = ({ quoteId }: B2BQuoteCalculatorProps) => {
                 </SelectContent>
               </Select>
             </div>
-          </div>
 
-          <Separator />
+            <Separator />
 
-          <div className="space-y-3">
-            <h4 className="font-semibold text-sm">Otimizações e Custos</h4>
-            
-            <div className="grid md:grid-cols-2 gap-3">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="rota_retorno"
-                  checked={formData.aceita_rota_retorno}
-                  onCheckedChange={(checked) => handleInputChange("aceita_rota_retorno", checked)}
-                />
-                <Label htmlFor="rota_retorno" className="cursor-pointer text-sm">
-                  Aceita rota de retorno (-35%)
-                </Label>
-              </div>
+            {/* Otimizações */}
+            <div className="space-y-3">
+              <h4 className="text-sm font-semibold text-slate-700">Otimizações e Custos</h4>
+              
+              <div className="grid grid-cols-1 gap-2">
+                <label className="flex items-center gap-3 p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer transition-colors">
+                  <Checkbox
+                    id="rota_retorno"
+                    checked={formData.aceita_rota_retorno}
+                    onCheckedChange={(checked) => handleInputChange("aceita_rota_retorno", checked)}
+                  />
+                  <div className="flex-1">
+                    <span className="text-sm font-medium">Aceita rota de retorno</span>
+                    <Badge className="ml-2 bg-emerald-100 text-emerald-700 text-[10px]">-35%</Badge>
+                  </div>
+                </label>
 
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="seguro"
-                  checked={formData.necessita_seguro}
-                  onCheckedChange={(checked) => handleInputChange("necessita_seguro", checked)}
-                />
-                <Label htmlFor="seguro" className="cursor-pointer text-sm">
-                  Necessita seguro adicional
-                </Label>
-              </div>
+                <label className="flex items-center gap-3 p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer transition-colors">
+                  <Checkbox
+                    id="seguro"
+                    checked={formData.necessita_seguro}
+                    onCheckedChange={(checked) => handleInputChange("necessita_seguro", checked)}
+                  />
+                  <span className="text-sm font-medium">Necessita seguro adicional</span>
+                </label>
 
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="reversa"
-                  checked={formData.logistica_reversa}
-                  onCheckedChange={(checked) => handleInputChange("logistica_reversa", checked)}
-                />
-                <Label htmlFor="reversa" className="cursor-pointer text-sm">
-                  Logística reversa necessária
-                </Label>
-              </div>
+                <label className="flex items-center gap-3 p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer transition-colors">
+                  <Checkbox
+                    id="reversa"
+                    checked={formData.logistica_reversa}
+                    onCheckedChange={(checked) => handleInputChange("logistica_reversa", checked)}
+                  />
+                  <span className="text-sm font-medium">Logística reversa necessária</span>
+                </label>
 
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="pedagios"
-                  checked={formData.pedagios_cliente}
-                  onCheckedChange={(checked) => handleInputChange("pedagios_cliente", checked)}
-                />
-                <Label htmlFor="pedagios" className="cursor-pointer text-sm">
-                  Cliente arca com pedágios
-                </Label>
-              </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <label className="flex items-center gap-3 p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer transition-colors">
+                    <Checkbox
+                      id="pedagios"
+                      checked={formData.pedagios_cliente}
+                      onCheckedChange={(checked) => handleInputChange("pedagios_cliente", checked)}
+                    />
+                    <span className="text-sm font-medium">Pedágios por conta</span>
+                  </label>
 
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="armazenagem"
-                  checked={formData.armazenagem_cliente}
-                  onCheckedChange={(checked) => handleInputChange("armazenagem_cliente", checked)}
-                />
-                <Label htmlFor="armazenagem" className="cursor-pointer text-sm">
-                  Cliente arca com armazenagem
-                </Label>
+                  <label className="flex items-center gap-3 p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer transition-colors">
+                    <Checkbox
+                      id="armazenagem"
+                      checked={formData.armazenagem_cliente}
+                      onCheckedChange={(checked) => handleInputChange("armazenagem_cliente", checked)}
+                    />
+                    <span className="text-sm font-medium">Armazenagem inclusa</span>
+                  </label>
+                </div>
               </div>
             </div>
-          </div>
 
-          <Button 
-            onClick={handleCalculate} 
-            className="w-full" 
-            size="lg"
-            disabled={loading}
-          >
-            {loading ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Calculando...
-              </>
+            <Button 
+              onClick={handleCalculate} 
+              className="w-full h-12 text-base font-semibold" 
+              size="lg"
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                  Processando...
+                </>
+              ) : (
+                <>
+                  <Calculator className="h-5 w-5 mr-2" />
+                  Simular Proposta
+                </>
+              )}
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Lado Direito - Card de Resultado (Sticky) */}
+      <div className="lg:sticky lg:top-24 lg:self-start space-y-4">
+        <Card className={`shadow-xl border-2 ${resultado ? 'bg-gradient-to-br from-blue-50 to-slate-50 border-blue-200' : 'bg-slate-50 border-slate-200'}`}>
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center justify-between">
+              <span className="flex items-center gap-2 text-lg">
+                <Target className="h-5 w-5 text-blue-600" />
+                Resultado da Proposta
+              </span>
+              {resultado && (
+                <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-300">
+                  LogiMind
+                </Badge>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-5">
+            {!resultado ? (
+              <div className="text-center py-12 text-muted-foreground">
+                <Calculator className="h-16 w-16 mx-auto mb-4 text-slate-300" />
+                <p className="text-sm">Preencha os parâmetros e clique em<br/><strong>"Simular Proposta"</strong> para ver os resultados</p>
+              </div>
             ) : (
               <>
-                <Calculator className="h-4 w-4 mr-2" />
-                Calcular Proposta
-              </>
-            )}
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* Resultado do Cálculo */}
-      {resultado && (
-        <div className="space-y-4">
-          {/* Cards de Resumo */}
-          <div className="grid md:grid-cols-3 gap-4">
-            <Card className="border-primary/50 bg-primary/5">
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-primary/10 rounded-lg">
-                    <DollarSign className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Valor Mensal Total</p>
-                    <p className="text-2xl font-bold">{formatCurrency(resultado.valor_mensal_total)}</p>
-                  </div>
+                {/* Preço por Viagem - Destaque Principal */}
+                <div className="text-center p-6 bg-white rounded-xl border-2 border-blue-200 shadow-md">
+                  <p className="text-sm text-muted-foreground mb-1">Preço por Viagem</p>
+                  <p className="text-4xl font-bold text-blue-700 font-[Inter]" style={{ fontWeight: 700 }}>
+                    {formatCurrency(resultado.preco_final_unitario)}
+                  </p>
                 </div>
-              </CardContent>
-            </Card>
 
-            <Card className="border-green-500/50 bg-green-500/5">
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-green-500/10 rounded-lg">
-                    <TrendingDown className="h-6 w-6 text-green-600" />
+                {/* Grid de Métricas */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="p-4 bg-white rounded-lg border border-slate-200">
+                    <p className="text-xs text-muted-foreground">Valor Mensal</p>
+                    <p className="text-xl font-bold text-slate-800 font-[Inter]" style={{ fontWeight: 600 }}>
+                      {formatCurrency(resultado.valor_mensal_total)}
+                    </p>
                   </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Desconto Total</p>
-                    <p className="text-2xl font-bold text-green-600">
-                      {resultado.desconto_total_percentual.toFixed(1)}%
+                  <div className="p-4 bg-white rounded-lg border border-slate-200">
+                    <p className="text-xs text-muted-foreground">Economia</p>
+                    <p className="text-xl font-bold text-emerald-600 font-[Inter]" style={{ fontWeight: 600 }}>
+                      {formatCurrency(resultado.economia_mensal)}
                     </p>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
 
-            <Card className="border-blue-500/50 bg-blue-500/5">
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-blue-500/10 rounded-lg">
-                    <Package className="h-6 w-6 text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Preço por Entrega</p>
-                    <p className="text-2xl font-bold text-blue-600">
-                      {formatCurrency(resultado.preco_final_unitario)}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Detalhamento Completo */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Detalhamento da Precificação</CardTitle>
-              <CardDescription>
-                Breakdown completo dos fatores aplicados no cálculo
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-3">
-                <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                  <span className="text-sm">{resultado.detalhamento.base}</span>
-                  <span className="font-semibold">{formatCurrency(resultado.preco_base_unitario)}</span>
-                </div>
-
-                <div className="flex justify-between items-center p-3 bg-green-500/10 rounded-lg">
-                  <span className="text-sm text-green-700">{resultado.detalhamento.volume}</span>
-                  <span className="font-semibold text-green-700">
-                    {formatCurrency(resultado.preco_com_volume_desconto)}
-                  </span>
-                </div>
-
-                <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                  <span className="text-sm">{resultado.detalhamento.tipo_carga}</span>
-                  <span className="font-semibold">{formatCurrency(resultado.preco_com_tipo_carga)}</span>
-                </div>
-
-                <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                  <span className="text-sm">{resultado.detalhamento.sla}</span>
-                  <span className="font-semibold">{formatCurrency(resultado.preco_com_sla)}</span>
-                </div>
-
-                {resultado.detalhamento.rota_retorno.includes('Otimização') && (
-                  <div className="flex justify-between items-center p-3 bg-green-500/10 rounded-lg">
-                    <span className="text-sm text-green-700">{resultado.detalhamento.rota_retorno}</span>
-                    <span className="font-semibold text-green-700">
-                      {formatCurrency(resultado.preco_com_rota_retorno)}
+                {/* Barra de Saúde da Margem */}
+                <div className="p-4 bg-white rounded-lg border border-slate-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-slate-700">Margem LogiMind</span>
+                    <span className={`text-sm font-bold ${marginTextColor}`}>
+                      {margin.toFixed(1)}%
                     </span>
                   </div>
-                )}
+                  <div className="relative h-3 bg-slate-100 rounded-full overflow-hidden">
+                    <div 
+                      className={`absolute left-0 top-0 h-full ${marginHealthColor} rounded-full transition-all duration-500`}
+                      style={{ width: `${Math.min(margin * 5, 100)}%` }}
+                    />
+                    {/* Marcador de 8% */}
+                    <div className="absolute top-0 h-full w-0.5 bg-slate-400" style={{ left: '40%' }} />
+                  </div>
+                  <div className="flex justify-between mt-1">
+                    <span className="text-[10px] text-muted-foreground">0%</span>
+                    <span className="text-[10px] text-muted-foreground">8% (min)</span>
+                    <span className="text-[10px] text-muted-foreground">20%</span>
+                  </div>
+                </div>
 
-                {resultado.detalhamento.custos_extras.length > 0 && (
-                  <div className="p-3 bg-orange-500/10 rounded-lg space-y-1">
-                    <p className="text-sm font-semibold text-orange-700">Custos Adicionais:</p>
-                    {resultado.detalhamento.custos_extras.map((custo, idx) => (
-                      <p key={idx} className="text-xs text-orange-600 ml-2">• {custo}</p>
-                    ))}
+                {/* Sugestão LogiMind */}
+                {suggestion && (
+                  <div className={`p-4 rounded-lg border ${
+                    suggestion.type === 'warning' ? 'bg-amber-50 border-amber-200' :
+                    suggestion.type === 'success' ? 'bg-emerald-50 border-emerald-200' :
+                    'bg-blue-50 border-blue-200'
+                  }`}>
+                    <div className="flex items-start gap-3">
+                      <Lightbulb className={`h-5 w-5 mt-0.5 ${
+                        suggestion.type === 'warning' ? 'text-amber-600' :
+                        suggestion.type === 'success' ? 'text-emerald-600' :
+                        'text-blue-600'
+                      }`} />
+                      <div>
+                        <p className="text-sm font-medium text-slate-700 mb-1">Sugestão LogiMind</p>
+                        <p className="text-xs text-slate-600">{suggestion.text}</p>
+                        <Badge variant="outline" className="mt-2 text-[10px]">
+                          Markup ideal: {suggestion.markup}
+                        </Badge>
+                      </div>
+                    </div>
                   </div>
                 )}
+
+                {/* Desconto Aplicado */}
+                <div className="flex items-center justify-between p-3 bg-emerald-50 rounded-lg border border-emerald-200">
+                  <div className="flex items-center gap-2">
+                    <TrendingDown className="h-5 w-5 text-emerald-600" />
+                    <span className="text-sm font-medium text-emerald-700">Desconto Total</span>
+                  </div>
+                  <span className="text-lg font-bold text-emerald-600">
+                    {resultado.desconto_total_percentual.toFixed(1)}%
+                  </span>
+                </div>
 
                 <Separator />
 
-                <div className="flex justify-between items-center p-4 bg-primary/10 rounded-lg">
-                  <span className="font-bold">Preço Final por Entrega</span>
-                  <span className="text-xl font-bold text-primary">
-                    {formatCurrency(resultado.preco_final_unitario)}
-                  </span>
+                {/* Botões de Ação */}
+                <div className="grid grid-cols-2 gap-3">
+                  <Button 
+                    variant="outline" 
+                    className="h-11 border-2 border-blue-200 text-blue-700 hover:bg-blue-50"
+                    onClick={() => toast({ title: "Gerando PDF...", description: "A proposta será baixada em instantes." })}
+                  >
+                    <FileDown className="h-4 w-4 mr-2" />
+                    Gerar PDF
+                  </Button>
+                  <Button 
+                    className="h-11 bg-emerald-600 hover:bg-emerald-700"
+                    onClick={() => toast({ title: "Salvo no Funil!", description: "Proposta adicionada ao pipeline B2B." })}
+                  >
+                    <FolderPlus className="h-4 w-4 mr-2" />
+                    Salvar no Funil
+                  </Button>
                 </div>
-              </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
 
-              {resultado.economia_mensal > 0 && (
-                <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <TrendingDown className="h-5 w-5 text-green-600" />
-                    <span className="font-semibold text-green-700">Economia Total</span>
-                  </div>
-                  <p className="text-2xl font-bold text-green-600">
-                    {formatCurrency(resultado.economia_mensal)}/mês
-                  </p>
-                  <p className="text-sm text-green-600 mt-1">
-                    Comparado ao preço sem os descontos aplicados
-                  </p>
+        {/* Card de Detalhamento (se houver resultado) */}
+        {resultado && (
+          <Card className="border-slate-200">
+            <CardHeader className="py-3">
+              <CardTitle className="text-sm font-medium text-slate-600">Breakdown da Precificação</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              <div className="flex justify-between py-2 border-b border-slate-100">
+                <span className="text-muted-foreground">Base (peso × km)</span>
+                <span className="font-medium">{formatCurrency(resultado.preco_base_unitario)}</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-slate-100">
+                <span className="text-muted-foreground">Após desconto volume</span>
+                <span className="font-medium text-emerald-600">{formatCurrency(resultado.preco_com_volume_desconto)}</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-slate-100">
+                <span className="text-muted-foreground">Fator tipo carga</span>
+                <span className="font-medium">{formatCurrency(resultado.preco_com_tipo_carga)}</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-slate-100">
+                <span className="text-muted-foreground">Fator SLA</span>
+                <span className="font-medium">{formatCurrency(resultado.preco_com_sla)}</span>
+              </div>
+              {resultado.custos_adicionais > 0 && (
+                <div className="flex justify-between py-2 border-b border-slate-100">
+                  <span className="text-muted-foreground">Custos adicionais</span>
+                  <span className="font-medium text-amber-600">+{formatCurrency(resultado.custos_adicionais)}</span>
                 </div>
               )}
+              <div className="flex justify-between py-3 bg-blue-50 -mx-4 px-4 rounded-lg mt-2">
+                <span className="font-semibold text-blue-700">Preço Final</span>
+                <span className="font-bold text-blue-700">{formatCurrency(resultado.preco_final_unitario)}</span>
+              </div>
             </CardContent>
           </Card>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };
