@@ -91,6 +91,17 @@ export const PixPaymentModal = ({
 
       if (updateError) throw updateError;
 
+      // Adicionar evento na timeline
+      await supabase.from("tracking_events").insert({
+        order_id: orderId,
+        event_code: "PAYMENT_PROOF_SENT",
+        event_description: "Comprovante de pagamento PIX enviado pelo cliente",
+        event_timestamp: new Date().toISOString(),
+        city: "N/A",
+        state: "N/A",
+        is_critical: false,
+      });
+
       toast.success("Comprovante enviado com sucesso!");
       
       // Aguardar 2 segundos e fechar modal

@@ -20,6 +20,9 @@ const getEventIcon = (eventCode: string, isCritical: boolean) => {
     case 'ORDER_CREATED':
     case 'ORDER_CONFIRMED':
       return <Package className="h-4 w-4 text-primary" />;
+    case 'PAYMENT_PROOF_SENT':
+    case 'PAYMENT_CONFIRMED':
+      return <CheckCircle className="h-4 w-4 text-secondary" />;
     case 'PICKED_UP':
     case 'IN_TRANSIT':
     case 'OUT_FOR_DELIVERY':
@@ -38,6 +41,10 @@ const getEventEmoji = (eventCode: string, isCritical: boolean) => {
     case 'ORDER_CREATED':
     case 'ORDER_CONFIRMED':
       return '📝';
+    case 'PAYMENT_PROOF_SENT':
+      return '📤';
+    case 'PAYMENT_CONFIRMED':
+      return '💳';
     case 'PICKED_UP':
       return '📦';
     case 'IN_TRANSIT':
