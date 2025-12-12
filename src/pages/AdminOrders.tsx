@@ -145,18 +145,18 @@ const AdminOrders = () => {
               <Package className="h-8 w-8 text-primary" />
               <h1 className="text-3xl font-bold text-foreground">Gestão de Pedidos e Cotações</h1>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               <Button 
                 variant="outline"
                 onClick={() => navigate('/admin/auditoria')}
                 className="gap-2"
               >
-                <Package className="h-4 w-4" />
+                <FileText className="h-4 w-4" />
                 Logs de Auditoria
               </Button>
               <Button 
                 onClick={() => navigate('/admin/calculadora-b2b')}
-                className="gap-2"
+                className="gap-2 bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 text-primary-foreground shadow-lg"
               >
                 <Calculator className="h-4 w-4" />
                 Calculadora B2B
@@ -170,35 +170,35 @@ const AdminOrders = () => {
 
         {/* KPI Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <Card>
+          <Card className="shadow-md border-l-4 border-l-amber-500 hover:shadow-lg transition-shadow">
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center">
-                  <FileText className="h-6 w-6 text-accent" />
+                <div className="w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center">
+                  <FileText className="h-6 w-6 text-amber-600" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground font-medium">Cotações Pendentes</p>
-                  <p className="text-3xl font-bold text-accent">{stats.pendingQuotes}</p>
+                  <p className="text-3xl font-semibold text-amber-600 font-serif tracking-tight">{stats.pendingQuotes}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="shadow-md border-l-4 border-l-destructive hover:shadow-lg transition-shadow">
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center">
                   <AlertCircle className="h-6 w-6 text-destructive" />
                 </div>
-          <div>
-            <p className="text-sm text-muted-foreground font-medium">Pendentes de Contato</p>
-            <p className="text-3xl font-bold text-destructive">{stats.pendingOrders}</p>
-          </div>
+                <div>
+                  <p className="text-sm text-muted-foreground font-medium">Pendentes de Contato</p>
+                  <p className="text-3xl font-semibold text-destructive font-serif tracking-tight">{stats.pendingOrders}</p>
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="shadow-md border-l-4 border-l-primary hover:shadow-lg transition-shadow">
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
@@ -206,21 +206,21 @@ const AdminOrders = () => {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground font-medium">Total de Pedidos</p>
-                  <p className="text-3xl font-bold text-primary">{stats.totalOrders}</p>
+                  <p className="text-3xl font-semibold text-primary font-serif tracking-tight">{stats.totalOrders}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="shadow-md border-l-4 border-l-emerald-500 hover:shadow-lg transition-shadow">
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center">
-                  <Clock className="h-6 w-6 text-secondary" />
+                <div className="w-12 h-12 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                  <TrendingUp className="h-6 w-6 text-emerald-600" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground font-medium">Taxa Conversão</p>
-                  <p className="text-3xl font-bold text-secondary">
+                  <p className="text-3xl font-semibold text-emerald-600 font-serif tracking-tight">
                     {stats.pendingQuotes > 0 
                       ? Math.round((stats.totalOrders / (stats.totalOrders + stats.pendingQuotes)) * 100)
                       : 0}%
@@ -233,46 +233,73 @@ const AdminOrders = () => {
 
         {/* Tabs de Conteúdo */}
         <Tabs defaultValue="carriers" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-8 max-w-7xl">
-            <TabsTrigger value="carriers" className="gap-2">
+          <TabsList className="grid w-full grid-cols-8 max-w-7xl bg-muted/50 p-1 rounded-lg">
+            <TabsTrigger 
+              value="carriers" 
+              className="gap-2 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
+            >
               <Truck className="h-4 w-4" />
               Transportadoras
             </TabsTrigger>
-            <TabsTrigger value="payments" className="gap-2">
+            <TabsTrigger 
+              value="payments" 
+              className="gap-2 relative data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
+            >
               <CheckCircle className="h-4 w-4" />
               PIX Pendentes
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-destructive text-destructive-foreground text-xs font-bold rounded-full flex items-center justify-center animate-pulse">
+                !
+              </span>
             </TabsTrigger>
-            <TabsTrigger value="pix-history" className="gap-2">
+            <TabsTrigger 
+              value="pix-history" 
+              className="gap-2 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
+            >
               <History className="h-4 w-4" />
               Histórico PIX
             </TabsTrigger>
-            <TabsTrigger value="kpis" className="gap-2">
+            <TabsTrigger 
+              value="kpis" 
+              className="gap-2 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
+            >
               <TrendingUp className="h-4 w-4" />
               KPIs LogiMind
             </TabsTrigger>
-            <TabsTrigger value="quotes" className="gap-2">
+            <TabsTrigger 
+              value="quotes" 
+              className="gap-2 relative data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
+            >
               <FileText className="h-4 w-4" />
               Cotações
               {stats.pendingQuotes > 0 && (
-                <Badge variant="destructive" className="ml-2">
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-destructive text-destructive-foreground text-xs font-bold rounded-full flex items-center justify-center">
                   {stats.pendingQuotes}
-                </Badge>
+                </span>
               )}
             </TabsTrigger>
-            <TabsTrigger value="orders-pending" className="gap-2">
+            <TabsTrigger 
+              value="orders-pending" 
+              className="gap-2 relative data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
+            >
               <AlertCircle className="h-4 w-4" />
               Pendentes
               {stats.pendingOrders > 0 && (
-                <Badge variant="destructive" className="ml-2">
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-destructive text-destructive-foreground text-xs font-bold rounded-full flex items-center justify-center">
                   {stats.pendingOrders}
-                </Badge>
+                </span>
               )}
             </TabsTrigger>
-            <TabsTrigger value="orders-accepted" className="gap-2">
+            <TabsTrigger 
+              value="orders-accepted" 
+              className="gap-2 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
+            >
               <CheckCircle className="h-4 w-4" />
               Aceitos
             </TabsTrigger>
-            <TabsTrigger value="orders-rejected" className="gap-2">
+            <TabsTrigger 
+              value="orders-rejected" 
+              className="gap-2 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
+            >
               <XCircle className="h-4 w-4" />
               Rejeitados
             </TabsTrigger>
