@@ -171,6 +171,7 @@ export default function Profile() {
             phone: profile.phone,
             company_name: profile.company_name,
             cnpj: profile.cnpj,
+            email: userEmail, // Atualizar email do usuário
           })
           .eq("user_id", userId);
 
@@ -184,6 +185,7 @@ export default function Profile() {
             phone: profile.phone,
             company_name: profile.company_name,
             cnpj: profile.cnpj,
+            email: userEmail, // Salvar email do usuário
           });
 
         if (error) throw error;

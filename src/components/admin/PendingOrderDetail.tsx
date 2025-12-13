@@ -144,14 +144,14 @@ export const PendingOrderDetail = ({ order, open, onOpenChange, onUpdate }: Pend
         if (order.user_id) {
           const { data: userProfile, error: userError } = await supabase
             .from('profiles')
-            .select('full_name, phone, company_name, cnpj')
+            .select('full_name, phone, company_name, cnpj, email')
             .eq('user_id', order.user_id)
             .single();
 
           if (!userError && userProfile) {
             setUserDetails({
               full_name: userProfile.company_name || userProfile.full_name || 'Não informado',
-              email: 'Disponível no perfil',
+              email: userProfile.email || 'Não disponível',
               phone: userProfile.phone || 'Não informado',
               cpf: userProfile.cnpj || 'Não informado'
             });
