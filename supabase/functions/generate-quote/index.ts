@@ -56,6 +56,53 @@ const LOGIGUARD_RISCO_LIMITE = 0.65; // 65% - Fator de risco mínimo para oferec
 const LOGIGUARD_RECOMENDACAO_VALOR = 100000.00; // R$ 100k para recomendação ativa
 const LOGIGUARD_RECOMENDACAO_RISCO = 0.80; // 80% de risco para recomendação ativa
 
+// ============================================================================
+// TABELA ANTT - Pisos Mínimos de Frete (Atualização Julho 2025)
+// ============================================================================
+// Fórmula: (Distância × CCD) + CC = Piso Mínimo
+// CCD = Coeficiente de Deslocamento (R$/km por eixo carregado)
+// CC = Coeficiente de Carga/Descarga (valor fixo)
+// Fonte: Resolução ANTT nº 5.867/2020, Atualização Jul/2025
+// Diesel S10: R$ 6,02/litro (ANP Jul/2025)
+// IPCA Acumulado: 3,28% (Dez/2024 - Mai/2025)
+// ============================================================================
+
+// CCD - Coeficiente de Deslocamento por Tipo de Carga (R$/km por eixo)
+// Valores atualizados Jul/2025 para veículo sem retorno vazio
+const ANTT_CCD: { [key: string]: { [eixos: number]: number } } = {
+  'carga_geral': { 2: 0.68, 3: 0.79, 4: 0.89, 5: 0.97, 6: 1.05, 7: 1.16, 9: 1.35 },
+  'granel_solido': { 2: 0.65, 3: 0.76, 4: 0.85, 5: 0.93, 6: 1.01, 7: 1.12, 9: 1.30 },
+  'granel_liquido': { 2: 0.72, 3: 0.84, 4: 0.94, 5: 1.03, 6: 1.11, 7: 1.22, 9: 1.42 },
+  'frigorificada': { 2: 0.82, 3: 0.96, 4: 1.08, 5: 1.18, 6: 1.27, 7: 1.40, 9: 1.63 },
+  'conteinerizada': { 2: 0.70, 3: 0.82, 4: 0.92, 5: 1.00, 6: 1.08, 7: 1.20, 9: 1.39 },
+  'perigosa': { 2: 0.88, 3: 1.03, 4: 1.16, 5: 1.27, 6: 1.37, 7: 1.51, 9: 1.76 },
+  'neogranel': { 2: 0.67, 3: 0.78, 4: 0.88, 5: 0.96, 6: 1.04, 7: 1.15, 9: 1.33 },
+};
+
+// CC - Coeficiente de Carga/Descarga por Tipo de Carga (valor fixo por operação)
+const ANTT_CC: { [key: string]: number } = {
+  'carga_geral': 320.00,
+  'granel_solido': 280.00,
+  'granel_liquido': 360.00,
+  'frigorificada': 420.00,
+  'conteinerizada': 340.00,
+  'perigosa': 480.00,
+  'neogranel': 300.00,
+};
+
+// Fator de ajuste para retorno vazio (+94% sobre CCD padrão)
+const ANTT_FATOR_RETORNO_VAZIO = 0.94;
+
+interface ANTTPisoMinimo {
+  valor: number;
+  ccd_aplicado: number;
+  cc_aplicado: number;
+  tipo_carga: string;
+  eixos: number;
+  distancia_km: number;
+  retorno_vazio: boolean;
+}
+
 interface QuoteRequest {
   service_type: string;
   vehicle_type?: string; // Para FTL: "moto", "carro", "picape", "caminhao_toco", "caminhao_truck"
@@ -102,6 +149,145 @@ interface ProcessedQuote {
     total_price: number;
     risk_factor: number;
   };
+  antt_piso_minimo?: ANTTPisoMinimo;
+}
+
+/**
+ * Calcula o Piso Mínimo de Frete ANTT
+ * Fórmula oficial: (Distância × CCD) + CC = Piso Mínimo
+ * 
+ * @param distanciaKm - Distância estimada em km
+ * @param tipoCarga - Tipo de carga (carga_geral, granel_solido, etc.)
+ * @param eixos - Número de eixos do veículo (2, 3, 4, 5, 6, 7, 9)
+ * @param retornoVazio - Se o veículo volta vazio (adiciona 94% ao CCD)
+ * @returns Dados do piso mínimo ANTT
+ */
+function calcularPisoMinimoANTT(
+  distanciaKm: number,
+  tipoCarga: string = 'carga_geral',
+  eixos: number = 5,
+  retornoVazio: boolean = false
+): ANTTPisoMinimo {
+  // Validar tipo de carga
+  const tipoNormalizado = tipoCarga.toLowerCase().replace(/\s+/g, '_');
+  const ccdTabela = ANTT_CCD[tipoNormalizado] || ANTT_CCD['carga_geral'];
+  
+  // Validar número de eixos (usar mais próximo se não existir)
+  const eixosValidos = Object.keys(ccdTabela).map(Number);
+  const eixosAplicados = eixosValidos.reduce((prev, curr) => 
+    Math.abs(curr - eixos) < Math.abs(prev - eixos) ? curr : prev
+  );
+  
+  // Buscar CCD para os eixos
+  let ccd = ccdTabela[eixosAplicados];
+  
+  // Aplicar fator de retorno vazio se necessário
+  if (retornoVazio) {
+    ccd = ccd * (1 + ANTT_FATOR_RETORNO_VAZIO);
+  }
+  
+  // Buscar CC para o tipo de carga
+  const cc = ANTT_CC[tipoNormalizado] || ANTT_CC['carga_geral'];
+  
+  // Calcular piso mínimo: (Distância × CCD) + CC
+  const pisoMinimo = (distanciaKm * ccd) + cc;
+  
+  console.log(
+    `[ANTT Piso Mínimo] Tipo: ${tipoNormalizado} | Eixos: ${eixosAplicados} | ` +
+    `Distância: ${distanciaKm}km | CCD: R$ ${ccd.toFixed(2)}/km | CC: R$ ${cc.toFixed(2)} | ` +
+    `Retorno Vazio: ${retornoVazio ? 'Sim' : 'Não'} | ` +
+    `Piso Mínimo: R$ ${pisoMinimo.toFixed(2)}`
+  );
+  
+  return {
+    valor: parseFloat(pisoMinimo.toFixed(2)),
+    ccd_aplicado: parseFloat(ccd.toFixed(2)),
+    cc_aplicado: cc,
+    tipo_carga: tipoNormalizado,
+    eixos: eixosAplicados,
+    distancia_km: distanciaKm,
+    retorno_vazio: retornoVazio,
+  };
+}
+
+/**
+ * Estima a distância entre dois CEPs (simplificado)
+ * Em produção, usar API de distância (Google Maps, HERE, etc.)
+ * 
+ * @param originCep - CEP de origem
+ * @param destinationCep - CEP de destino
+ * @returns Distância estimada em km
+ */
+function estimarDistanciaCeps(originCep: string, destinationCep: string): number {
+  const cleanOrigin = originCep.replace(/\D/g, '');
+  const cleanDest = destinationCep.replace(/\D/g, '');
+  
+  // Extrair região (primeiro dígito) para estimativa
+  const regiaoOrigem = parseInt(cleanOrigin[0]);
+  const regiaoDestino = parseInt(cleanDest[0]);
+  
+  // Mapa de regiões brasileiras (CEPs):
+  // 0-1: São Paulo | 2: Rio | 3: Minas | 4: Bahia | 5: Nordeste | 6-7: Centro-Oeste/Norte | 8-9: Sul
+  
+  // Matriz simplificada de distâncias médias entre regiões (km)
+  const distanciasRegionais: { [key: string]: number } = {
+    '0-0': 50, '0-1': 100, '0-2': 450, '0-3': 600, '0-4': 1500, '0-5': 2000, '0-6': 1200, '0-7': 2000, '0-8': 700, '0-9': 500,
+    '1-0': 100, '1-1': 50, '1-2': 400, '1-3': 550, '1-4': 1450, '1-5': 1950, '1-6': 1150, '1-7': 1950, '1-8': 650, '1-9': 450,
+    '2-0': 450, '2-1': 400, '2-2': 50, '2-3': 450, '2-4': 1200, '2-5': 1700, '2-6': 1100, '2-7': 2200, '2-8': 1100, '2-9': 900,
+    '3-0': 600, '3-1': 550, '3-2': 450, '3-3': 50, '3-4': 1000, '3-5': 1500, '3-6': 800, '3-7': 1800, '3-8': 1200, '3-9': 1000,
+    '4-0': 1500, '4-1': 1450, '4-2': 1200, '4-3': 1000, '4-4': 50, '4-5': 500, '4-6': 1200, '4-7': 2000, '4-8': 2100, '4-9': 1900,
+    '5-0': 2000, '5-1': 1950, '5-2': 1700, '5-3': 1500, '5-4': 500, '5-5': 50, '5-6': 1500, '5-7': 2200, '5-8': 2600, '5-9': 2400,
+    '6-0': 1200, '6-1': 1150, '6-2': 1100, '6-3': 800, '6-4': 1200, '6-5': 1500, '6-6': 50, '6-7': 800, '6-8': 1500, '6-9': 1300,
+    '7-0': 2000, '7-1': 1950, '7-2': 2200, '7-3': 1800, '7-4': 2000, '7-5': 2200, '7-6': 800, '7-7': 50, '7-8': 2500, '7-9': 2300,
+    '8-0': 700, '8-1': 650, '8-2': 1100, '8-3': 1200, '8-4': 2100, '8-5': 2600, '8-6': 1500, '8-7': 2500, '8-8': 50, '8-9': 200,
+    '9-0': 500, '9-1': 450, '9-2': 900, '9-3': 1000, '9-4': 1900, '9-5': 2400, '9-6': 1300, '9-7': 2300, '9-8': 200, '9-9': 50,
+  };
+  
+  const chave = `${regiaoOrigem}-${regiaoDestino}`;
+  const distanciaBase = distanciasRegionais[chave] || 500;
+  
+  // Adicionar variação baseada nos primeiros 5 dígitos para mais precisão
+  const subRegiaoOrigem = parseInt(cleanOrigin.substring(0, 5));
+  const subRegiaoDestino = parseInt(cleanDest.substring(0, 5));
+  const variacao = Math.abs(subRegiaoOrigem - subRegiaoDestino) * 0.001;
+  
+  const distanciaEstimada = Math.max(50, distanciaBase + (distanciaBase * variacao * 0.1));
+  
+  console.log(`[Distância Estimada] ${originCep} → ${destinationCep}: ${distanciaEstimada.toFixed(0)} km`);
+  
+  return parseFloat(distanciaEstimada.toFixed(0));
+}
+
+/**
+ * Determina número de eixos baseado no peso da carga
+ * @param weightKg - Peso da carga em kg
+ * @param vehicleType - Tipo de veículo (para FTL)
+ * @returns Número de eixos estimado
+ */
+function estimarEixos(weightKg: number, vehicleType?: string): number {
+  // Se tem tipo de veículo específico (FTL)
+  if (vehicleType) {
+    switch (vehicleType) {
+      case 'moto': return 2;
+      case 'carro': return 2;
+      case 'picape': return 2;
+      case 'van': return 2;
+      case 'caminhao_toco': return 4;
+      case 'caminhao_truck': return 6;
+      case 'carreta': return 7;
+      case 'carreta_ls': return 9;
+      case 'carreta_bi_truck': return 9;
+      default: return 5;
+    }
+  }
+  
+  // Baseado no peso (para LTL)
+  if (weightKg <= 500) return 2;      // Utilitário
+  if (weightKg <= 3000) return 3;     // Caminhão 3/4
+  if (weightKg <= 6000) return 4;     // Caminhão Toco
+  if (weightKg <= 14000) return 6;    // Caminhão Truck
+  if (weightKg <= 28000) return 7;    // Carreta simples
+  return 9;                            // Carreta bi-truck
 }
 
 /**
@@ -697,10 +883,19 @@ serve(async (req) => {
     // 6.5. Calculate LogiGuard Pro para cada cotação
     const logiGuardPro = calcularLogiGuardPro(quoteRequest.cargo_value, riskFactor);
     
-    // Adiciona LogiGuard Pro a todas as cotações processadas
+    // 6.6. Calculate ANTT Piso Mínimo (Referência Legal)
+    const distanciaEstimada = estimarDistanciaCeps(quoteRequest.origin_cep, quoteRequest.destination_cep);
+    const eixosEstimados = estimarEixos(quoteRequest.weight_kg, quoteRequest.vehicle_type);
+    const isRetornoVazio = routeAdjustmentFactor > 0.5; // Rotas de retorno têm fator > 0.5
+    const anttPisoMinimo = calcularPisoMinimoANTT(distanciaEstimada, 'carga_geral', eixosEstimados, isRetornoVazio);
+    
+    console.log(`[ANTT Reference] Piso Mínimo Legal: R$ ${anttPisoMinimo.valor.toFixed(2)}`);
+    
+    // Adiciona LogiGuard Pro e ANTT Piso Mínimo a todas as cotações processadas
     const cotacoesComLogiGuard = cotacoesProcessadas.map(cota => ({
       ...cota,
       logiguard_pro: logiGuardPro,
+      antt_piso_minimo: anttPisoMinimo,
     }));
 
     // 7. Create quote record
@@ -762,6 +957,15 @@ serve(async (req) => {
         restricted_origin: restrictedOrigin,
         restricted_destination: restrictedDestination,
         logiguard_available: logiGuardPro?.available ?? false,
+        antt_reference: {
+          piso_minimo: anttPisoMinimo.valor,
+          distancia_km: anttPisoMinimo.distancia_km,
+          eixos: anttPisoMinimo.eixos,
+          tipo_carga: anttPisoMinimo.tipo_carga,
+          ccd_aplicado: anttPisoMinimo.ccd_aplicado,
+          cc_aplicado: anttPisoMinimo.cc_aplicado,
+          retorno_vazio: anttPisoMinimo.retorno_vazio,
+        },
       }),
       {
         headers: { ...corsHeaders, ...rateLimitHeaders, 'Content-Type': 'application/json' },

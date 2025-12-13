@@ -19,6 +19,16 @@ import { PixPaymentModal } from "@/components/payment/PixPaymentModal";
 import { ServiceTypeSelector } from "@/components/quote/ServiceTypeSelector";
 import { AddressForm } from "@/components/quote/AddressForm";
 
+interface ANTTReference {
+  piso_minimo: number;
+  distancia_km: number;
+  eixos: number;
+  tipo_carga: string;
+  ccd_aplicado: number;
+  cc_aplicado: number;
+  retorno_vazio: boolean;
+}
+
 interface QuoteResult {
   carrier_id: string;
   carrier_name: string;
@@ -38,6 +48,15 @@ interface QuoteResult {
     markup_value: number;
     total_price: number;
     risk_factor: number;
+  };
+  antt_piso_minimo?: {
+    valor: number;
+    ccd_aplicado: number;
+    cc_aplicado: number;
+    tipo_carga: string;
+    eixos: number;
+    distancia_km: number;
+    retorno_vazio: boolean;
   };
 }
 
@@ -72,6 +91,7 @@ const Quote = () => {
   });
   const [quotes, setQuotes] = useState<QuoteResult[]>([]);
   const [routeType, setRouteType] = useState<string>("");
+  const [anttReference, setAnttReference] = useState<ANTTReference | null>(null);
   const [sortBy, setSortBy] = useState<SortOption>("price");
   const [loadingCep, setLoadingCep] = useState<"origin" | "destination" | null>(null);
   const [restrictedAreas, setRestrictedAreas] = useState<{origin: boolean, destination: boolean}>({
@@ -306,6 +326,7 @@ const Quote = () => {
 
       setQuotes(data.quotes);
       setRouteType(data.route_type);
+      setAnttReference(data.antt_reference || null);
       setRestrictedAreas({
         origin: data.restricted_origin || false,
         destination: data.restricted_destination || false,
@@ -754,6 +775,51 @@ const Quote = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Card de Referência ANTT */}
+              {anttReference && (
+                <TooltipProvider>
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 bg-muted/50 border border-border rounded-lg mb-6">
+                    <div className="flex items-center gap-2">
+                      <div className="p-2 bg-primary/10 rounded-lg">
+                        <Building2 className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground font-medium">Piso Mínimo ANTT</p>
+                        <p className="text-lg font-bold text-primary">{formatarMoeda(anttReference.piso_minimo)}</p>
+                      </div>
+                    </div>
+                    <div className="flex-1 text-xs text-muted-foreground hidden sm:block">
+                      <span>Referência legal para {anttReference.distancia_km} km | {anttReference.eixos} eixos | </span>
+                      <span className="capitalize">{anttReference.tipo_carga.replace(/_/g, ' ')}</span>
+                      {anttReference.retorno_vazio && <span className="text-accent"> (+94% retorno vazio)</span>}
+                    </div>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="p-1.5 rounded-full hover:bg-muted cursor-help">
+                          <Info className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent side="left" className="max-w-xs">
+                        <p className="font-semibold mb-1">📋 Tabela de Frete ANTT</p>
+                        <p className="text-xs mb-2">
+                          O piso mínimo é calculado pela fórmula oficial: 
+                          <code className="bg-muted px-1 rounded">(Distância × CCD) + CC</code>
+                        </p>
+                        <ul className="text-xs space-y-1">
+                          <li>• CCD aplicado: {formatarMoeda(anttReference.ccd_aplicado)}/km</li>
+                          <li>• CC (carga/descarga): {formatarMoeda(anttReference.cc_aplicado)}</li>
+                          <li>• Distância estimada: {anttReference.distancia_km} km</li>
+                          <li>• Eixos do veículo: {anttReference.eixos}</li>
+                        </ul>
+                        <p className="text-xs mt-2 text-muted-foreground italic">
+                          Fonte: Resolução ANTT nº 5.867/2020, atualização Jul/2025
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                </TooltipProvider>
+              )}
 
               {/* Alerta de Urgência para Rotas de Alta Demanda */}
               {routeType === "high_demand" && (
