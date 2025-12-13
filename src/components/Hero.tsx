@@ -2,12 +2,13 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Truck, Building2, User, TrendingUp, BarChart3, Map, Sparkles } from "lucide-react";
 import heroIllustration from "@/assets/hero-logistics-illustration.png";
+import LiquidityDashboard from "./home/LiquidityDashboard";
 
 const Hero = () => {
   const navigate = useNavigate();
 
   return (
-    <section className="relative pt-32 pb-20 overflow-hidden">
+    <section className="relative pt-24 sm:pt-32 pb-12 sm:pb-20 overflow-hidden">
       {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5 -z-10" />
       
@@ -27,14 +28,9 @@ const Hero = () => {
             </p>
           </div>
           
-          {/* Illustration */}
+          {/* Liquidity Dashboard instead of static illustration */}
           <div className="relative animate-fade-in">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 rounded-3xl blur-3xl animate-pulse-slow" />
-            <img 
-              src={heroIllustration} 
-              alt="Ilustração de Logística Inteligente" 
-              className="relative w-full h-auto rounded-2xl"
-            />
+            <LiquidityDashboard />
           </div>
         </div>
 
