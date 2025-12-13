@@ -1,46 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
-import { useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Truck, Package, TrendingUp, Zap, Activity, MapPin } from "lucide-react";
-
-// Subtle notification sound using Web Audio API - hard-locked to home page
-const playMatchSound = () => {
-  try {
-    if (typeof window === "undefined" || typeof document === "undefined") return;
-
-    // Extra safety: never play outside home or when tab is hidden
-    const isHome = window.location.pathname === "/";
-    const isVisible = document.visibilityState === "visible";
-    if (!isHome || !isVisible) return;
-
-    const AudioContextClass =
-      (window.AudioContext || (window as any).webkitAudioContext) as typeof AudioContext;
-    const audioContext = new AudioContextClass();
-
-    // Create a pleasant "ding" sound
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-
-    oscillator.frequency.setValueAtTime(880, audioContext.currentTime); // A5 note
-    oscillator.frequency.exponentialRampToValueAtTime(
-      1320,
-      audioContext.currentTime + 0.1,
-    ); // E6 note
-
-    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime); // Start quiet
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3); // Fade out
-
-    oscillator.type = "sine";
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.3);
-  } catch (e) {
-    // Silently fail if audio is not supported
-    console.log("Audio not supported");
-  }
-};
+import { Truck, Package, TrendingUp, Zap, Activity } from "lucide-react";
 
 interface FreightPoint {
   id: string;
@@ -96,27 +56,12 @@ const generateRandomPoint = (existingPoints: FreightPoint[]): FreightPoint => {
 };
 
 const LiquidityDashboard = () => {
-  const location = useLocation();
-  const isHomePage = location.pathname === "/";
-  const [isPageVisible, setIsPageVisible] = useState(true);
   const [points, setPoints] = useState<FreightPoint[]>([]);
   const [matchLines, setMatchLines] = useState<MatchLine[]>([]);
   const [liquidityIndex, setLiquidityIndex] = useState(1.35);
   const [totalFreights, setTotalFreights] = useState(127);
   const [matchesPerHour, setMatchesPerHour] = useState(23);
 
-  // Track page visibility to stop sounds when page is hidden
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      setIsPageVisible(document.visibilityState === "visible");
-    };
-    
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
-  }, []);
-
-  // Derived state: only play sounds when on home page AND page is visible
-  const shouldPlaySound = isHomePage && isPageVisible;
 
   // Generate initial points
   useEffect(() => {
@@ -170,11 +115,6 @@ const LiquidityDashboard = () => {
           
           setMatchLines((prevLines) => [...prevLines, newMatchLine]);
           setMatchesPerHour((m) => m + 1);
-          
-          // Play subtle notification sound only on home page and when visible
-          if (shouldPlaySound) {
-            playMatchSound();
-          }
 
           // Remove match line after animation
           setTimeout(() => {
