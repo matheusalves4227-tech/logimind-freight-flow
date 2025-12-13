@@ -231,18 +231,52 @@ function calcularDistanciaHaversine(lat1: number, lon1: number, lat2: number, lo
 }
 
 /**
- * Geocodifica um CEP usando Nominatim (OpenStreetMap) - API gratuita
+ * Busca informações de endereço via ViaCEP (API brasileira gratuita)
  * @param cep - CEP brasileiro
- * @returns Coordenadas {lat, lon} ou null se não encontrar
+ * @returns Dados do endereço ou null
  */
-async function geocodificarCepNominatim(cep: string): Promise<{ lat: number; lon: number } | null> {
+async function buscarViaCep(cep: string): Promise<{ cidade: string; estado: string; logradouro: string; bairro: string } | null> {
   const cleanCep = cep.replace(/\D/g, '');
-  const formattedCep = `${cleanCep.slice(0, 5)}-${cleanCep.slice(5)}`;
   
   try {
-    // Nominatim exige User-Agent identificando a aplicação
+    const response = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
+    
+    if (!response.ok) {
+      console.log(`[ViaCEP] HTTP error: ${response.status}`);
+      return null;
+    }
+    
+    const data = await response.json();
+    
+    if (data.erro) {
+      console.log(`[ViaCEP] CEP ${cleanCep} não encontrado`);
+      return null;
+    }
+    
+    console.log(`[ViaCEP] CEP ${cleanCep} → ${data.localidade}/${data.uf}`);
+    return {
+      cidade: data.localidade,
+      estado: data.uf,
+      logradouro: data.logradouro || '',
+      bairro: data.bairro || '',
+    };
+  } catch (error) {
+    console.error(`[ViaCEP] Erro ao buscar CEP ${cleanCep}:`, error);
+    return null;
+  }
+}
+
+/**
+ * Geocodifica uma cidade/estado usando Nominatim (OpenStreetMap)
+ * @param cidade - Nome da cidade
+ * @param estado - Sigla do estado (UF)
+ * @returns Coordenadas {lat, lon} ou null
+ */
+async function geocodificarCidade(cidade: string, estado: string): Promise<{ lat: number; lon: number } | null> {
+  try {
+    const query = encodeURIComponent(`${cidade}, ${estado}, Brazil`);
     const response = await fetch(
-      `https://nominatim.openstreetmap.org/search?postalcode=${formattedCep}&country=Brazil&format=json&limit=1`,
+      `https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=1`,
       {
         headers: {
           'User-Agent': 'LogiMarket/1.0 (contact@logimarket.com.br)',
@@ -260,16 +294,33 @@ async function geocodificarCepNominatim(cep: string): Promise<{ lat: number; lon
     
     if (data && data.length > 0) {
       const result = { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
-      console.log(`[Nominatim] CEP ${formattedCep} → lat: ${result.lat}, lon: ${result.lon}`);
+      console.log(`[Nominatim] ${cidade}/${estado} → lat: ${result.lat.toFixed(4)}, lon: ${result.lon.toFixed(4)}`);
       return result;
     }
     
-    console.log(`[Nominatim] CEP ${formattedCep} não encontrado`);
+    console.log(`[Nominatim] ${cidade}/${estado} não encontrado`);
     return null;
   } catch (error) {
-    console.error(`[Nominatim] Erro ao geocodificar CEP ${formattedCep}:`, error);
+    console.error(`[Nominatim] Erro ao geocodificar ${cidade}/${estado}:`, error);
     return null;
   }
+}
+
+/**
+ * Geocodifica um CEP usando ViaCEP + Nominatim (100% gratuito)
+ * @param cep - CEP brasileiro
+ * @returns Coordenadas {lat, lon} ou null
+ */
+async function geocodificarCep(cep: string): Promise<{ lat: number; lon: number } | null> {
+  // Primeiro busca endereço via ViaCEP
+  const endereco = await buscarViaCep(cep);
+  
+  if (!endereco) {
+    return null;
+  }
+  
+  // Depois geocodifica a cidade via Nominatim
+  return await geocodificarCidade(endereco.cidade, endereco.estado);
 }
 
 /**
@@ -286,8 +337,8 @@ async function calcularDistanciaReal(originCep: string, destinationCep: string):
   
   // Tentar geocodificar ambos os CEPs em paralelo
   const [originCoords, destCoords] = await Promise.all([
-    geocodificarCepNominatim(originCep),
-    geocodificarCepNominatim(destinationCep),
+    geocodificarCep(originCep),
+    geocodificarCep(destinationCep),
   ]);
   
   // Se conseguiu geocodificar ambos, calcular distância real
