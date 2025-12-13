@@ -1103,6 +1103,8 @@ export type Database = {
           id: string
           last_location_update: string | null
           length_cm: number | null
+          logiguard_pro_contratado: boolean | null
+          logiguard_pro_valor: number | null
           operational_notes: string | null
           origin_address: string
           origin_cep: string
@@ -1152,6 +1154,8 @@ export type Database = {
           id?: string
           last_location_update?: string | null
           length_cm?: number | null
+          logiguard_pro_contratado?: boolean | null
+          logiguard_pro_valor?: number | null
           operational_notes?: string | null
           origin_address: string
           origin_cep: string
@@ -1201,6 +1205,8 @@ export type Database = {
           id?: string
           last_location_update?: string | null
           length_cm?: number | null
+          logiguard_pro_contratado?: boolean | null
+          logiguard_pro_valor?: number | null
           operational_notes?: string | null
           origin_address?: string
           origin_cep?: string
