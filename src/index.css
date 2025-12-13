@@ -537,4 +537,93 @@ All colors MUST be HSL.
   .dropzone-area.active {
     @apply border-primary bg-primary/10;
   }
+
+  /* === BORDER BEAM ANIMATION (LogiMind Pulse) === */
+  @keyframes border-beam {
+    0% {
+      background-position: 0% 0%;
+    }
+    50% {
+      background-position: 100% 100%;
+    }
+    100% {
+      background-position: 0% 0%;
+    }
+  }
+
+  .border-beam {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 2px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      transparent 40%,
+      hsl(217 91% 60% / 0.8) 50%,
+      transparent 60%,
+      transparent 100%
+    );
+    background-size: 200% 200%;
+    animation: border-beam 2s linear infinite;
+    -webkit-mask: 
+      linear-gradient(#fff 0 0) content-box, 
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  /* Glassmorphism card base */
+  .glass-card {
+    @apply bg-white/70 dark:bg-white/5;
+    @apply backdrop-blur-xl;
+    @apply border border-white/20 dark:border-white/10;
+    @apply rounded-[20px];
+    @apply shadow-lg;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .glass-card:hover {
+    @apply shadow-2xl;
+    @apply border-primary/30;
+    transform: translateY(-4px);
+  }
+
+  /* 3D Card Hover Effect - Enhanced */
+  .card-3d-hover {
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+                box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+  }
+
+  .card-3d-hover:hover {
+    transform: translateY(-6px) scale(1.01);
+    box-shadow: 
+      0 20px 40px -15px hsl(217 91% 53% / 0.2),
+      0 10px 20px -10px hsl(0 0% 0% / 0.1);
+  }
+
+  /* Scanning line animation for AI processing */
+  @keyframes scan-line {
+    0% {
+      transform: translateY(-100%);
+      opacity: 0;
+    }
+    10% {
+      opacity: 1;
+    }
+    90% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+  }
+
+  .scan-line {
+    animation: scan-line 3s ease-in-out infinite;
+  }
 }
+
