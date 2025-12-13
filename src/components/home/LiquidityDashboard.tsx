@@ -86,11 +86,25 @@ const generateRandomPoint = (existingPoints: FreightPoint[]): FreightPoint => {
 const LiquidityDashboard = () => {
   const location = useLocation();
   const isHomePage = location.pathname === "/";
+  const [isPageVisible, setIsPageVisible] = useState(true);
   const [points, setPoints] = useState<FreightPoint[]>([]);
   const [matchLines, setMatchLines] = useState<MatchLine[]>([]);
   const [liquidityIndex, setLiquidityIndex] = useState(1.35);
   const [totalFreights, setTotalFreights] = useState(127);
   const [matchesPerHour, setMatchesPerHour] = useState(23);
+
+  // Track page visibility to stop sounds when page is hidden
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      setIsPageVisible(document.visibilityState === "visible");
+    };
+    
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, []);
+
+  // Derived state: only play sounds when on home page AND page is visible
+  const shouldPlaySound = isHomePage && isPageVisible;
 
   // Generate initial points
   useEffect(() => {
@@ -145,8 +159,8 @@ const LiquidityDashboard = () => {
           setMatchLines((prevLines) => [...prevLines, newMatchLine]);
           setMatchesPerHour((m) => m + 1);
           
-          // Play subtle notification sound only on home page
-          if (isHomePage) {
+          // Play subtle notification sound only on home page and when visible
+          if (shouldPlaySound) {
             playMatchSound();
           }
 
