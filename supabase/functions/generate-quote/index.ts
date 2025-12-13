@@ -211,25 +211,122 @@ function calcularPisoMinimoANTT(
 }
 
 /**
- * Estima a distância entre dois CEPs (simplificado)
- * Em produção, usar API de distância (Google Maps, HERE, etc.)
+ * Calcula a distância em km usando a fórmula de Haversine
+ * @param lat1 - Latitude do ponto 1
+ * @param lon1 - Longitude do ponto 1
+ * @param lat2 - Latitude do ponto 2
+ * @param lon2 - Longitude do ponto 2
+ * @returns Distância em linha reta em km
+ */
+function calcularDistanciaHaversine(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371; // Raio da Terra em km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+/**
+ * Geocodifica um CEP usando Nominatim (OpenStreetMap) - API gratuita
+ * @param cep - CEP brasileiro
+ * @returns Coordenadas {lat, lon} ou null se não encontrar
+ */
+async function geocodificarCepNominatim(cep: string): Promise<{ lat: number; lon: number } | null> {
+  const cleanCep = cep.replace(/\D/g, '');
+  const formattedCep = `${cleanCep.slice(0, 5)}-${cleanCep.slice(5)}`;
+  
+  try {
+    // Nominatim exige User-Agent identificando a aplicação
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/search?postalcode=${formattedCep}&country=Brazil&format=json&limit=1`,
+      {
+        headers: {
+          'User-Agent': 'LogiMarket/1.0 (contact@logimarket.com.br)',
+          'Accept-Language': 'pt-BR,pt;q=0.9',
+        },
+      }
+    );
+    
+    if (!response.ok) {
+      console.log(`[Nominatim] HTTP error: ${response.status}`);
+      return null;
+    }
+    
+    const data = await response.json();
+    
+    if (data && data.length > 0) {
+      const result = { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
+      console.log(`[Nominatim] CEP ${formattedCep} → lat: ${result.lat}, lon: ${result.lon}`);
+      return result;
+    }
+    
+    console.log(`[Nominatim] CEP ${formattedCep} não encontrado`);
+    return null;
+  } catch (error) {
+    console.error(`[Nominatim] Erro ao geocodificar CEP ${formattedCep}:`, error);
+    return null;
+  }
+}
+
+/**
+ * Calcula a distância rodoviária estimada entre dois CEPs
+ * Usa Nominatim para geocodificação e Haversine para distância
+ * Aplica fator de correção 1.3x para aproximar distância rodoviária
  * 
  * @param originCep - CEP de origem
  * @param destinationCep - CEP de destino
  * @returns Distância estimada em km
  */
-function estimarDistanciaCeps(originCep: string, destinationCep: string): number {
+async function calcularDistanciaReal(originCep: string, destinationCep: string): Promise<number> {
+  console.log(`[Distância Real] Calculando ${originCep} → ${destinationCep}`);
+  
+  // Tentar geocodificar ambos os CEPs em paralelo
+  const [originCoords, destCoords] = await Promise.all([
+    geocodificarCepNominatim(originCep),
+    geocodificarCepNominatim(destinationCep),
+  ]);
+  
+  // Se conseguiu geocodificar ambos, calcular distância real
+  if (originCoords && destCoords) {
+    const distanciaLinhaReta = calcularDistanciaHaversine(
+      originCoords.lat, originCoords.lon,
+      destCoords.lat, destCoords.lon
+    );
+    
+    // Fator de correção 1.3x para aproximar distância rodoviária
+    // (estradas nunca são em linha reta)
+    const distanciaRodoviaria = distanciaLinhaReta * 1.3;
+    const distanciaFinal = Math.max(10, Math.round(distanciaRodoviaria));
+    
+    console.log(
+      `[Distância Real] Linha reta: ${distanciaLinhaReta.toFixed(1)}km | ` +
+      `Rodoviária (×1.3): ${distanciaFinal}km`
+    );
+    
+    return distanciaFinal;
+  }
+  
+  // Fallback: usar estimativa por região se geocodificação falhar
+  console.log('[Distância Real] Geocodificação falhou, usando estimativa por região');
+  return estimarDistanciaPorRegiao(originCep, destinationCep);
+}
+
+/**
+ * Estimativa de distância por região (fallback)
+ * Usado quando a geocodificação Nominatim falha
+ */
+function estimarDistanciaPorRegiao(originCep: string, destinationCep: string): number {
   const cleanOrigin = originCep.replace(/\D/g, '');
   const cleanDest = destinationCep.replace(/\D/g, '');
   
-  // Extrair região (primeiro dígito) para estimativa
   const regiaoOrigem = parseInt(cleanOrigin[0]);
   const regiaoDestino = parseInt(cleanDest[0]);
   
-  // Mapa de regiões brasileiras (CEPs):
-  // 0-1: São Paulo | 2: Rio | 3: Minas | 4: Bahia | 5: Nordeste | 6-7: Centro-Oeste/Norte | 8-9: Sul
-  
-  // Matriz simplificada de distâncias médias entre regiões (km)
+  // Matriz de distâncias médias entre regiões (km)
   const distanciasRegionais: { [key: string]: number } = {
     '0-0': 50, '0-1': 100, '0-2': 450, '0-3': 600, '0-4': 1500, '0-5': 2000, '0-6': 1200, '0-7': 2000, '0-8': 700, '0-9': 500,
     '1-0': 100, '1-1': 50, '1-2': 400, '1-3': 550, '1-4': 1450, '1-5': 1950, '1-6': 1150, '1-7': 1950, '1-8': 650, '1-9': 450,
@@ -246,14 +343,14 @@ function estimarDistanciaCeps(originCep: string, destinationCep: string): number
   const chave = `${regiaoOrigem}-${regiaoDestino}`;
   const distanciaBase = distanciasRegionais[chave] || 500;
   
-  // Adicionar variação baseada nos primeiros 5 dígitos para mais precisão
+  // Adicionar variação baseada nos primeiros 5 dígitos
   const subRegiaoOrigem = parseInt(cleanOrigin.substring(0, 5));
   const subRegiaoDestino = parseInt(cleanDest.substring(0, 5));
   const variacao = Math.abs(subRegiaoOrigem - subRegiaoDestino) * 0.001;
   
   const distanciaEstimada = Math.max(50, distanciaBase + (distanciaBase * variacao * 0.1));
   
-  console.log(`[Distância Estimada] ${originCep} → ${destinationCep}: ${distanciaEstimada.toFixed(0)} km`);
+  console.log(`[Distância Fallback] ${originCep} → ${destinationCep}: ${distanciaEstimada.toFixed(0)} km`);
   
   return parseFloat(distanciaEstimada.toFixed(0));
 }
@@ -884,7 +981,7 @@ serve(async (req) => {
     const logiGuardPro = calcularLogiGuardPro(quoteRequest.cargo_value, riskFactor);
     
     // 6.6. Calculate ANTT Piso Mínimo (Referência Legal)
-    const distanciaEstimada = estimarDistanciaCeps(quoteRequest.origin_cep, quoteRequest.destination_cep);
+    const distanciaEstimada = await calcularDistanciaReal(quoteRequest.origin_cep, quoteRequest.destination_cep);
     const eixosEstimados = estimarEixos(quoteRequest.weight_kg, quoteRequest.vehicle_type);
     const isRetornoVazio = routeAdjustmentFactor > 0.5; // Rotas de retorno têm fator > 0.5
     const anttPisoMinimo = calcularPisoMinimoANTT(distanciaEstimada, 'carga_geral', eixosEstimados, isRetornoVazio);
