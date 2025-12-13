@@ -1,19 +1,21 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Truck, Building2, User, TrendingUp, BarChart3, Map, Sparkles } from "lucide-react";
-import heroIllustration from "@/assets/hero-logistics-illustration.png";
 import LiquidityDashboard from "./home/LiquidityDashboard";
+import MiniDashboard from "./home/MiniDashboard";
+import MovingGradientBackground from "./home/MovingGradientBackground";
+import GlassmorphicCard from "./home/GlassmorphicCard";
 
 const Hero = () => {
   const navigate = useNavigate();
 
   return (
     <section className="relative pt-24 sm:pt-32 pb-12 sm:pb-20 overflow-hidden">
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5 -z-10" />
+      {/* Moving Gradient Background for depth */}
+      <MovingGradientBackground />
       
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header Section with Illustration */}
+        {/* Header Section with Dashboard */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center max-w-7xl mx-auto mb-16">
           {/* Text Content */}
           <div className="text-center lg:text-left">
@@ -23,21 +25,26 @@ const Hero = () => {
                 Seu Frete Otimizado.
               </span>
             </h1>
-            <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto lg:mx-0">
+            <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto lg:mx-0 mb-8">
               Conectando embarcadores, transportadoras e motoristas autônomos através de tecnologia inteligente e precificação dinâmica.
             </p>
+            
+            {/* Mini Dashboard - Shows system in action */}
+            <div className="hidden lg:block max-w-sm">
+              <MiniDashboard />
+            </div>
           </div>
           
-          {/* Liquidity Dashboard instead of static illustration */}
+          {/* Liquidity Dashboard */}
           <div className="relative animate-fade-in">
             <LiquidityDashboard />
           </div>
         </div>
 
-        {/* 4 Cards de Direcionamento com 3D Hover Effect */}
+        {/* 4 Cards de Direcionamento com Glassmorphism */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10 max-w-7xl mx-auto mb-12 md:mb-20 px-4 md:px-0 items-stretch">
           {/* Card 1: Embarcador (DESTAQUE PRINCIPAL) */}
-          <div className="group bg-card/80 backdrop-blur-md rounded-[20px] p-6 md:p-8 shadow-xl border-2 border-primary card-3d-hover relative animate-fade-in">
+          <GlassmorphicCard variant="primary" featured className="relative">
             {/* Badge de Destaque */}
             <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
               <span className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-r from-primary to-[hsl(217,82%,45%)] text-primary-foreground text-xs font-bold rounded-full shadow-lg">
@@ -46,7 +53,7 @@ const Hero = () => {
               </span>
             </div>
             
-            <div className="flex flex-col items-center text-center space-y-6">
+            <div className="flex flex-col items-center text-center space-y-6 pt-4">
               <div className="relative">
                 <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl group-hover:bg-primary/30 transition-all duration-300" />
                 <div className="relative p-6 bg-gradient-to-br from-primary to-[hsl(217,82%,45%)] rounded-2xl shadow-lg group-hover:shadow-xl transition-all duration-300">
@@ -71,7 +78,7 @@ const Hero = () => {
               <div className="w-full space-y-2">
                 <Button 
                   size="lg" 
-                  className="w-full h-12 btn-gradient-primary text-primary-foreground font-semibold shadow-lg hover:shadow-xl transition-all duration-300 rounded-lg animate-pulse-subtle"
+                  className="w-full h-12 btn-gradient-primary text-primary-foreground font-semibold shadow-lg hover:shadow-xl transition-all duration-300 rounded-lg"
                   onClick={() => navigate("/cadastro/embarcador")}
                 >
                   Cadastre sua Empresa Grátis
@@ -86,7 +93,7 @@ const Hero = () => {
                 </Button>
               </div>
 
-              <div className="pt-4 space-y-2 text-xs text-muted-foreground border-t border-border w-full">
+              <div className="pt-4 space-y-2 text-xs text-muted-foreground border-t border-border/50 w-full">
                 <div className="flex items-center gap-2">
                   <div className="w-1.5 h-1.5 rounded-full bg-primary" />
                   <span>Compare 500+ transportadoras</span>
@@ -97,10 +104,10 @@ const Hero = () => {
                 </div>
               </div>
             </div>
-          </div>
+          </GlassmorphicCard>
 
           {/* Card 2: Transportadora */}
-          <div className="group bg-card/80 backdrop-blur-md rounded-[20px] p-6 md:p-8 shadow-lg border-2 border-border hover:border-secondary/50 card-3d-hover">
+          <GlassmorphicCard variant="secondary">
             <div className="flex flex-col items-center text-center space-y-6">
               <div className="relative">
                 <div className="absolute inset-0 bg-secondary/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -131,7 +138,7 @@ const Hero = () => {
                 Oferecer Fretes
               </Button>
 
-              <div className="pt-4 space-y-2 text-xs text-muted-foreground border-t border-border w-full">
+              <div className="pt-4 space-y-2 text-xs text-muted-foreground border-t border-border/50 w-full">
                 <div className="flex items-center gap-2">
                   <div className="w-1.5 h-1.5 rounded-full bg-secondary" />
                   <span>Otimização de rotas de retorno</span>
@@ -142,10 +149,10 @@ const Hero = () => {
                 </div>
               </div>
             </div>
-          </div>
+          </GlassmorphicCard>
 
           {/* Card 3: Motorista Autônomo */}
-          <div className="group bg-card/80 backdrop-blur-md rounded-[20px] p-6 md:p-8 shadow-lg border-2 border-border hover:border-accent/50 card-3d-hover">
+          <GlassmorphicCard variant="accent">
             <div className="flex flex-col items-center text-center space-y-6">
               <div className="relative">
                 <div className="absolute inset-0 bg-accent/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -176,7 +183,7 @@ const Hero = () => {
                 Ver Fretes Disponíveis
               </Button>
 
-              <div className="pt-4 space-y-2 text-xs text-muted-foreground border-t border-border w-full">
+              <div className="pt-4 space-y-2 text-xs text-muted-foreground border-t border-border/50 w-full">
                 <div className="flex items-center gap-2">
                   <div className="w-1.5 h-1.5 rounded-full bg-accent" />
                   <span>Margem otimizada por rota</span>
@@ -187,10 +194,10 @@ const Hero = () => {
                 </div>
               </div>
             </div>
-          </div>
+          </GlassmorphicCard>
 
           {/* Card 4: Empresas B2B */}
-          <div className="group bg-card/80 backdrop-blur-md rounded-[20px] p-6 md:p-8 shadow-xl border-2 border-accent card-3d-hover relative animate-fade-in bg-gradient-to-br from-accent/5 to-accent/10">
+          <GlassmorphicCard variant="accent" className="bg-gradient-to-br from-accent/5 to-accent/10">
             <div className="flex flex-col items-center text-center space-y-6">
               <div className="relative">
                 <div className="absolute inset-0 bg-accent/20 rounded-2xl blur-xl group-hover:bg-accent/30 transition-all duration-300" />
@@ -221,7 +228,7 @@ const Hero = () => {
                 Solicitar Cotação B2B
               </Button>
 
-              <div className="pt-4 space-y-2 text-xs text-muted-foreground border-t border-border w-full">
+              <div className="pt-4 space-y-2 text-xs text-muted-foreground border-t border-border/50 w-full">
                 <div className="flex items-center gap-2">
                   <div className="w-1.5 h-1.5 rounded-full bg-accent" />
                   <span>Descontos por volume</span>
@@ -232,7 +239,7 @@ const Hero = () => {
                 </div>
               </div>
             </div>
-          </div>
+          </GlassmorphicCard>
         </div>
       </div>
     </section>
