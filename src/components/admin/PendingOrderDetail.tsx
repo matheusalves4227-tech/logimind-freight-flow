@@ -140,13 +140,31 @@ export const PendingOrderDetail = ({ order, open, onOpenChange, onUpdate }: Pend
           setSelectedDriverId(orderData.driver_id);
         }
         
-        // Por enquanto, placeholder para dados do usuário
-        setUserDetails({
-          full_name: 'Embarcador',
-          email: 'contato@example.com',
-          phone: '(11) 99999-9999',
-          cpf: 'Não disponível'
-        });
+        // Buscar dados reais do embarcador (usuário que criou o pedido)
+        if (order.user_id) {
+          const { data: userProfile, error: userError } = await supabase
+            .from('profiles')
+            .select('full_name, phone, company_name, cnpj')
+            .eq('user_id', order.user_id)
+            .single();
+
+          if (!userError && userProfile) {
+            setUserDetails({
+              full_name: userProfile.company_name || userProfile.full_name || 'Não informado',
+              email: 'Disponível no perfil',
+              phone: userProfile.phone || 'Não informado',
+              cpf: userProfile.cnpj || 'Não informado'
+            });
+          } else {
+            // Fallback se não encontrar perfil
+            setUserDetails({
+              full_name: 'Usuário não encontrado',
+              email: 'Não disponível',
+              phone: 'Não disponível',
+              cpf: 'Não disponível'
+            });
+          }
+        }
       };
       fetchDetails();
     }
