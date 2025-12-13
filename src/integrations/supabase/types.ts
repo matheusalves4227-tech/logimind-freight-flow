@@ -1457,6 +1457,57 @@ export type Database = {
         }
         Relationships: []
       }
+      shipper_profiles: {
+        Row: {
+          accepts_whatsapp_contact: boolean | null
+          cnpj: string
+          company_sector: string
+          corporate_email: string
+          created_at: string
+          id: string
+          monthly_freight_volume: string
+          phone: string
+          razao_social: string | null
+          responsible_cpf: string
+          responsible_name: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          accepts_whatsapp_contact?: boolean | null
+          cnpj: string
+          company_sector: string
+          corporate_email: string
+          created_at?: string
+          id?: string
+          monthly_freight_volume: string
+          phone: string
+          razao_social?: string | null
+          responsible_cpf: string
+          responsible_name: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          accepts_whatsapp_contact?: boolean | null
+          cnpj?: string
+          company_sector?: string
+          corporate_email?: string
+          created_at?: string
+          id?: string
+          monthly_freight_volume?: string
+          phone?: string
+          razao_social?: string | null
+          responsible_cpf?: string
+          responsible_name?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       tracking_events: {
         Row: {
           city: string | null
