@@ -1,6 +1,33 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Truck, Package, TrendingUp, Zap, Activity, MapPin } from "lucide-react";
+
+// Subtle notification sound using Web Audio API
+const playMatchSound = () => {
+  try {
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    
+    // Create a pleasant "ding" sound
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.setValueAtTime(880, audioContext.currentTime); // A5 note
+    oscillator.frequency.exponentialRampToValueAtTime(1320, audioContext.currentTime + 0.1); // E6 note
+    
+    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime); // Start quiet
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3); // Fade out
+    
+    oscillator.type = "sine";
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.3);
+  } catch (e) {
+    // Silently fail if audio is not supported
+    console.log("Audio not supported");
+  }
+};
 
 interface FreightPoint {
   id: string;
@@ -114,6 +141,9 @@ const LiquidityDashboard = () => {
           
           setMatchLines((prevLines) => [...prevLines, newMatchLine]);
           setMatchesPerHour((m) => m + 1);
+          
+          // Play subtle notification sound
+          playMatchSound();
 
           // Remove match line after animation
           setTimeout(() => {
