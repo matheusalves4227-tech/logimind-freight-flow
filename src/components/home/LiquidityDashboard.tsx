@@ -1,8 +1,9 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Truck, Package, TrendingUp, Zap, Activity, MapPin } from "lucide-react";
 
-// Subtle notification sound using Web Audio API
+// Subtle notification sound using Web Audio API - only plays on home page
 const playMatchSound = () => {
   try {
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -83,6 +84,8 @@ const generateRandomPoint = (existingPoints: FreightPoint[]): FreightPoint => {
 };
 
 const LiquidityDashboard = () => {
+  const location = useLocation();
+  const isHomePage = location.pathname === "/";
   const [points, setPoints] = useState<FreightPoint[]>([]);
   const [matchLines, setMatchLines] = useState<MatchLine[]>([]);
   const [liquidityIndex, setLiquidityIndex] = useState(1.35);
@@ -142,8 +145,10 @@ const LiquidityDashboard = () => {
           setMatchLines((prevLines) => [...prevLines, newMatchLine]);
           setMatchesPerHour((m) => m + 1);
           
-          // Play subtle notification sound
-          playMatchSound();
+          // Play subtle notification sound only on home page
+          if (isHomePage) {
+            playMatchSound();
+          }
 
           // Remove match line after animation
           setTimeout(() => {
