@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { FileText, Package, AlertCircle, Clock, TrendingUp, Truck, Calculator, CheckCircle, XCircle, History } from 'lucide-react';
+import { FileText, Package, AlertCircle, Clock, TrendingUp, Truck, Calculator, CheckCircle, XCircle, History, Building2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { PendingQuotesTable } from '@/components/admin/PendingQuotesTable';
 import { PendingOrdersTable } from '@/components/admin/PendingOrdersTable';
@@ -18,6 +18,7 @@ import { LogiMindKPIs } from '@/components/admin/LogiMindKPIs';
 import { CarriersManagement } from '@/components/admin/CarriersManagement';
 import { PendingPaymentsTable } from '@/components/admin/PendingPaymentsTable';
 import { PixPaymentHistory } from '@/components/admin/PixPaymentHistory';
+import { ShippersManagement } from '@/components/admin/ShippersManagement';
 
 interface StatsData {
   pendingQuotes: number;
@@ -233,13 +234,20 @@ const AdminOrders = () => {
 
         {/* Tabs de Conteúdo */}
         <Tabs defaultValue="carriers" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-8 max-w-7xl bg-muted/50 p-1 rounded-lg">
+          <TabsList className="grid w-full grid-cols-9 max-w-7xl bg-muted/50 p-1 rounded-lg">
             <TabsTrigger 
               value="carriers" 
               className="gap-2 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
             >
               <Truck className="h-4 w-4" />
               Transportadoras
+            </TabsTrigger>
+            <TabsTrigger 
+              value="shippers" 
+              className="gap-2 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
+            >
+              <Building2 className="h-4 w-4" />
+              Embarcadores
             </TabsTrigger>
             <TabsTrigger 
               value="payments" 
@@ -304,6 +312,10 @@ const AdminOrders = () => {
               Rejeitados
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="shippers">
+            <ShippersManagement />
+          </TabsContent>
 
           <TabsContent value="carriers">
             <CarriersManagement />
