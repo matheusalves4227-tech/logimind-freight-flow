@@ -72,13 +72,23 @@ const Hero = () => {
                 <span>Powered by LogiMind</span>
               </div>
 
-              <Button 
-                size="lg" 
-                className="w-full h-12 btn-gradient-primary text-primary-foreground font-semibold shadow-lg hover:shadow-xl transition-all duration-300 rounded-lg animate-pulse-subtle"
-                onClick={() => navigate("/quote")}
-              >
-                Cote e Economize Agora
-              </Button>
+              <div className="w-full space-y-2">
+                <Button 
+                  size="lg" 
+                  className="w-full h-12 btn-gradient-primary text-primary-foreground font-semibold shadow-lg hover:shadow-xl transition-all duration-300 rounded-lg animate-pulse-subtle"
+                  onClick={() => navigate("/cadastro/embarcador")}
+                >
+                  Cadastre sua Empresa Grátis
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="ghost"
+                  className="w-full text-xs text-muted-foreground hover:text-primary"
+                  onClick={() => navigate("/quote")}
+                >
+                  Já tenho cadastro? Cotar agora
+                </Button>
+              </div>
 
               <div className="pt-4 space-y-2 text-xs text-muted-foreground border-t border-border w-full">
                 <div className="flex items-center gap-2">
