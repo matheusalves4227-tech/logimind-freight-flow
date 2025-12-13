@@ -3,24 +3,36 @@ import { useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Truck, Package, TrendingUp, Zap, Activity, MapPin } from "lucide-react";
 
-// Subtle notification sound using Web Audio API - only plays on home page
+// Subtle notification sound using Web Audio API - hard-locked to home page
 const playMatchSound = () => {
   try {
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    
+    if (typeof window === "undefined" || typeof document === "undefined") return;
+
+    // Extra safety: never play outside home or when tab is hidden
+    const isHome = window.location.pathname === "/";
+    const isVisible = document.visibilityState === "visible";
+    if (!isHome || !isVisible) return;
+
+    const AudioContextClass =
+      (window.AudioContext || (window as any).webkitAudioContext) as typeof AudioContext;
+    const audioContext = new AudioContextClass();
+
     // Create a pleasant "ding" sound
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
-    
+
     oscillator.connect(gainNode);
     gainNode.connect(audioContext.destination);
-    
+
     oscillator.frequency.setValueAtTime(880, audioContext.currentTime); // A5 note
-    oscillator.frequency.exponentialRampToValueAtTime(1320, audioContext.currentTime + 0.1); // E6 note
-    
+    oscillator.frequency.exponentialRampToValueAtTime(
+      1320,
+      audioContext.currentTime + 0.1,
+    ); // E6 note
+
     gainNode.gain.setValueAtTime(0.1, audioContext.currentTime); // Start quiet
     gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3); // Fade out
-    
+
     oscillator.type = "sine";
     oscillator.start(audioContext.currentTime);
     oscillator.stop(audioContext.currentTime + 0.3);
