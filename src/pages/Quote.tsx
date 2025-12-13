@@ -406,6 +406,12 @@ const Quote = () => {
       // PASSO 1: Criar pedido no sistema
       toast.loading("Criando pedido...", { id: 'contract-freight' });
       
+      // Check if LogiGuard Pro was selected for this carrier
+      const logiGuardSelected = selectedLogiGuard[quote.carrier_id] || false;
+      const logiGuardValue = logiGuardSelected && quote.logiguard_pro?.total_price 
+        ? quote.logiguard_pro.total_price 
+        : null;
+      
       const { data: orderData, error: orderError } = await supabase.functions.invoke('create-order', {
         body: {
           carrier_id: quote.carrier_id,
@@ -422,11 +428,15 @@ const Quote = () => {
           length_cm: formData.length_cm ? parseFloat(formData.length_cm) : null,
           base_price: quote.base_price,
           commission_applied: quote.commission_applied,
-          final_price: quote.final_price,
+          final_price: logiGuardSelected && quote.logiguard_pro?.total_price 
+            ? quote.final_price + quote.logiguard_pro.total_price 
+            : quote.final_price,
           delivery_days: quote.delivery_days,
           external_tracking_code: null,
           driver_name: null,
-          driver_phone: null
+          driver_phone: null,
+          logiguard_pro_contratado: logiGuardSelected,
+          logiguard_pro_valor: logiGuardValue
         }
       });
 
