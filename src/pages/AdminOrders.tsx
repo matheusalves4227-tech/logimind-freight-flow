@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { FileText, Package, AlertCircle, Clock, TrendingUp, Truck, Calculator, CheckCircle, XCircle, History, Building2 } from 'lucide-react';
+import { FileText, Package, AlertCircle, Clock, TrendingUp, Truck, Calculator, CheckCircle, XCircle, History, Building2, BarChart3 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { PendingQuotesTable } from '@/components/admin/PendingQuotesTable';
 import { PendingOrdersTable } from '@/components/admin/PendingOrdersTable';
@@ -19,6 +19,7 @@ import { CarriersManagement } from '@/components/admin/CarriersManagement';
 import { PendingPaymentsTable } from '@/components/admin/PendingPaymentsTable';
 import { PixPaymentHistory } from '@/components/admin/PixPaymentHistory';
 import { ShippersManagement } from '@/components/admin/ShippersManagement';
+import { CompetitorBenchmark } from '@/components/admin/CompetitorBenchmark';
 
 interface StatsData {
   pendingQuotes: number;
@@ -234,7 +235,7 @@ const AdminOrders = () => {
 
         {/* Tabs de Conteúdo */}
         <Tabs defaultValue="carriers" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-9 max-w-7xl bg-muted/50 p-1 rounded-lg">
+          <TabsList className="grid w-full grid-cols-10 max-w-7xl bg-muted/50 p-1 rounded-lg">
             <TabsTrigger 
               value="carriers" 
               className="gap-2 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
@@ -248,6 +249,13 @@ const AdminOrders = () => {
             >
               <Building2 className="h-4 w-4" />
               Embarcadores
+            </TabsTrigger>
+            <TabsTrigger 
+              value="benchmark" 
+              className="gap-2 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
+            >
+              <BarChart3 className="h-4 w-4" />
+              Benchmark
             </TabsTrigger>
             <TabsTrigger 
               value="payments" 
@@ -319,6 +327,10 @@ const AdminOrders = () => {
 
           <TabsContent value="carriers">
             <CarriersManagement />
+          </TabsContent>
+
+          <TabsContent value="benchmark">
+            <CompetitorBenchmark />
           </TabsContent>
 
           <TabsContent value="payments">
