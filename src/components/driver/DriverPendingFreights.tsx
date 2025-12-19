@@ -153,7 +153,7 @@ export const DriverPendingFreights = ({ driverProfile, onFreightAccepted }: Driv
       const { error } = await supabase
         .from('orders')
         .update({
-          status: 'pending', // Volta para pendente para admin reatribuir
+          status: 'pending',
           driver_id: null,
           driver_name: null,
           driver_phone: null,
@@ -164,9 +164,28 @@ export const DriverPendingFreights = ({ driverProfile, onFreightAccepted }: Driv
 
       if (error) throw error;
 
+      // Notificar admin sobre a recusa
+      try {
+        await supabase.functions.invoke('notify-admin-rejection', {
+          body: {
+            orderId: selectedFreight.id,
+            trackingCode: selectedFreight.tracking_code,
+            driverName: driverProfile.full_name,
+            driverEmail: driverProfile.email,
+            rejectReason: rejectReason,
+            originAddress: selectedFreight.origin_address,
+            destinationAddress: selectedFreight.destination_address,
+            valorRepasse: selectedFreight.valor_repasse_liquido || selectedFreight.final_price * 0.85,
+          },
+        });
+        console.log('Admin notificado sobre recusa');
+      } catch (notifyError) {
+        console.error('Erro ao notificar admin:', notifyError);
+      }
+
       toast({
         title: "Frete Recusado",
-        description: "O frete foi devolvido para reatribuição.",
+        description: "O frete foi devolvido para reatribuição. Admin foi notificado.",
       });
 
       setRejectDialogOpen(false);
