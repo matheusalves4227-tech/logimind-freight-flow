@@ -5,7 +5,8 @@
  * Uses sliding window algorithm with 1-minute time windows.
  */
 
-import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type SupabaseClientAny = any;
 
 export interface RateLimitConfig {
   endpoint: string;
@@ -29,7 +30,7 @@ export interface RateLimitResult {
  * @returns Rate limit result with allowed status and headers info
  */
 export async function checkRateLimit(
-  supabase: SupabaseClient,
+  supabase: SupabaseClientAny,
   identifier: string,
   config: RateLimitConfig
 ): Promise<RateLimitResult> {
