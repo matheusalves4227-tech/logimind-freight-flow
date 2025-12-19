@@ -272,6 +272,9 @@ export const PendingOrderDetail = ({ order, open, onOpenChange, onUpdate }: Pend
 
       if (error) throw error;
 
+      // Enviar notificação por email ao motorista
+      await notifyDriverAssignment(selectedDriverId, order.id);
+
       // Registrar auditoria
       await logAction({
         action: 'order_approval',
@@ -287,7 +290,7 @@ export const PendingOrderDetail = ({ order, open, onOpenChange, onUpdate }: Pend
 
       toast({
         title: 'Pedido Aprovado',
-        description: 'O pedido foi aprovado e está pronto para operação',
+        description: `Pedido aprovado e notificação enviada para ${selectedDriver?.full_name}`,
       });
 
       onUpdate();
@@ -378,6 +381,22 @@ export const PendingOrderDetail = ({ order, open, onOpenChange, onUpdate }: Pend
     }
   };
 
+  const notifyDriverAssignment = async (driverId: string, orderId: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('notify-driver-assignment', {
+        body: { orderId, driverId }
+      });
+      
+      if (error) {
+        console.error('Erro ao enviar notificação:', error);
+      } else if (data?.success) {
+        console.log('Notificação enviada para:', data.driverEmail);
+      }
+    } catch (err) {
+      console.error('Erro ao notificar motorista:', err);
+    }
+  };
+
   const handleAssignDriver = async () => {
     if (!selectedDriverId) {
       toast({
@@ -404,6 +423,9 @@ export const PendingOrderDetail = ({ order, open, onOpenChange, onUpdate }: Pend
 
       if (error) throw error;
 
+      // Enviar notificação por email ao motorista
+      await notifyDriverAssignment(selectedDriverId, order.id);
+
       // Registrar auditoria
       await logAction({
         action: 'freight_assignment',
@@ -419,7 +441,7 @@ export const PendingOrderDetail = ({ order, open, onOpenChange, onUpdate }: Pend
 
       toast({
         title: 'Motorista Atribuído',
-        description: `Frete atribuído para ${selectedDriver?.full_name}`,
+        description: `Frete atribuído para ${selectedDriver?.full_name}. Notificação enviada por email.`,
       });
 
       onUpdate();
