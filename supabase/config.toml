@@ -44,3 +44,6 @@ verify_jwt = true
 
 [functions.match-drivers]
 verify_jwt = true
+
+[functions.notify-admin-rejection]
+verify_jwt = true
