@@ -17,6 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { DriverSuggestions } from './DriverSuggestions';
 import {
   Package,
   MapPin,
@@ -749,56 +750,78 @@ export const PendingOrderDetail = ({ order, open, onOpenChange, onUpdate }: Pend
           </Card>
 
           {/* 6. ATRIBUIÇÃO DE MOTORISTA */}
-          <Card className="border-primary/20 bg-primary/5">
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <UserCheck className="h-5 w-5 text-primary" />
-                Atribuir Motorista ao Frete
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="driver-select">Selecionar Motorista Aprovado</Label>
-                <Select value={selectedDriverId} onValueChange={setSelectedDriverId}>
-                  <SelectTrigger id="driver-select">
-                    <SelectValue placeholder="Escolha um motorista..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableDrivers.length > 0 ? (
-                      availableDrivers.map((driver) => (
-                        <SelectItem key={driver.id} value={driver.id}>
-                          {driver.full_name} - {driver.cpf} - {driver.phone}
+          <div className="space-y-4">
+            {/* Sugestão Inteligente de Motoristas */}
+            <DriverSuggestions
+              orderId={order.id}
+              selectedDriverId={selectedDriverId}
+              onSelectDriver={(driverId, driverName, driverPhone) => {
+                setSelectedDriverId(driverId);
+                // Update availableDrivers if needed to include this driver
+                const existingDriver = availableDrivers.find(d => d.id === driverId);
+                if (!existingDriver) {
+                  setAvailableDrivers(prev => [...prev, {
+                    id: driverId,
+                    full_name: driverName,
+                    phone: driverPhone,
+                    cpf: ''
+                  }]);
+                }
+              }}
+            />
+
+            {/* Seleção Manual de Motorista */}
+            <Card className="border-primary/20 bg-primary/5">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <UserCheck className="h-5 w-5 text-primary" />
+                  {selectedDriverId ? 'Motorista Selecionado' : 'Seleção Manual de Motorista'}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="driver-select">Selecionar Motorista Aprovado</Label>
+                  <Select value={selectedDriverId} onValueChange={setSelectedDriverId}>
+                    <SelectTrigger id="driver-select">
+                      <SelectValue placeholder="Escolha um motorista..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableDrivers.length > 0 ? (
+                        availableDrivers.map((driver) => (
+                          <SelectItem key={driver.id} value={driver.id}>
+                            {driver.full_name} - {driver.cpf || 'CPF N/A'} - {driver.phone}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="none" disabled>
+                          Nenhum motorista aprovado disponível
                         </SelectItem>
-                      ))
-                    ) : (
-                      <SelectItem value="none" disabled>
-                        Nenhum motorista aprovado disponível
-                      </SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <Button
-                onClick={handleAssignDriver}
-                disabled={!selectedDriverId || processing}
-                className="w-full"
-              >
-                {processing ? (
-                  <>Atribuindo...</>
-                ) : (
-                  <>
-                    <UserCheck className="h-4 w-4 mr-2" />
-                    Atribuir Frete ao Motorista
-                  </>
-                )}
-              </Button>
-              
-              <p className="text-xs text-muted-foreground">
-                ⚠️ Esta ação registrará o motorista responsável pelo frete e será registrada em auditoria
-              </p>
-            </CardContent>
-          </Card>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <Button
+                  onClick={handleAssignDriver}
+                  disabled={!selectedDriverId || processing}
+                  className="w-full"
+                >
+                  {processing ? (
+                    <>Atribuindo...</>
+                  ) : (
+                    <>
+                      <UserCheck className="h-4 w-4 mr-2" />
+                      Atribuir Frete ao Motorista
+                    </>
+                  )}
+                </Button>
+                
+                <p className="text-xs text-muted-foreground">
+                  ⚠️ Esta ação registrará o motorista responsável pelo frete e será registrada em auditoria
+                </p>
+              </CardContent>
+            </Card>
+          </div>
 
           {/* 7. DOCUMENTAÇÃO E PREPARAÇÃO */}
           <Card>
