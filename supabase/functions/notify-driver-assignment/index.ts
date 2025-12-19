@@ -169,8 +169,8 @@ Deno.serve(async (req) => {
                       <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                         <tr>
                           <td align="center" style="padding: 30px 0 20px;">
-                            <a href="${appUrl}/motorista" style="display: inline-block; background: linear-gradient(135deg, #1A73E8 0%, #155bb3 100%); color: #ffffff; padding: 16px 40px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(26,115,232,0.3);">
-                              🚀 Acessar Painel do Motorista
+                            <a href="${appUrl}/motorista" style="display: inline-block; background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: #ffffff; padding: 18px 50px; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 18px; box-shadow: 0 4px 15px rgba(16,185,129,0.4);">
+                              ✅ ACEITAR FRETE AGORA
                             </a>
                           </td>
                         </tr>
@@ -178,7 +178,7 @@ Deno.serve(async (req) => {
 
                       <div style="background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 16px; margin-top: 20px;">
                         <p style="margin: 0; color: #991b1b; font-size: 14px; line-height: 1.6;">
-                          ⚠️ <strong>Atenção:</strong> Confirme o aceite do frete o mais rápido possível para garantir a reserva.
+                          ⚠️ <strong>AÇÃO NECESSÁRIA:</strong> Você precisa aceitar ou recusar este frete no painel do motorista. O frete será reatribuído se não for aceito em tempo hábil.
                         </p>
                       </div>
                     </td>

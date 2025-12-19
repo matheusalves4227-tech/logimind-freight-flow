@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DriverStatus } from "@/components/driver/DriverStatus";
+import { DriverPendingFreights } from "@/components/driver/DriverPendingFreights";
 import { DriverOpportunities } from "@/components/driver/DriverOpportunities";
 import { DriverActive } from "@/components/driver/DriverActive";
 import { DriverBankAccount } from "@/components/driver/DriverBankAccount";
@@ -124,7 +125,11 @@ const DriverDashboard = () => {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="status">
+          <TabsContent value="status" className="space-y-6">
+            {/* Fretes aguardando aceite - PRIORIDADE */}
+            <DriverPendingFreights driverProfile={driverProfile} />
+            
+            {/* Status geral */}
             <DriverStatus driverProfile={driverProfile} />
           </TabsContent>
 

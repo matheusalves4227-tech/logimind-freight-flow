@@ -8,12 +8,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { FileText, Package, AlertCircle, Clock, TrendingUp, Truck, Calculator, CheckCircle, XCircle, History, Building2, BarChart3 } from 'lucide-react';
+import { FileText, Package, AlertCircle, Clock, TrendingUp, Truck, Calculator, CheckCircle, XCircle, History, Building2, BarChart3, UserCheck } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { PendingQuotesTable } from '@/components/admin/PendingQuotesTable';
 import { PendingOrdersTable } from '@/components/admin/PendingOrdersTable';
 import { AcceptedOrdersTable } from '@/components/admin/AcceptedOrdersTable';
 import { RejectedOrdersTable } from '@/components/admin/RejectedOrdersTable';
+import { AwaitingDriverTable } from '@/components/admin/AwaitingDriverTable';
 import { LogiMindKPIs } from '@/components/admin/LogiMindKPIs';
 import { CarriersManagement } from '@/components/admin/CarriersManagement';
 import { PendingPaymentsTable } from '@/components/admin/PendingPaymentsTable';
@@ -24,6 +25,7 @@ import { CompetitorBenchmark } from '@/components/admin/CompetitorBenchmark';
 interface StatsData {
   pendingQuotes: number;
   pendingOrders: number;
+  awaitingDriver: number;
   totalOrders: number;
   avgResponseTime: number;
 }
@@ -37,6 +39,7 @@ const AdminOrders = () => {
   const [stats, setStats] = useState<StatsData>({
     pendingQuotes: 0,
     pendingOrders: 0,
+    awaitingDriver: 0,
     totalOrders: 0,
     avgResponseTime: 0,
   });
@@ -104,6 +107,12 @@ const AdminOrders = () => {
         .select('id', { count: 'exact', head: true })
         .eq('status', 'pending');
 
+      // Contar pedidos aguardando aceite do motorista
+      const { count: awaitingCount } = await supabase
+        .from('orders')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'awaiting_driver_acceptance');
+
       // Total de pedidos
       const { count: totalCount } = await supabase
         .from('orders')
@@ -112,6 +121,7 @@ const AdminOrders = () => {
       setStats({
         pendingQuotes: quotesCount || 0,
         pendingOrders: ordersCount || 0,
+        awaitingDriver: awaitingCount || 0,
         totalOrders: totalCount || 0,
         avgResponseTime: 0, // Calcular depois se necessário
       });
@@ -235,8 +245,8 @@ const AdminOrders = () => {
 
         {/* Tabs de Conteúdo */}
         <Tabs defaultValue="carriers" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-10 max-w-7xl bg-muted/50 p-1 rounded-lg">
-            <TabsTrigger 
+          <TabsList className="grid w-full grid-cols-11 max-w-7xl bg-muted/50 p-1 rounded-lg">
+            <TabsTrigger
               value="carriers" 
               className="gap-2 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
             >
@@ -306,6 +316,18 @@ const AdminOrders = () => {
               )}
             </TabsTrigger>
             <TabsTrigger 
+              value="orders-awaiting" 
+              className="gap-2 relative data-[state=active]:border-b-2 data-[state=active]:border-accent data-[state=active]:font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
+            >
+              <UserCheck className="h-4 w-4" />
+              Aguardando
+              {stats.awaitingDriver > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-accent text-accent-foreground text-xs font-bold rounded-full flex items-center justify-center">
+                  {stats.awaitingDriver}
+                </span>
+              )}
+            </TabsTrigger>
+            <TabsTrigger 
               value="orders-accepted" 
               className="gap-2 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
             >
@@ -351,6 +373,10 @@ const AdminOrders = () => {
 
           <TabsContent value="orders-pending">
             <PendingOrdersTable onUpdate={fetchStats} />
+          </TabsContent>
+
+          <TabsContent value="orders-awaiting">
+            <AwaitingDriverTable />
           </TabsContent>
 
           <TabsContent value="orders-accepted">
