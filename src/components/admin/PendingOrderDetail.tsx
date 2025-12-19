@@ -261,7 +261,7 @@ export const PendingOrderDetail = ({ order, open, onOpenChange, onUpdate }: Pend
       const { error } = await supabase
         .from('orders')
         .update({
-          status: 'confirmed',
+          status: 'awaiting_driver_acceptance', // Aguardar aceite do motorista
           operational_notes: operationalNotes,
           driver_id: selectedDriverId,
           driver_name: selectedDriver?.full_name,
@@ -289,8 +289,8 @@ export const PendingOrderDetail = ({ order, open, onOpenChange, onUpdate }: Pend
       });
 
       toast({
-        title: 'Pedido Aprovado',
-        description: `Pedido aprovado e notificação enviada para ${selectedDriver?.full_name}`,
+        title: 'Frete Enviado ao Motorista',
+        description: `Aguardando ${selectedDriver?.full_name} aceitar o frete. Notificação enviada.`,
       });
 
       onUpdate();
@@ -414,6 +414,7 @@ export const PendingOrderDetail = ({ order, open, onOpenChange, onUpdate }: Pend
       const { error } = await supabase
         .from('orders')
         .update({
+          status: 'awaiting_driver_acceptance', // Aguardar aceite do motorista
           driver_id: selectedDriverId,
           driver_name: selectedDriver?.full_name,
           driver_phone: selectedDriver?.phone,
@@ -441,7 +442,7 @@ export const PendingOrderDetail = ({ order, open, onOpenChange, onUpdate }: Pend
 
       toast({
         title: 'Motorista Atribuído',
-        description: `Frete atribuído para ${selectedDriver?.full_name}. Notificação enviada por email.`,
+        description: `Frete enviado para ${selectedDriver?.full_name}. Aguardando aceite do motorista.`,
       });
 
       onUpdate();
