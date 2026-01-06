@@ -3,9 +3,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Navigation, Package, CheckCircle } from "lucide-react";
+import { MapPin, Navigation, Package, CheckCircle, Camera } from "lucide-react";
 import { formatarMoeda } from "@/lib/formatters";
 import { toast } from "sonner";
+import { DeliveryPhotoUpload } from "./DeliveryPhotoUpload";
 
 interface DriverActiveProps {
   driverProfile: any;
@@ -25,6 +26,7 @@ interface ActiveLoad {
 export const DriverActive = ({ driverProfile }: DriverActiveProps) => {
   const [activeLoads, setActiveLoads] = useState<ActiveLoad[]>([]);
   const [loading, setLoading] = useState(false);
+  const [showPhotoUpload, setShowPhotoUpload] = useState<string | null>(null);
 
   useEffect(() => {
     loadActiveLoads();
@@ -69,16 +71,25 @@ export const DriverActive = ({ driverProfile }: DriverActiveProps) => {
     window.open(wazeUrl, '_blank');
   };
 
-  const handleUpdateStatus = async (loadId: string, newStatus: string, statusLabel: string) => {
+  const handleUpdateStatus = async (loadId: string, newStatus: string, statusLabel: string, photoUrl?: string) => {
     setLoading(true);
     
     try {
       // Preparar dados de atualização
-      const updateData: { status: string; actual_delivery?: string } = { status: newStatus };
+      const updateData: { 
+        status: string; 
+        actual_delivery?: string;
+        foto_entrega_url?: string;
+        foto_entrega_timestamp?: string;
+      } = { status: newStatus };
       
-      // Se status for entregue, registrar data/hora da entrega
+      // Se status for entregue, registrar data/hora da entrega e foto
       if (newStatus === 'entregue') {
         updateData.actual_delivery = new Date().toISOString();
+        if (photoUrl) {
+          updateData.foto_entrega_url = photoUrl;
+          updateData.foto_entrega_timestamp = new Date().toISOString();
+        }
       }
 
       // Atualizar status da ordem
@@ -134,6 +145,7 @@ export const DriverActive = ({ driverProfile }: DriverActiveProps) => {
       }
 
       toast.success(`Status atualizado: ${statusLabel}`);
+      setShowPhotoUpload(null);
       loadActiveLoads();
     } catch (error) {
       console.error('Erro ao atualizar status:', error);
@@ -141,6 +153,11 @@ export const DriverActive = ({ driverProfile }: DriverActiveProps) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDeliveryPhotoUploaded = (loadId: string, photoUrl: string) => {
+    // Confirmar entrega com a foto
+    handleUpdateStatus(loadId, "entregue", "Entrega Concluída com Foto", photoUrl);
   };
 
   const getStatusBadge = (status: string) => {
@@ -247,14 +264,23 @@ export const DriverActive = ({ driverProfile }: DriverActiveProps) => {
                   )}
                   
                   {load.status === "em_transito" && (
-                    <Button 
-                      className="w-full gap-2 bg-green-600 hover:bg-green-700"
-                      onClick={() => handleUpdateStatus(load.id, "entregue", "Entrega Concluída")}
-                      disabled={loading}
-                    >
-                      <CheckCircle className="h-4 w-4" />
-                      Concluir Entrega
-                    </Button>
+                    showPhotoUpload === load.id ? (
+                      <DeliveryPhotoUpload
+                        orderId={load.id}
+                        trackingCode={load.tracking_code}
+                        onPhotoUploaded={(photoUrl) => handleDeliveryPhotoUploaded(load.id, photoUrl)}
+                        onCancel={() => setShowPhotoUpload(null)}
+                      />
+                    ) : (
+                      <Button 
+                        className="w-full gap-2 bg-green-600 hover:bg-green-700"
+                        onClick={() => setShowPhotoUpload(load.id)}
+                        disabled={loading}
+                      >
+                        <Camera className="h-4 w-4" />
+                        Concluir Entrega (Foto Obrigatória)
+                      </Button>
+                    )
                   )}
                 </div>
               </CardContent>
