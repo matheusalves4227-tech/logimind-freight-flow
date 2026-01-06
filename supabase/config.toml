@@ -50,3 +50,6 @@ verify_jwt = true
 
 [functions.notify-shipper-acceptance]
 verify_jwt = true
+
+[functions.notify-shipper-transit]
+verify_jwt = true
