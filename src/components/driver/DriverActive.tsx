@@ -71,7 +71,13 @@ export const DriverActive = ({ driverProfile }: DriverActiveProps) => {
     window.open(wazeUrl, '_blank');
   };
 
-  const handleUpdateStatus = async (loadId: string, newStatus: string, statusLabel: string, photoUrl?: string) => {
+  const handleUpdateStatus = async (
+    loadId: string, 
+    newStatus: string, 
+    statusLabel: string, 
+    photoUrl?: string,
+    location?: { latitude: number; longitude: number }
+  ) => {
     setLoading(true);
     
     try {
@@ -81,6 +87,8 @@ export const DriverActive = ({ driverProfile }: DriverActiveProps) => {
         actual_delivery?: string;
         foto_entrega_url?: string;
         foto_entrega_timestamp?: string;
+        foto_entrega_latitude?: number;
+        foto_entrega_longitude?: number;
       } = { status: newStatus };
       
       // Se status for entregue, registrar data/hora da entrega e foto
@@ -89,6 +97,10 @@ export const DriverActive = ({ driverProfile }: DriverActiveProps) => {
         if (photoUrl) {
           updateData.foto_entrega_url = photoUrl;
           updateData.foto_entrega_timestamp = new Date().toISOString();
+        }
+        if (location) {
+          updateData.foto_entrega_latitude = location.latitude;
+          updateData.foto_entrega_longitude = location.longitude;
         }
       }
 
@@ -155,9 +167,13 @@ export const DriverActive = ({ driverProfile }: DriverActiveProps) => {
     }
   };
 
-  const handleDeliveryPhotoUploaded = (loadId: string, photoUrl: string) => {
-    // Confirmar entrega com a foto
-    handleUpdateStatus(loadId, "entregue", "Entrega Concluída com Foto", photoUrl);
+  const handleDeliveryPhotoUploaded = (
+    loadId: string, 
+    photoUrl: string, 
+    location?: { latitude: number; longitude: number }
+  ) => {
+    // Confirmar entrega com a foto e geolocalização
+    handleUpdateStatus(loadId, "entregue", "Entrega Concluída com Foto", photoUrl, location);
   };
 
   const getStatusBadge = (status: string) => {
@@ -268,7 +284,7 @@ export const DriverActive = ({ driverProfile }: DriverActiveProps) => {
                       <DeliveryPhotoUpload
                         orderId={load.id}
                         trackingCode={load.tracking_code}
-                        onPhotoUploaded={(photoUrl) => handleDeliveryPhotoUploaded(load.id, photoUrl)}
+                        onPhotoUploaded={(photoUrl, location) => handleDeliveryPhotoUploaded(load.id, photoUrl, location)}
                         onCancel={() => setShowPhotoUpload(null)}
                       />
                     ) : (

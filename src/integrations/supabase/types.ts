@@ -1098,6 +1098,8 @@ export type Database = {
           estimated_delivery: string | null
           external_tracking_code: string | null
           final_price: number
+          foto_entrega_latitude: number | null
+          foto_entrega_longitude: number | null
           foto_entrega_timestamp: string | null
           foto_entrega_url: string | null
           gateway_transaction_id: string | null
@@ -1151,6 +1153,8 @@ export type Database = {
           estimated_delivery?: string | null
           external_tracking_code?: string | null
           final_price: number
+          foto_entrega_latitude?: number | null
+          foto_entrega_longitude?: number | null
           foto_entrega_timestamp?: string | null
           foto_entrega_url?: string | null
           gateway_transaction_id?: string | null
@@ -1204,6 +1208,8 @@ export type Database = {
           estimated_delivery?: string | null
           external_tracking_code?: string | null
           final_price?: number
+          foto_entrega_latitude?: number | null
+          foto_entrega_longitude?: number | null
           foto_entrega_timestamp?: string | null
           foto_entrega_url?: string | null
           gateway_transaction_id?: string | null

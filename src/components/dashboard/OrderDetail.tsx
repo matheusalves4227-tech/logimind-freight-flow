@@ -19,7 +19,8 @@ import {
   AlertCircle,
   Star,
   Camera,
-  ExternalLink
+  ExternalLink,
+  Navigation
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ReviewForm } from "@/components/reviews/ReviewForm";
@@ -37,6 +38,8 @@ export interface OrderDetails {
   carrier_id?: string;
   foto_entrega_url?: string;
   foto_entrega_timestamp?: string;
+  foto_entrega_latitude?: number;
+  foto_entrega_longitude?: number;
   origin: {
     cep: string;
     address: string;
@@ -450,7 +453,7 @@ export const OrderDetail = ({ order, onBack }: OrderDetailProps) => {
               />
             </div>
             
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex flex-col gap-3">
               {order.foto_entrega_timestamp && (
                 <p className="text-sm text-muted-foreground flex items-center gap-2">
                   <Clock className="h-4 w-4" />
@@ -462,6 +465,27 @@ export const OrderDetail = ({ order, onBack }: OrderDetailProps) => {
                     minute: '2-digit'
                   })}
                 </p>
+              )}
+              
+              {order.foto_entrega_latitude && order.foto_entrega_longitude && (
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                  <p className="text-sm text-muted-foreground flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-green-600" />
+                    Localização: {order.foto_entrega_latitude.toFixed(6)}, {order.foto_entrega_longitude.toFixed(6)}
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-fit"
+                    onClick={() => window.open(
+                      `https://www.google.com/maps?q=${order.foto_entrega_latitude},${order.foto_entrega_longitude}`,
+                      '_blank'
+                    )}
+                  >
+                    <Navigation className="h-4 w-4 mr-2" />
+                    Ver no Mapa
+                  </Button>
+                </div>
               )}
               
               <Button
