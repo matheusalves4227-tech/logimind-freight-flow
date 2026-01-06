@@ -119,9 +119,23 @@ export const DriverPendingFreights = ({ driverProfile, onFreightAccepted }: Driv
 
       if (error) throw error;
 
+      // Notificar embarcador sobre aceite do motorista
+      try {
+        await supabase.functions.invoke('notify-shipper-acceptance', {
+          body: {
+            orderId: freight.id,
+            driverName: driverProfile.full_name,
+            driverPhone: driverProfile.phone || driverProfile.whatsapp,
+          },
+        });
+        console.log('Embarcador notificado sobre aceite');
+      } catch (notifyError) {
+        console.error('Erro ao notificar embarcador:', notifyError);
+      }
+
       toast({
         title: "Frete Aceito!",
-        description: `Você aceitou o frete ${freight.tracking_code}. Bom trabalho!`,
+        description: `Você aceitou o frete ${freight.tracking_code}. O embarcador foi notificado.`,
       });
 
       loadPendingFreights();
