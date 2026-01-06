@@ -73,10 +73,18 @@ export const DriverActive = ({ driverProfile }: DriverActiveProps) => {
     setLoading(true);
     
     try {
+      // Preparar dados de atualização
+      const updateData: { status: string; actual_delivery?: string } = { status: newStatus };
+      
+      // Se status for entregue, registrar data/hora da entrega
+      if (newStatus === 'entregue') {
+        updateData.actual_delivery = new Date().toISOString();
+      }
+
       // Atualizar status da ordem
       const { error } = await supabase
         .from('orders')
-        .update({ status: newStatus })
+        .update(updateData)
         .eq('id', loadId);
 
       if (error) throw error;
@@ -105,6 +113,23 @@ export const DriverActive = ({ driverProfile }: DriverActiveProps) => {
           }
         } catch (notifyErr) {
           console.error('Falha ao chamar notify-shipper-transit:', notifyErr);
+        }
+      }
+
+      // Se o status mudou para entregue, notificar o embarcador
+      if (newStatus === 'entregue') {
+        try {
+          const { error: notifyError } = await supabase.functions.invoke('notify-shipper-delivery', {
+            body: { orderId: loadId }
+          });
+          
+          if (notifyError) {
+            console.error('Erro ao notificar embarcador sobre entrega:', notifyError);
+          } else {
+            console.log('Embarcador notificado sobre entrega concluída');
+          }
+        } catch (notifyErr) {
+          console.error('Falha ao chamar notify-shipper-delivery:', notifyErr);
         }
       }
 
