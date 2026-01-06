@@ -152,6 +152,8 @@ const Dashboard = () => {
         vehicle_type: order.vehicle_type || undefined,
         driver_id: order.driver_id || undefined,
         carrier_id: order.carrier_id || undefined,
+        foto_entrega_url: order.foto_entrega_url || undefined,
+        foto_entrega_timestamp: order.foto_entrega_timestamp || undefined,
         origin: {
           cep: order.origin_cep,
           address: order.origin_address,
