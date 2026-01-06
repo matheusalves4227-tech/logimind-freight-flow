@@ -17,7 +17,9 @@ import {
   Upload,
   FileText,
   AlertCircle,
-  Star
+  Star,
+  Camera,
+  ExternalLink
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ReviewForm } from "@/components/reviews/ReviewForm";
@@ -33,6 +35,8 @@ export interface OrderDetails {
   vehicle_type?: string;
   driver_id?: string;
   carrier_id?: string;
+  foto_entrega_url?: string;
+  foto_entrega_timestamp?: string;
   origin: {
     cep: string;
     address: string;
@@ -428,6 +432,51 @@ export const OrderDetail = ({ order, onBack }: OrderDetailProps) => {
           </div>
         </div>
       </Card>
+
+      {/* Foto de Comprovante de Entrega */}
+      {order.foto_entrega_url && (
+        <Card className="p-6 rounded-xl shadow-sm">
+          <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+            <Camera className="h-5 w-5 text-primary" />
+            Comprovante de Entrega
+          </h3>
+          
+          <div className="space-y-4">
+            <div className="relative rounded-lg overflow-hidden border border-border bg-muted/30">
+              <img 
+                src={order.foto_entrega_url} 
+                alt="Foto de comprovante da entrega"
+                className="w-full max-h-96 object-contain"
+              />
+            </div>
+            
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              {order.foto_entrega_timestamp && (
+                <p className="text-sm text-muted-foreground flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  Registrada em: {new Date(order.foto_entrega_timestamp).toLocaleString('pt-BR', {
+                    day: '2-digit',
+                    month: 'long',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </p>
+              )}
+              
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-fit"
+                onClick={() => window.open(order.foto_entrega_url, '_blank')}
+              >
+                <ExternalLink className="h-4 w-4 mr-2" />
+                Abrir em nova aba
+              </Button>
+            </div>
+          </div>
+        </Card>
+      )}
 
       {/* Seção de Avaliação do Motorista */}
       {canReview && hasReviewed !== null && (
