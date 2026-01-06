@@ -5,6 +5,7 @@ import Navbar from '@/components/Navbar';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { 
@@ -17,7 +18,8 @@ import {
   Info,
   Loader2,
   AlertTriangle,
-  Radio
+  Radio,
+  Search
 } from 'lucide-react';
 import { TrackingMap } from '@/components/tracking/TrackingMap';
 import { TrackingTimeline } from '@/components/tracking/TrackingTimeline';
@@ -63,13 +65,15 @@ interface OrderData {
 }
 
 const Tracking = () => {
-  const { trackingCode } = useParams<{ trackingCode: string }>();
+  const { trackingCode: urlTrackingCode } = useParams<{ trackingCode: string }>();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [trackingData, setTrackingData] = useState<TrackingData | null>(null);
   const [orderData, setOrderData] = useState<OrderData | null>(null);
   const [orderId, setOrderId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [searchCode, setSearchCode] = useState('');
+  const [activeTrackingCode, setActiveTrackingCode] = useState<string | null>(urlTrackingCode || null);
 
   // Hook de Realtime tracking
   const { isConnected } = useRealtimeTracking({
@@ -128,12 +132,21 @@ const Tracking = () => {
   });
 
   useEffect(() => {
-    if (trackingCode) {
-      fetchTrackingData();
+    if (urlTrackingCode) {
+      setActiveTrackingCode(urlTrackingCode);
     }
-  }, [trackingCode]);
+  }, [urlTrackingCode]);
 
-  const fetchTrackingData = async () => {
+  useEffect(() => {
+    if (activeTrackingCode) {
+      fetchTrackingData(activeTrackingCode);
+    }
+  }, [activeTrackingCode]);
+
+  const fetchTrackingData = async (code?: string) => {
+    const trackingCodeToUse = code || activeTrackingCode;
+    if (!trackingCodeToUse) return;
+
     try {
       setLoading(true);
       setError(null);
@@ -142,7 +155,7 @@ const Tracking = () => {
       const { data: order, error: orderError } = await supabase
         .from('orders')
         .select('*')
-        .eq('tracking_code', trackingCode)
+        .eq('tracking_code', trackingCodeToUse)
         .single();
 
       if (orderError) {
@@ -161,7 +174,7 @@ const Tracking = () => {
 
       // Chamar edge function de tracking
       const { data, error: trackingError } = await supabase.functions.invoke(
-        `tracking/${trackingCode}`,
+        `tracking/${trackingCodeToUse}`,
         {
           method: 'GET',
         }
@@ -179,6 +192,14 @@ const Tracking = () => {
       setError('Erro ao carregar rastreamento');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchCode.trim()) {
+      setActiveTrackingCode(searchCode.trim().toUpperCase());
+      navigate(`/tracking/${searchCode.trim().toUpperCase()}`);
     }
   };
 
@@ -202,6 +223,53 @@ const Tracking = () => {
 
   const hasCriticalEvents = trackingData?.historico_eventos.some(e => e.ocorrencia_critica);
 
+  // Se não tiver código de rastreamento, mostrar formulário de busca
+  if (!activeTrackingCode || (error && !trackingData && !orderData)) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Helmet>
+          <title>Rastrear Pedido | LogiMarket</title>
+          <meta name="description" content="Rastreie seu pedido em tempo real" />
+        </Helmet>
+        <Navbar />
+        <div className="container mx-auto px-4 py-8 pt-24">
+          <Card className="p-8 max-w-md mx-auto">
+            <div className="text-center mb-6">
+              <Package className="h-16 w-16 text-primary mx-auto mb-4" />
+              <h1 className="text-2xl font-bold mb-2">Rastrear Pedido</h1>
+              <p className="text-muted-foreground">
+                Digite o código de rastreamento para acompanhar seu pedido
+              </p>
+            </div>
+            
+            <form onSubmit={handleSearch} className="space-y-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Ex: LGM-XXXXXX"
+                  value={searchCode}
+                  onChange={(e) => setSearchCode(e.target.value)}
+                  className="pl-10 text-center font-mono uppercase"
+                />
+              </div>
+              <Button type="submit" className="w-full" disabled={!searchCode.trim()}>
+                <Search className="mr-2 h-4 w-4" />
+                Rastrear
+              </Button>
+            </form>
+
+            {error && (
+              <div className="mt-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-center">
+                <p className="text-sm text-destructive">{error}</p>
+              </div>
+            )}
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -216,7 +284,7 @@ const Tracking = () => {
     );
   }
 
-  if (error || !trackingData || !orderData) {
+  if (!trackingData || !orderData) {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
@@ -225,11 +293,11 @@ const Tracking = () => {
             <Package className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
             <h2 className="text-xl font-bold mb-2">Rastreamento não encontrado</h2>
             <p className="text-muted-foreground mb-6">
-              Código de rastreamento: {trackingCode}
+              Código de rastreamento: {activeTrackingCode}
             </p>
-            <Button onClick={() => navigate('/dashboard')}>
+            <Button onClick={() => navigate('/tracking')}>
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Voltar ao Dashboard
+              Tentar novamente
             </Button>
           </Card>
         </div>
@@ -257,7 +325,7 @@ const Tracking = () => {
               <span className="hidden sm:inline">Voltar</span>
             </Button>
             
-            <Button variant="outline" size="sm" onClick={fetchTrackingData}>
+            <Button variant="outline" size="sm" onClick={() => fetchTrackingData()}>
               Atualizar
             </Button>
           </div>
@@ -266,7 +334,7 @@ const Tracking = () => {
             <h1 className="text-xl md:text-2xl lg:text-3xl font-bold mb-2">Rastreamento</h1>
             <div className="bg-muted/50 rounded-lg p-3 border border-border">
               <p className="text-xs text-muted-foreground mb-1">Código de Rastreio</p>
-              <p className="text-sm md:text-base font-mono font-semibold break-all">{trackingCode}</p>
+              <p className="text-sm md:text-base font-mono font-semibold break-all">{activeTrackingCode}</p>
             </div>
           </div>
         </div>

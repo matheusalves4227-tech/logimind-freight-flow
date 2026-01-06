@@ -42,6 +42,7 @@ const App = () => (
           <Route path="/quote" element={<Quote />} />
           <Route path="/cotacao-b2b" element={<B2BQuote />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/tracking" element={<Tracking />} />
           <Route path="/tracking/:trackingCode" element={<Tracking />} />
           <Route path="/motorista/dashboard" element={<DriverDashboard />} />
           <Route path="/motorista/coleta/:orderId" element={<DriverPickupCode />} />
@@ -50,8 +51,9 @@ const App = () => (
           <Route path="/admin/pedidos" element={<AdminOrders />} />
           <Route path="/admin/calculadora-b2b" element={<AdminB2BCalculator />} />
           <Route path="/admin/auditoria" element={<AdminAuditLogs />} />
-            <Route path="/parceiro/cadastro" element={<PartnerOnboarding />} />
-            <Route path="/cadastro/embarcador" element={<ShipperOnboarding />} />
+          <Route path="/parceiro/cadastro" element={<PartnerOnboarding />} />
+          <Route path="/cadastro-parceiro" element={<PartnerOnboarding />} />
+          <Route path="/cadastro/embarcador" element={<ShipperOnboarding />} />
           <Route path="/aguardando-aprovacao" element={<AguardandoAprovacao />} />
           <Route path="/payment-success" element={<PaymentSuccess />} />
           <Route path="/ranking" element={<Ranking />} />
