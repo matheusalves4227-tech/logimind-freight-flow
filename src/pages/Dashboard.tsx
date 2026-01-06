@@ -145,10 +145,13 @@ const Dashboard = () => {
         quote_id: order.quote_id || order.id,
         status: order.status === 'in_transit' ? 'in_transit' : 
                 order.status === 'delivered' ? 'delivered' : 
+                order.status === 'entregue' ? 'ENTREGUE' :
                 order.status === 'incident' ? 'incident' : 'in_transit',
         carrier_name: order.carrier_name,
         carrier_type: order.service_type === 'ftl' ? "autonomous" : "carrier",
         vehicle_type: order.vehicle_type || undefined,
+        driver_id: order.driver_id || undefined,
+        carrier_id: order.carrier_id || undefined,
         origin: {
           cep: order.origin_cep,
           address: order.origin_address,

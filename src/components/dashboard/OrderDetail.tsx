@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -16,8 +16,11 @@ import {
   CheckCircle,
   Upload,
   FileText,
-  AlertCircle
+  AlertCircle,
+  Star
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { ReviewForm } from "@/components/reviews/ReviewForm";
 import { toast } from "sonner";
 
 export interface OrderDetails {
@@ -28,6 +31,8 @@ export interface OrderDetails {
   carrier_name: string;
   carrier_type: "carrier" | "autonomous";
   vehicle_type?: string;
+  driver_id?: string;
+  carrier_id?: string;
   origin: {
     cep: string;
     address: string;
@@ -158,6 +163,45 @@ const CopyButton = ({ text, label }: { text: string; label: string }) => {
 export const OrderDetail = ({ order, onBack }: OrderDetailProps) => {
   const statusConfig = getStatusConfig(order.status_pagamento || order.status);
   const needsProofUpload = order.status === 'AGUARDANDO_COMPROVANTE' || order.status_pagamento === 'AGUARDANDO_COMPROVANTE';
+  
+  const [hasReviewed, setHasReviewed] = useState<boolean | null>(null);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  
+  const isDelivered = order.status === 'ENTREGUE' || order.status === 'entregue' || order.status === 'delivered';
+  const canReview = isDelivered && order.driver_id;
+  
+  useEffect(() => {
+    const checkExistingReview = async () => {
+      if (!canReview || !order.driver_id) {
+        setHasReviewed(false);
+        return;
+      }
+      
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        
+        const { data: existingReview } = await supabase
+          .from('driver_reviews')
+          .select('id')
+          .eq('order_id', order.id)
+          .eq('reviewer_user_id', user.id)
+          .maybeSingle();
+        
+        setHasReviewed(!!existingReview);
+      } catch (error) {
+        console.error('Error checking review:', error);
+        setHasReviewed(false);
+      }
+    };
+    
+    checkExistingReview();
+  }, [order.id, order.driver_id, canReview]);
+  
+  const handleReviewSuccess = () => {
+    setHasReviewed(true);
+    setShowReviewForm(false);
+  };
 
   return (
     <div className="space-y-6">
@@ -384,6 +428,57 @@ export const OrderDetail = ({ order, onBack }: OrderDetailProps) => {
           </div>
         </div>
       </Card>
+
+      {/* Seção de Avaliação do Motorista */}
+      {canReview && hasReviewed !== null && (
+        <Card className="p-6 rounded-xl shadow-sm">
+          <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+            <Star className="h-5 w-5 text-yellow-500" />
+            Avaliação do Motorista
+          </h3>
+          
+          {hasReviewed ? (
+            <div className="flex items-center gap-3 p-4 bg-emerald-50 rounded-lg border border-emerald-200">
+              <CheckCircle className="h-6 w-6 text-emerald-600" />
+              <div>
+                <p className="font-medium text-emerald-800">Avaliação enviada!</p>
+                <p className="text-sm text-emerald-600">
+                  Obrigado por avaliar o motorista. Sua opinião ajuda a melhorar nosso serviço.
+                </p>
+              </div>
+            </div>
+          ) : showReviewForm ? (
+            <div className="space-y-4">
+              <ReviewForm
+                orderId={order.id}
+                driverId={order.driver_id}
+                type="driver"
+                onSuccess={handleReviewSuccess}
+              />
+              <Button 
+                variant="ghost" 
+                className="w-full"
+                onClick={() => setShowReviewForm(false)}
+              >
+                Cancelar
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-muted-foreground">
+                Como foi sua experiência com o motorista? Sua avaliação ajuda outros embarcadores.
+              </p>
+              <Button 
+                onClick={() => setShowReviewForm(true)}
+                className="w-full sm:w-auto"
+              >
+                <Star className="h-4 w-4 mr-2" />
+                Avaliar Motorista
+              </Button>
+            </div>
+          )}
+        </Card>
+      )}
     </div>
   );
 };
