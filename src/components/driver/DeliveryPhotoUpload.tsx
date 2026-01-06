@@ -1,15 +1,20 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Camera, Upload, X, CheckCircle, Loader2, Image as ImageIcon } from "lucide-react";
+import { Camera, Upload, X, CheckCircle, Loader2, Image as ImageIcon, MapPin, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import imageCompression from "browser-image-compression";
 
+interface GeoLocation {
+  latitude: number;
+  longitude: number;
+}
+
 interface DeliveryPhotoUploadProps {
   orderId: string;
   trackingCode: string;
-  onPhotoUploaded: (photoUrl: string) => void;
+  onPhotoUploaded: (photoUrl: string, location?: GeoLocation) => void;
   onCancel: () => void;
 }
 
@@ -22,8 +27,57 @@ export const DeliveryPhotoUpload = ({
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [location, setLocation] = useState<GeoLocation | null>(null);
+  const [locationLoading, setLocationLoading] = useState(false);
+  const [locationError, setLocationError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+
+  const captureLocation = () => {
+    if (!navigator.geolocation) {
+      setLocationError("Geolocalização não suportada neste dispositivo");
+      return;
+    }
+
+    setLocationLoading(true);
+    setLocationError(null);
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setLocation({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude
+        });
+        setLocationLoading(false);
+        toast.success("Localização capturada com sucesso!");
+      },
+      (error) => {
+        setLocationLoading(false);
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            setLocationError("Permissão de localização negada");
+            toast.error("Por favor, permita o acesso à localização para comprovar o local da entrega.");
+            break;
+          case error.POSITION_UNAVAILABLE:
+            setLocationError("Localização indisponível");
+            toast.error("Não foi possível obter sua localização.");
+            break;
+          case error.TIMEOUT:
+            setLocationError("Tempo esgotado ao obter localização");
+            toast.error("Tempo esgotado. Tente novamente.");
+            break;
+          default:
+            setLocationError("Erro ao obter localização");
+            toast.error("Erro ao capturar localização.");
+        }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
+    );
+  };
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -52,6 +106,9 @@ export const DeliveryPhotoUpload = ({
         setPreview(reader.result as string);
       };
       reader.readAsDataURL(compressedFile);
+      
+      // Capturar localização automaticamente ao selecionar foto
+      captureLocation();
     } catch (error) {
       console.error('Erro ao comprimir imagem:', error);
       toast.error("Erro ao processar imagem. Tente novamente.");
@@ -88,7 +145,7 @@ export const DeliveryPhotoUpload = ({
         .getPublicUrl(fileName);
 
       toast.success("Foto enviada com sucesso!");
-      onPhotoUploaded(publicUrl);
+      onPhotoUploaded(publicUrl, location || undefined);
     } catch (error: any) {
       console.error('Erro ao fazer upload:', error);
       toast.error("Erro ao enviar foto. Tente novamente.");
@@ -100,6 +157,8 @@ export const DeliveryPhotoUpload = ({
   const handleRemovePhoto = () => {
     setPreview(null);
     setSelectedFile(null);
+    setLocation(null);
+    setLocationError(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
     if (cameraInputRef.current) cameraInputRef.current.value = '';
   };
@@ -118,20 +177,65 @@ export const DeliveryPhotoUpload = ({
       <CardContent className="space-y-4">
         {/* Preview da foto */}
         {preview ? (
-          <div className="relative">
-            <img 
-              src={preview} 
-              alt="Preview da foto de entrega" 
-              className="w-full h-48 object-cover rounded-lg border"
-            />
-            <Button
-              variant="destructive"
-              size="icon"
-              className="absolute top-2 right-2 h-8 w-8"
-              onClick={handleRemovePhoto}
-            >
-              <X className="h-4 w-4" />
-            </Button>
+          <div className="space-y-3">
+            <div className="relative">
+              <img 
+                src={preview} 
+                alt="Preview da foto de entrega" 
+                className="w-full h-48 object-cover rounded-lg border"
+              />
+              <Button
+                variant="destructive"
+                size="icon"
+                className="absolute top-2 right-2 h-8 w-8"
+                onClick={handleRemovePhoto}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            {/* Status da geolocalização */}
+            <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50">
+              {locationLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin text-amber-600" />
+                  <span className="text-sm text-muted-foreground">Obtendo localização...</span>
+                </>
+              ) : location ? (
+                <>
+                  <MapPin className="h-4 w-4 text-green-600" />
+                  <span className="text-sm text-green-700">
+                    Localização capturada: {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}
+                  </span>
+                </>
+              ) : locationError ? (
+                <>
+                  <AlertTriangle className="h-4 w-4 text-amber-600" />
+                  <span className="text-sm text-amber-700">{locationError}</span>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={captureLocation}
+                    className="ml-auto text-xs"
+                  >
+                    Tentar novamente
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">Localização não disponível</span>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={captureLocation}
+                    className="ml-auto text-xs"
+                  >
+                    Capturar
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
         ) : (
           <div className="border-2 border-dashed border-muted-foreground/30 rounded-lg p-8 text-center">

@@ -154,6 +154,8 @@ const Dashboard = () => {
         carrier_id: order.carrier_id || undefined,
         foto_entrega_url: order.foto_entrega_url || undefined,
         foto_entrega_timestamp: order.foto_entrega_timestamp || undefined,
+        foto_entrega_latitude: order.foto_entrega_latitude || undefined,
+        foto_entrega_longitude: order.foto_entrega_longitude || undefined,
         origin: {
           cep: order.origin_cep,
           address: order.origin_address,
