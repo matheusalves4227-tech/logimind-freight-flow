@@ -91,6 +91,23 @@ export const DriverActive = ({ driverProfile }: DriverActiveProps) => {
           event_timestamp: new Date().toISOString()
         });
 
+      // Se o status mudou para em_transito, notificar o embarcador
+      if (newStatus === 'em_transito') {
+        try {
+          const { error: notifyError } = await supabase.functions.invoke('notify-shipper-transit', {
+            body: { orderId: loadId }
+          });
+          
+          if (notifyError) {
+            console.error('Erro ao notificar embarcador sobre trânsito:', notifyError);
+          } else {
+            console.log('Embarcador notificado sobre início do trânsito');
+          }
+        } catch (notifyErr) {
+          console.error('Falha ao chamar notify-shipper-transit:', notifyErr);
+        }
+      }
+
       toast.success(`Status atualizado: ${statusLabel}`);
       loadActiveLoads();
     } catch (error) {
