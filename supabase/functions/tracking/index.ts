@@ -200,12 +200,25 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Cliente com contexto do usuário para leitura
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       {
         global: {
           headers: { Authorization: req.headers.get('Authorization')! },
+        },
+      }
+    );
+    
+    // Cliente admin para inserções em tabelas com RLS restritivo
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
         },
       }
     );
@@ -280,9 +293,9 @@ Deno.serve(async (req) => {
       const driverData = await fetchDriverTracking(order.id, order.driver_phone);
       normalizedEvents = driverData.events.map((e: any) => normalizeExternalEvent(e, 'ftl'));
       
-      // Atualizar localização atual do veículo
+      // Atualizar localização atual do veículo usando cliente admin
       if (driverData.current_location) {
-        await supabaseClient
+        await supabaseAdmin
           .from('orders')
           .update({
             current_latitude: driverData.current_location.lat,
@@ -314,11 +327,11 @@ Deno.serve(async (req) => {
         raw_data: event.rawData
       }));
 
-      await supabaseClient
+      // Usar cliente admin para insert em tracking_events (RLS restritivo)
+      await supabaseAdmin
         .from('tracking_events')
         .insert(eventsToInsert);
     }
-
     // 5. Combinar eventos existentes e novos para resposta final
     const allEvents = [...(existingEvents || []), ...newEvents.map((e: any) => ({
       event_code: e.code,

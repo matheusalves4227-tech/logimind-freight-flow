@@ -36,12 +36,25 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Cliente com contexto do usuário para leitura/validação
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       {
         global: {
           headers: { Authorization: req.headers.get('Authorization')! },
+        },
+      }
+    );
+    
+    // Cliente admin para operações em tabelas com RLS restritivo
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
         },
       }
     );
@@ -184,8 +197,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    // 7. Registrar transação de PENDENTE (não PAID ainda)
-    const { error: transactionError } = await supabaseClient
+    // 7. Registrar transação de PENDENTE usando cliente admin (RLS restritivo)
+    const { error: transactionError } = await supabaseAdmin
       .from('financial_transactions')
       .insert({
         order_id: order_id,

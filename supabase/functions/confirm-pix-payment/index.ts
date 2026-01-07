@@ -32,9 +32,22 @@ serve(async (req: Request) => {
     // Extract JWT token from Bearer header
     const jwt = authHeader.replace('Bearer ', '');
     
+    // Cliente com contexto do usuário para autenticação e leitura
     const supabase = createClient(supabaseUrl, supabaseKey, {
       global: { headers: { Authorization: authHeader } },
     });
+    
+    // Cliente admin para operações em tabelas com RLS restritivo
+    const supabaseAdmin = createClient(
+      supabaseUrl,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        },
+      }
+    );
 
     // Use getUser with JWT token directly
     const { data: { user }, error: userError } = await supabase.auth.getUser(jwt);
@@ -102,8 +115,8 @@ serve(async (req: Request) => {
       );
     }
 
-    // Criar registro de transação financeira
-    const { error: transactionError } = await supabase
+    // Criar registro de transação financeira usando cliente admin (RLS restritivo)
+    const { error: transactionError } = await supabaseAdmin
       .from("financial_transactions")
       .insert({
         order_id: order_id,
