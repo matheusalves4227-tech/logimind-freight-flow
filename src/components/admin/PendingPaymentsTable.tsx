@@ -133,7 +133,11 @@ export const PendingPaymentsTable = () => {
       // Adicionar aos confirmados
       setConfirmedIds(prev => new Set([...prev, selectedPayment.id]));
       
-      toast.success("Pagamento confirmado com sucesso!");
+      toast.success("💰 Pagamento PIX Confirmado!", {
+        description: `Pedido ${selectedPayment.tracking_code} — R$ ${selectedPayment.final_price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} validado com sucesso.`,
+        duration: 6000,
+        style: { background: 'hsl(142, 76%, 36%)', color: 'white', border: 'none' },
+      });
       setSelectedPayment(null);
       setAdminNotes("");
       
@@ -143,7 +147,11 @@ export const PendingPaymentsTable = () => {
       }, 1500);
     } catch (error: any) {
       console.error("Error confirming payment:", error);
-      toast.error("Erro ao confirmar pagamento");
+      toast.error("❌ Falha na Confirmação", {
+        description: error?.message || "Não foi possível confirmar o pagamento. Tente novamente.",
+        duration: 6000,
+        style: { background: 'hsl(0, 84%, 60%)', color: 'white', border: 'none' },
+      });
     } finally {
       setConfirming(false);
       setConfirmingId(null);
