@@ -99,7 +99,7 @@ serve(async (req: Request) => {
       .update({
         status_pagamento: "PAGO",
         paid_at: new Date().toISOString(),
-        status: "confirmed",
+        status: "awaiting_driver",
         operational_notes: admin_notes 
           ? `${order.operational_notes || ""}\n[ADMIN] Pagamento PIX confirmado: ${admin_notes}`.trim()
           : `${order.operational_notes || ""}\n[ADMIN] Pagamento PIX confirmado manualmente`.trim(),
