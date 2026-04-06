@@ -17,14 +17,14 @@ import {
   Shield, 
   MessageCircle,
   TrendingUp,
-  SortDesc,
   Map,
   Phone,
-  Mail,
   User,
   Scale,
   Calendar,
-  Truck
+  Truck,
+  Loader2,
+  XCircle
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
