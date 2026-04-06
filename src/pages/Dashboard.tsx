@@ -328,6 +328,18 @@ const Dashboard = () => {
       </div>
     </div>
 
+    {/* Modal de Escolha de Método de Pagamento */}
+    {paymentOrder && (
+      <PaymentMethodModal
+        open={paymentMethodModalOpen}
+        onOpenChange={setPaymentMethodModalOpen}
+        orderId={paymentOrder.id}
+        totalAmount={paymentOrder.final_price}
+        trackingCode={paymentOrder.tracking_code}
+        onSelectPix={handleSelectPix}
+      />
+    )}
+
     {/* Modal de Pagamento PIX */}
     <PixPaymentModal
       open={pixModalOpen}
