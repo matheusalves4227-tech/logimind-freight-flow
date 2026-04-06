@@ -5,6 +5,7 @@ import { KPICards } from "@/components/dashboard/KPICards";
 import { ActiveOrdersTable, Order } from "@/components/dashboard/ActiveOrdersTable";
 import { OrderDetail, OrderDetails } from "@/components/dashboard/OrderDetail";
 import { PixPaymentModal } from "@/components/payment/PixPaymentModal";
+import { PaymentMethodModal } from "@/components/payment/PaymentMethodModal";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
@@ -19,6 +20,8 @@ const Dashboard = () => {
   const [pixModalOpen, setPixModalOpen] = useState(false);
   const [pixData, setPixData] = useState<any>(null);
   const [currentOrderId, setCurrentOrderId] = useState<string | null>(null);
+  const [paymentMethodModalOpen, setPaymentMethodModalOpen] = useState(false);
+  const [paymentOrder, setPaymentOrder] = useState<Order | null>(null);
 
   // Mock KPI data - Em produção, viria do backend
   const kpiData = {
