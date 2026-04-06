@@ -618,41 +618,39 @@ export const PendingQuotesTable = ({ onUpdate }: PendingQuotesTableProps) => {
                   )}
                 </div>
 
-                {/* Quote Options Card */}
+                {/* Resumo das Opções (Admin View) */}
                 {selectedQuote.quote_items && selectedQuote.quote_items.length > 0 && (
                   <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
                     <h4 className="font-semibold text-xs text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
                       <FileText className="w-3.5 h-3.5" />
-                      Opções de Frete ({selectedQuote.quote_items.length})
+                      Resumo das Cotações
                     </h4>
-                    <div className="space-y-2">
-                      {selectedQuote.quote_items
-                        .sort((a, b) => a.final_price - b.final_price)
-                        .map((item, idx) => (
-                          <div 
-                            key={idx} 
-                            className={`
-                              flex items-center justify-between bg-white rounded-lg p-3 border
-                              ${idx === 0 ? 'border-blue-200 ring-1 ring-blue-100' : 'border-slate-100'}
-                            `}
-                          >
-                            <div className="flex items-center gap-3">
-                              {idx === 0 && (
-                                <Badge className="bg-blue-100 text-blue-700 text-[10px] px-1.5">Melhor</Badge>
-                              )}
-                              <div>
-                                <p className="text-sm font-medium text-slate-700">Opção {idx + 1}</p>
-                                <p className="text-xs text-slate-500 flex items-center gap-1">
-                                  <Truck className="w-3 h-3" />
-                                  {item.delivery_days} dias úteis
-                                </p>
-                              </div>
-                            </div>
-                            <p className={`font-bold tabular-nums ${idx === 0 ? 'text-blue-700 text-lg' : 'text-slate-700'}`}>
-                              {formatCurrency(item.final_price)}
-                            </p>
-                          </div>
-                        ))}
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="bg-white rounded-lg p-3 border border-slate-100 text-center">
+                        <p className="text-[10px] uppercase tracking-wider text-slate-400 mb-1">Opções</p>
+                        <p className="text-2xl font-bold text-slate-800">{selectedQuote.quote_items.length}</p>
+                      </div>
+                      <div className="bg-white rounded-lg p-3 border border-blue-100 text-center">
+                        <p className="text-[10px] uppercase tracking-wider text-blue-500 mb-1">Menor Preço</p>
+                        <p className="text-lg font-bold text-blue-700">
+                          {formatCurrency(Math.min(...selectedQuote.quote_items.map(i => i.final_price)))}
+                        </p>
+                      </div>
+                      <div className="bg-white rounded-lg p-3 border border-slate-100 text-center">
+                        <p className="text-[10px] uppercase tracking-wider text-slate-400 mb-1">Maior Preço</p>
+                        <p className="text-lg font-bold text-slate-600">
+                          {formatCurrency(Math.max(...selectedQuote.quote_items.map(i => i.final_price)))}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                      <span className="flex items-center gap-1">
+                        <Truck className="w-3.5 h-3.5" />
+                        Prazo mais rápido: {Math.min(...selectedQuote.quote_items.map(i => i.delivery_days))} dias úteis
+                      </span>
+                      <span>
+                        Prazo mais longo: {Math.max(...selectedQuote.quote_items.map(i => i.delivery_days))} dias úteis
+                      </span>
                     </div>
                   </div>
                 )}
