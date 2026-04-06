@@ -244,36 +244,40 @@ export const PendingOrderDetail = ({ order, open, onOpenChange, onUpdate }: Pend
       return;
     }
 
-    // Validação de motorista atribuído
-    if (!selectedDriverId) {
-      toast({
-        title: 'Motorista Não Atribuído',
-        description: 'Por favor, atribua um motorista ao frete antes de confirmar',
-        variant: 'destructive',
-      });
-      return;
-    }
-
     setProcessing(true);
     try {
-      const selectedDriver = availableDrivers.find(d => d.id === selectedDriverId);
+      const selectedDriver = selectedDriverId 
+        ? availableDrivers.find(d => d.id === selectedDriverId) 
+        : null;
       
+      // Se tem motorista selecionado, vai para awaiting_driver_acceptance
+      // Se não tem, vai para confirmed (transportadora cuida da logística)
+      const newStatus = selectedDriverId ? 'awaiting_driver_acceptance' : 'confirmed';
+      
+      const updateData: any = {
+        status: newStatus,
+        operational_notes: operationalNotes,
+        updated_at: new Date().toISOString(),
+      };
+
+      // Só adiciona dados do motorista se um foi selecionado
+      if (selectedDriver) {
+        updateData.driver_id = selectedDriverId;
+        updateData.driver_name = selectedDriver.full_name;
+        updateData.driver_phone = selectedDriver.phone;
+      }
+
       const { error } = await supabase
         .from('orders')
-        .update({
-          status: 'awaiting_driver_acceptance', // Aguardar aceite do motorista
-          operational_notes: operationalNotes,
-          driver_id: selectedDriverId,
-          driver_name: selectedDriver?.full_name,
-          driver_phone: selectedDriver?.phone,
-          updated_at: new Date().toISOString(),
-        })
+        .update(updateData)
         .eq('id', order.id);
 
       if (error) throw error;
 
-      // Enviar notificação por email ao motorista
-      await notifyDriverAssignment(selectedDriverId, order.id);
+      // Enviar notificação por email ao motorista (apenas se tiver motorista)
+      if (selectedDriverId) {
+        await notifyDriverAssignment(selectedDriverId, order.id);
+      }
 
       // Registrar auditoria
       await logAction({
@@ -282,16 +286,24 @@ export const PendingOrderDetail = ({ order, open, onOpenChange, onUpdate }: Pend
           order_id: order.id,
           tracking_code: order.tracking_code,
           carrier_name: order.carrier_name,
-          driver_id: selectedDriverId,
-          driver_name: selectedDriver?.full_name,
+          driver_id: selectedDriverId || null,
+          driver_name: selectedDriver?.full_name || null,
+          status: newStatus,
           approved_at: new Date().toISOString(),
         },
       });
 
-      toast({
-        title: 'Frete Enviado ao Motorista',
-        description: `Aguardando ${selectedDriver?.full_name} aceitar o frete. Notificação enviada.`,
-      });
+      if (selectedDriver) {
+        toast({
+          title: '🚚 Frete Enviado ao Motorista',
+          description: `Aguardando ${selectedDriver.full_name} aceitar o frete.`,
+        });
+      } else {
+        toast({
+          title: '✅ Pedido Confirmado',
+          description: `Pedido ${order.tracking_code} confirmado. A transportadora ${order.carrier_name} cuidará da logística.`,
+        });
+      }
 
       onUpdate();
       onOpenChange(false);
@@ -772,15 +784,19 @@ export const PendingOrderDetail = ({ order, open, onOpenChange, onUpdate }: Pend
             </CardContent>
           </Card>
 
-          {/* 6. ATRIBUIÇÃO DE MOTORISTA */}
+          {/* 6. ATRIBUIÇÃO DE MOTORISTA (OPCIONAL) */}
           <div className="space-y-4">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Badge variant="outline" className="text-xs">Opcional</Badge>
+              <span>A transportadora escolhida pode designar o motorista internamente</span>
+            </div>
+
             {/* Sugestão Inteligente de Motoristas */}
             <DriverSuggestions
               orderId={order.id}
               selectedDriverId={selectedDriverId}
               onSelectDriver={(driverId, driverName, driverPhone) => {
                 setSelectedDriverId(driverId);
-                // Update availableDrivers if needed to include this driver
                 const existingDriver = availableDrivers.find(d => d.id === driverId);
                 if (!existingDriver) {
                   setAvailableDrivers(prev => [...prev, {
@@ -794,53 +810,53 @@ export const PendingOrderDetail = ({ order, open, onOpenChange, onUpdate }: Pend
             />
 
             {/* Seleção Manual de Motorista */}
-            <Card className="border-primary/20 bg-primary/5">
+            <Card className="border-dashed border-muted-foreground/30">
               <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <UserCheck className="h-5 w-5 text-primary" />
-                  {selectedDriverId ? 'Motorista Selecionado' : 'Seleção Manual de Motorista'}
+                <CardTitle className="text-base flex items-center gap-2 text-muted-foreground">
+                  <UserCheck className="h-5 w-5" />
+                  Motorista (Opcional)
+                  {selectedDriverId && (
+                    <Badge className="bg-primary text-primary-foreground text-xs ml-2">Selecionado</Badge>
+                  )}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="driver-select">Selecionar Motorista Aprovado</Label>
-                  <Select value={selectedDriverId} onValueChange={setSelectedDriverId}>
-                    <SelectTrigger id="driver-select">
-                      <SelectValue placeholder="Escolha um motorista..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableDrivers.length > 0 ? (
-                        availableDrivers.map((driver) => (
-                          <SelectItem key={driver.id} value={driver.id}>
-                            {driver.full_name} - {driver.cpf || 'CPF N/A'} - {driver.phone}
+                  <div className="flex gap-2">
+                    <Select value={selectedDriverId} onValueChange={setSelectedDriverId}>
+                      <SelectTrigger id="driver-select">
+                        <SelectValue placeholder="Nenhum — transportadora designa internamente" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableDrivers.length > 0 ? (
+                          availableDrivers.map((driver) => (
+                            <SelectItem key={driver.id} value={driver.id}>
+                              {driver.full_name} - {driver.cpf || 'CPF N/A'} - {driver.phone}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <SelectItem value="none" disabled>
+                            Nenhum motorista aprovado disponível
                           </SelectItem>
-                        ))
-                      ) : (
-                        <SelectItem value="none" disabled>
-                          Nenhum motorista aprovado disponível
-                        </SelectItem>
-                      )}
-                    </SelectContent>
-                  </Select>
+                        )}
+                      </SelectContent>
+                    </Select>
+                    {selectedDriverId && (
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        onClick={() => setSelectedDriverId('')}
+                        title="Remover motorista"
+                      >
+                        <XCircle className="h-4 w-4 text-muted-foreground" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
                 
-                <Button
-                  onClick={handleAssignDriver}
-                  disabled={!selectedDriverId || processing}
-                  className="w-full"
-                >
-                  {processing ? (
-                    <>Atribuindo...</>
-                  ) : (
-                    <>
-                      <UserCheck className="h-4 w-4 mr-2" />
-                      Atribuir Frete ao Motorista
-                    </>
-                  )}
-                </Button>
-                
                 <p className="text-xs text-muted-foreground">
-                  ⚠️ Esta ação registrará o motorista responsável pelo frete e será registrada em auditoria
+                  💡 Se não selecionar um motorista, o pedido será confirmado diretamente com a transportadora
                 </p>
               </CardContent>
             </Card>
@@ -946,7 +962,7 @@ export const PendingOrderDetail = ({ order, open, onOpenChange, onUpdate }: Pend
                   className="gap-2 flex-1 min-w-[180px]"
                 >
                   <CheckCircle className="h-4 w-4" />
-                  {processing ? 'Processando...' : 'Aprovar e Confirmar'}
+                  {processing ? 'Processando...' : selectedDriverId ? 'Aprovar e Enviar ao Motorista' : 'Aprovar e Confirmar'}
                 </Button>
 
                 <Button
