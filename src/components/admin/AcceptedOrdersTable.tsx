@@ -14,7 +14,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { useAuditLog } from '@/hooks/useAuditLog';
-import { CheckCircle, Eye, Truck, MapPin, Package, Clock } from 'lucide-react';
+import { CheckCircle, Eye, Truck, Package } from 'lucide-react';
 
 interface AcceptedOrder {
   id: string;

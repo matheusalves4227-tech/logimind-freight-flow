@@ -14,7 +14,10 @@ export type AuditAction =
   | "freight_assignment"
   | "delivery_confirmation"
   | "order_rejection"
-  | "order_approval";
+  | "order_approval"
+  | "order_confirmed_in_transit"
+  | "order_revoked"
+  | "order_delivered";
 
 interface AuditLogParams {
   action: AuditAction;

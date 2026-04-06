@@ -25,7 +25,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuditLog } from "@/hooks/useAuditLog";
 import { formatarMoeda } from "@/lib/formatters";
 import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
+
 import {
   Clock,
   RefreshCw,
