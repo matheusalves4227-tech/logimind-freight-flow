@@ -6,9 +6,6 @@ import { Button } from '@/components/ui/button';
 import {
   Sheet,
   SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
 } from '@/components/ui/sheet';
 import { 
   FileText, 
@@ -20,14 +17,14 @@ import {
   Shield, 
   MessageCircle,
   TrendingUp,
-  SortDesc,
   Map,
   Phone,
-  Mail,
   User,
   Scale,
   Calendar,
-  Truck
+  Truck,
+  Loader2,
+  XCircle
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -65,6 +62,7 @@ export const PendingQuotesTable = ({ onUpdate }: PendingQuotesTableProps) => {
   const { toast } = useToast();
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
   const [sortType, setSortType] = useState<SortType>('recent');
   const [selectedQuote, setSelectedQuote] = useState<Quote | null>(null);
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
@@ -138,6 +136,40 @@ export const PendingQuotesTable = ({ onUpdate }: PendingQuotesTableProps) => {
     setSelectedQuote(quote);
     setSheetOpen(true);
     await fetchProfile(quote.user_id);
+  };
+
+  const handleQuoteAction = async (quoteId: string, newStatus: 'confirmed' | 'cancelled') => {
+    setActionLoading(true);
+    try {
+      const { error } = await supabase
+        .from('quotes')
+        .update({ status: newStatus })
+        .eq('id', quoteId);
+
+      if (error) throw error;
+
+      toast({
+        title: newStatus === 'confirmed' ? 'Pedido Confirmado!' : 'Cotação Cancelada',
+        description: newStatus === 'confirmed' 
+          ? 'O pedido foi confirmado e a transportadora será notificada.'
+          : 'A cotação foi cancelada com sucesso.',
+      });
+
+      setSheetOpen(false);
+      setSelectedQuote(null);
+      // Remove da lista local para atualização imediata
+      setQuotes(prev => prev.filter(q => q.id !== quoteId));
+      onUpdate();
+    } catch (error) {
+      console.error('Erro ao atualizar cotação:', error);
+      toast({
+        title: 'Erro',
+        description: 'Erro ao processar a ação. Tente novamente.',
+        variant: 'destructive',
+      });
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const formatCurrency = (value: number) => {
@@ -636,16 +668,24 @@ export const PendingQuotesTable = ({ onUpdate }: PendingQuotesTableProps) => {
               <div className="sticky bottom-0 bg-white border-t border-slate-200 p-4 space-y-2 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
                 <Button
                   className="w-full h-12 text-base font-semibold bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-md"
-                  onClick={() => {
-                    toast({
-                      title: "Pedido Confirmado!",
-                      description: "O pedido foi criado e a transportadora será notificada.",
-                    });
-                    setSheetOpen(false);
-                  }}
+                  disabled={actionLoading}
+                  onClick={() => handleQuoteAction(selectedQuote.id, 'confirmed')}
                 >
-                  <TrendingUp className="w-5 h-5 mr-2" />
+                  {actionLoading ? (
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  ) : (
+                    <TrendingUp className="w-5 h-5 mr-2" />
+                  )}
                   Confirmar Pedido
+                </Button>
+                <Button 
+                  variant="destructive" 
+                  className="w-full h-10"
+                  disabled={actionLoading}
+                  onClick={() => handleQuoteAction(selectedQuote.id, 'cancelled')}
+                >
+                  <XCircle className="w-4 h-4 mr-2" />
+                  Cancelar Cotação
                 </Button>
                 <Button 
                   variant="ghost" 
