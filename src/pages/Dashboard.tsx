@@ -5,6 +5,7 @@ import { KPICards } from "@/components/dashboard/KPICards";
 import { ActiveOrdersTable, Order } from "@/components/dashboard/ActiveOrdersTable";
 import { OrderDetail, OrderDetails } from "@/components/dashboard/OrderDetail";
 import { PixPaymentModal } from "@/components/payment/PixPaymentModal";
+import { PaymentMethodModal } from "@/components/payment/PaymentMethodModal";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
@@ -19,6 +20,8 @@ const Dashboard = () => {
   const [pixModalOpen, setPixModalOpen] = useState(false);
   const [pixData, setPixData] = useState<any>(null);
   const [currentOrderId, setCurrentOrderId] = useState<string | null>(null);
+  const [paymentMethodModalOpen, setPaymentMethodModalOpen] = useState(false);
+  const [paymentOrder, setPaymentOrder] = useState<Order | null>(null);
 
   // Mock KPI data - Em produção, viria do backend
   const kpiData = {
@@ -214,11 +217,22 @@ const Dashboard = () => {
     return "Erro ao processar pagamento. Tente novamente ou contate o suporte.";
   };
 
-  const handleRetryPayment = async (orderId: string) => {
+  const handleRetryPayment = (orderId: string) => {
+    const order = orders.find(o => o.id === orderId);
+    if (!order) {
+      toast.error("Pedido não encontrado.");
+      return;
+    }
+    setPaymentOrder(order);
+    setCurrentOrderId(orderId);
+    setPaymentMethodModalOpen(true);
+  };
+
+  const handleSelectPix = async () => {
+    if (!currentOrderId) return;
     try {
       toast.loading("Gerando dados do pagamento PIX...", { id: 'retry-payment' });
 
-      // Verificar autenticação antes de fazer qualquer chamada
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         toast.error("Sessão expirada. Faça login novamente.", { id: 'retry-payment' });
@@ -226,19 +240,9 @@ const Dashboard = () => {
         return;
       }
 
-      // Validar que o pedido existe e pertence ao usuário
-      const order = orders.find(o => o.id === orderId);
-      if (!order) {
-        toast.error("Pedido não encontrado.", { id: 'retry-payment' });
-        return;
-      }
-
-      // Gerar dados do PIX Manual
       const { data: pixPaymentData, error: pixError } = await supabase.functions.invoke(
         'create-pix-payment',
-        {
-          body: { order_id: orderId }
-        }
+        { body: { order_id: currentOrderId } }
       );
 
       if (pixError || !pixPaymentData?.pix_data) {
@@ -248,13 +252,10 @@ const Dashboard = () => {
       }
 
       toast.dismiss('retry-payment');
-      
-      // Mostrar modal com QR Code PIX
       setPixData(pixPaymentData.pix_data);
-      setCurrentOrderId(orderId);
       setPixModalOpen(true);
     } catch (error: any) {
-      console.error('Unexpected error retrying payment:', error);
+      console.error('Unexpected error:', error);
       toast.error("Erro ao processar pagamento. Tente novamente.", { id: 'retry-payment' });
     }
   };
@@ -326,6 +327,18 @@ const Dashboard = () => {
         )}
       </div>
     </div>
+
+    {/* Modal de Escolha de Método de Pagamento */}
+    {paymentOrder && (
+      <PaymentMethodModal
+        open={paymentMethodModalOpen}
+        onOpenChange={setPaymentMethodModalOpen}
+        orderId={paymentOrder.id}
+        totalAmount={paymentOrder.final_price}
+        trackingCode={paymentOrder.tracking_code}
+        onSelectPix={handleSelectPix}
+      />
+    )}
 
     {/* Modal de Pagamento PIX */}
     <PixPaymentModal
