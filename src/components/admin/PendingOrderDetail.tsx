@@ -244,24 +244,18 @@ export const PendingOrderDetail = ({ order, open, onOpenChange, onUpdate }: Pend
       return;
     }
 
-    // Validação de motorista atribuído
-    if (!selectedDriverId) {
-      toast({
-        title: 'Motorista Não Atribuído',
-        description: 'Por favor, atribua um motorista ao frete antes de confirmar',
-        variant: 'destructive',
-      });
-      return;
-    }
-
     setProcessing(true);
     try {
-      const selectedDriver = availableDrivers.find(d => d.id === selectedDriverId);
+      const selectedDriver = selectedDriverId 
+        ? availableDrivers.find(d => d.id === selectedDriverId) 
+        : null;
       
-      const { error } = await supabase
-        .from('orders')
-        .update({
-          status: 'awaiting_driver_acceptance', // Aguardar aceite do motorista
+      // Se tem motorista selecionado, vai para awaiting_driver_acceptance
+      // Se não tem, vai para confirmed (transportadora cuida da logística)
+      const newStatus = selectedDriverId ? 'awaiting_driver_acceptance' : 'confirmed';
+      
+      const updateData: any = {
+        status: newStatus,
           operational_notes: operationalNotes,
           driver_id: selectedDriverId,
           driver_name: selectedDriver?.full_name,
