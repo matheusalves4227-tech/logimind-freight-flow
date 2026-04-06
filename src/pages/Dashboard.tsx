@@ -217,11 +217,22 @@ const Dashboard = () => {
     return "Erro ao processar pagamento. Tente novamente ou contate o suporte.";
   };
 
-  const handleRetryPayment = async (orderId: string) => {
+  const handleRetryPayment = (orderId: string) => {
+    const order = orders.find(o => o.id === orderId);
+    if (!order) {
+      toast.error("Pedido não encontrado.");
+      return;
+    }
+    setPaymentOrder(order);
+    setCurrentOrderId(orderId);
+    setPaymentMethodModalOpen(true);
+  };
+
+  const handleSelectPix = async () => {
+    if (!currentOrderId) return;
     try {
       toast.loading("Gerando dados do pagamento PIX...", { id: 'retry-payment' });
 
-      // Verificar autenticação antes de fazer qualquer chamada
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         toast.error("Sessão expirada. Faça login novamente.", { id: 'retry-payment' });
@@ -229,19 +240,9 @@ const Dashboard = () => {
         return;
       }
 
-      // Validar que o pedido existe e pertence ao usuário
-      const order = orders.find(o => o.id === orderId);
-      if (!order) {
-        toast.error("Pedido não encontrado.", { id: 'retry-payment' });
-        return;
-      }
-
-      // Gerar dados do PIX Manual
       const { data: pixPaymentData, error: pixError } = await supabase.functions.invoke(
         'create-pix-payment',
-        {
-          body: { order_id: orderId }
-        }
+        { body: { order_id: currentOrderId } }
       );
 
       if (pixError || !pixPaymentData?.pix_data) {
@@ -251,13 +252,10 @@ const Dashboard = () => {
       }
 
       toast.dismiss('retry-payment');
-      
-      // Mostrar modal com QR Code PIX
       setPixData(pixPaymentData.pix_data);
-      setCurrentOrderId(orderId);
       setPixModalOpen(true);
     } catch (error: any) {
-      console.error('Unexpected error retrying payment:', error);
+      console.error('Unexpected error:', error);
       toast.error("Erro ao processar pagamento. Tente novamente.", { id: 'retry-payment' });
     }
   };
