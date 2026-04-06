@@ -1050,6 +1050,16 @@ const Quote = () => {
       </div>
       )}
       
+      {/* Modal de Seleção de Método de Pagamento */}
+      <PaymentMethodModal
+        open={paymentMethodModalOpen}
+        onOpenChange={setPaymentMethodModalOpen}
+        orderId={pendingOrderId}
+        totalAmount={pendingOrderAmount}
+        trackingCode={pendingTrackingCode}
+        onSelectPix={handleSelectPix}
+      />
+
       {/* Modal de Pagamento PIX */}
       {pixData && (
         <PixPaymentModal
