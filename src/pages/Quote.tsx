@@ -105,9 +105,9 @@ const Quote = () => {
   const [pixData, setPixData] = useState<any>(null);
   const [currentOrderId, setCurrentOrderId] = useState<string>("");
   const [paymentMethodModalOpen, setPaymentMethodModalOpen] = useState(false);
-  const [pendingQuote, setPendingQuote] = useState<QuoteResult | null>(null);
   const [pendingOrderId, setPendingOrderId] = useState<string>("");
-  const [processingStripe, setProcessingStripe] = useState(false);
+  const [pendingOrderAmount, setPendingOrderAmount] = useState<number>(0);
+  const [pendingTrackingCode, setPendingTrackingCode] = useState<string>("");
 
   const steps = [
     { label: "Localidades", description: "Origem e destino" },
