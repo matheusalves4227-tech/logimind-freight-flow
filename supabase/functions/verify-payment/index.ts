@@ -73,7 +73,7 @@ serve(async (req) => {
           stripe_payment_intent_id: session.payment_intent as string,
           payment_method: paymentMethod,
           paid_at: new Date().toISOString(),
-          status: 'confirmed', // Pedido confirmado após pagamento
+          status: 'awaiting_driver', // Aguardando motorista após pagamento confirmado
           updated_at: new Date().toISOString(),
         })
         .eq("id", order_id);
