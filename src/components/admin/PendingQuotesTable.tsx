@@ -65,6 +65,7 @@ export const PendingQuotesTable = ({ onUpdate }: PendingQuotesTableProps) => {
   const { toast } = useToast();
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
   const [sortType, setSortType] = useState<SortType>('recent');
   const [selectedQuote, setSelectedQuote] = useState<Quote | null>(null);
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
