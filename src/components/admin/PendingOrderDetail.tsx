@@ -256,18 +256,28 @@ export const PendingOrderDetail = ({ order, open, onOpenChange, onUpdate }: Pend
       
       const updateData: any = {
         status: newStatus,
-          operational_notes: operationalNotes,
-          driver_id: selectedDriverId,
-          driver_name: selectedDriver?.full_name,
-          driver_phone: selectedDriver?.phone,
-          updated_at: new Date().toISOString(),
-        })
+        operational_notes: operationalNotes,
+        updated_at: new Date().toISOString(),
+      };
+
+      // Só adiciona dados do motorista se um foi selecionado
+      if (selectedDriver) {
+        updateData.driver_id = selectedDriverId;
+        updateData.driver_name = selectedDriver.full_name;
+        updateData.driver_phone = selectedDriver.phone;
+      }
+
+      const { error } = await supabase
+        .from('orders')
+        .update(updateData)
         .eq('id', order.id);
 
       if (error) throw error;
 
-      // Enviar notificação por email ao motorista
-      await notifyDriverAssignment(selectedDriverId, order.id);
+      // Enviar notificação por email ao motorista (apenas se tiver motorista)
+      if (selectedDriverId) {
+        await notifyDriverAssignment(selectedDriverId, order.id);
+      }
 
       // Registrar auditoria
       await logAction({
@@ -276,16 +286,24 @@ export const PendingOrderDetail = ({ order, open, onOpenChange, onUpdate }: Pend
           order_id: order.id,
           tracking_code: order.tracking_code,
           carrier_name: order.carrier_name,
-          driver_id: selectedDriverId,
-          driver_name: selectedDriver?.full_name,
+          driver_id: selectedDriverId || null,
+          driver_name: selectedDriver?.full_name || null,
+          status: newStatus,
           approved_at: new Date().toISOString(),
         },
       });
 
-      toast({
-        title: 'Frete Enviado ao Motorista',
-        description: `Aguardando ${selectedDriver?.full_name} aceitar o frete. Notificação enviada.`,
-      });
+      if (selectedDriver) {
+        toast({
+          title: '🚚 Frete Enviado ao Motorista',
+          description: `Aguardando ${selectedDriver.full_name} aceitar o frete.`,
+        });
+      } else {
+        toast({
+          title: '✅ Pedido Confirmado',
+          description: `Pedido ${order.tracking_code} confirmado. A transportadora ${order.carrier_name} cuidará da logística.`,
+        });
+      }
 
       onUpdate();
       onOpenChange(false);
