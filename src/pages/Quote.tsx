@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Package, MapPin, Loader2, TrendingUp, Info, Lightbulb, Truck, Clock, DollarSign, Zap, Building2 } from "lucide-react";
+import { ArrowLeft, Package, MapPin, Loader2, TrendingUp, Info, Truck, Clock, DollarSign, Zap, Building2, CreditCard, QrCode } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { Stepper } from "@/components/ui/stepper";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -16,6 +16,7 @@ import { WeightInput } from "@/components/ui/weight-input";
 import { MoneyInput } from "@/components/ui/money-input";
 import { DimensionInput } from "@/components/ui/dimension-input";
 import { PixPaymentModal } from "@/components/payment/PixPaymentModal";
+import { PaymentMethodModal } from "@/components/payment/PaymentMethodModal";
 import { ServiceTypeSelector } from "@/components/quote/ServiceTypeSelector";
 import { AddressForm } from "@/components/quote/AddressForm";
 
