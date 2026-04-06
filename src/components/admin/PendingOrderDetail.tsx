@@ -962,7 +962,7 @@ export const PendingOrderDetail = ({ order, open, onOpenChange, onUpdate }: Pend
                   className="gap-2 flex-1 min-w-[180px]"
                 >
                   <CheckCircle className="h-4 w-4" />
-                  {processing ? 'Processando...' : 'Aprovar e Confirmar'}
+                  {processing ? 'Processando...' : selectedDriverId ? 'Aprovar e Enviar ao Motorista' : 'Aprovar e Confirmar'}
                 </Button>
 
                 <Button
