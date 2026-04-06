@@ -57,7 +57,11 @@ const Auth = () => {
 
     try {
       if (!validatePassword()) {
-        toast.error("A senha não atende aos requisitos de segurança");
+        toast.error("🔐 Senha fraca", {
+          description: "A senha precisa ter 8+ caracteres, maiúscula, minúscula e número.",
+          duration: 6000,
+          style: { background: 'hsl(0, 84%, 60%)', color: 'white', border: 'none' },
+        });
         setLoading(false);
         return;
       }
@@ -75,10 +79,20 @@ const Auth = () => {
 
       if (error) throw error;
 
-      toast.success("Conta criada com sucesso! Você já pode fazer login.");
+      toast.success("🎉 Conta criada com sucesso!", {
+        description: "Você já pode fazer login com suas credenciais.",
+        duration: 5000,
+        style: { background: 'hsl(142, 76%, 36%)', color: 'white', border: 'none' },
+      });
       setIsSignUp(false);
     } catch (error: any) {
-      toast.error(error.message);
+      toast.error("❌ Erro ao criar conta", {
+        description: error.message === "User already registered" 
+          ? "Este email já está cadastrado. Tente fazer login." 
+          : error.message,
+        duration: 6000,
+        style: { background: 'hsl(0, 84%, 60%)', color: 'white', border: 'none' },
+      });
     } finally {
       setLoading(false);
     }
@@ -96,16 +110,38 @@ const Auth = () => {
 
       if (error) throw error;
 
-      toast.success("Login realizado com sucesso!");
+      toast.success("✅ Login realizado!", {
+        description: "Redirecionando para o painel...",
+        duration: 3000,
+        style: { background: 'hsl(142, 76%, 36%)', color: 'white', border: 'none' },
+      });
       setLoginAttempts(0);
     } catch (error: any) {
       setLoginAttempts(prev => prev + 1);
-      toast.error(error.message);
+      const errorMsg = error.message === "Invalid login credentials" 
+        ? "Email ou senha incorretos. Verifique e tente novamente."
+        : error.message;
+      toast.error("🔒 Falha no login", {
+        description: errorMsg,
+        duration: 6000,
+        style: { background: 'hsl(0, 84%, 60%)', color: 'white', border: 'none' },
+      });
       
       if (loginAttempts + 1 >= 2) {
-        toast.info("Tendo problemas? Você pode redefinir sua senha.", {
-          duration: 5000,
-        });
+        setTimeout(() => {
+          toast("🔑 Esqueceu sua senha?", {
+            description: `Após ${loginAttempts + 1} tentativas, recomendamos redefinir sua senha.`,
+            duration: 8000,
+            action: {
+              label: "Redefinir",
+              onClick: () => {
+                setIsResetPassword(true);
+                setIsSignUp(false);
+              },
+            },
+            style: { background: 'hsl(38, 92%, 50%)', color: 'white', border: 'none' },
+          });
+        }, 1000);
       }
     } finally {
       setLoading(false);
@@ -123,10 +159,18 @@ const Auth = () => {
 
       if (error) throw error;
 
-      toast.success("Email de redefinição enviado! Verifique sua caixa de entrada.");
+      toast.success("📧 Email enviado!", {
+        description: "Verifique sua caixa de entrada e spam para redefinir sua senha.",
+        duration: 8000,
+        style: { background: 'hsl(142, 76%, 36%)', color: 'white', border: 'none' },
+      });
       setIsResetPassword(false);
     } catch (error: any) {
-      toast.error(error.message);
+      toast.error("❌ Erro ao enviar email", {
+        description: error.message,
+        duration: 6000,
+        style: { background: 'hsl(0, 84%, 60%)', color: 'white', border: 'none' },
+      });
     } finally {
       setLoading(false);
     }
