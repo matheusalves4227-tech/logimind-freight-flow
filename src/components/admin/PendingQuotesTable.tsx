@@ -138,6 +138,40 @@ export const PendingQuotesTable = ({ onUpdate }: PendingQuotesTableProps) => {
     await fetchProfile(quote.user_id);
   };
 
+  const handleQuoteAction = async (quoteId: string, newStatus: 'confirmed' | 'cancelled') => {
+    setActionLoading(true);
+    try {
+      const { error } = await supabase
+        .from('quotes')
+        .update({ status: newStatus })
+        .eq('id', quoteId);
+
+      if (error) throw error;
+
+      toast({
+        title: newStatus === 'confirmed' ? 'Pedido Confirmado!' : 'Cotação Cancelada',
+        description: newStatus === 'confirmed' 
+          ? 'O pedido foi confirmado e a transportadora será notificada.'
+          : 'A cotação foi cancelada com sucesso.',
+      });
+
+      setSheetOpen(false);
+      setSelectedQuote(null);
+      // Remove da lista local para atualização imediata
+      setQuotes(prev => prev.filter(q => q.id !== quoteId));
+      onUpdate();
+    } catch (error) {
+      console.error('Erro ao atualizar cotação:', error);
+      toast({
+        title: 'Erro',
+        description: 'Erro ao processar a ação. Tente novamente.',
+        variant: 'destructive',
+      });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const formatCurrency = (value: number) => {
     return value.toLocaleString('pt-BR', {
       style: 'currency',
