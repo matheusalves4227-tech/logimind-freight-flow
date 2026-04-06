@@ -331,8 +331,8 @@ const AdminOrders = () => {
               value="orders-accepted" 
               className="gap-2 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
             >
-              <CheckCircle className="h-4 w-4" />
-              Aceitos
+              <Truck className="h-4 w-4" />
+              Em Trânsito
             </TabsTrigger>
             <TabsTrigger 
               value="orders-rejected" 
