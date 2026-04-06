@@ -454,36 +454,46 @@ const Quote = () => {
 
       toast.success(`Pedido criado! Código: ${orderData.tracking_code}`, { id: 'contract-freight' });
 
-      // PASSO 2: Gerar dados do PIX Manual
-      toast.loading("Gerando dados do pagamento PIX...", { id: 'payment-redirect' });
-
-      const { data: pixPaymentData, error: pixError } = await supabase.functions.invoke(
-        'create-pix-payment',
-        {
-          body: { order_id: orderData.order_id }
-        }
-      );
-
-      if (pixError || !pixPaymentData?.pix_data) {
-        console.error('Error creating PIX payment:', pixError);
-        toast.error("Erro ao gerar pagamento PIX. Tente novamente.", { id: 'payment-redirect' });
-        setContractingCarrierId(null);
-        // Redirecionar para dashboard onde o usuário pode tentar pagar novamente
-        setTimeout(() => navigate('/dashboard'), 2000);
-        return;
-      }
-
-      toast.dismiss('payment-redirect');
+      // PASSO 2: Mostrar modal de seleção de método de pagamento
+      const finalPrice = logiGuardSelected && quote.logiguard_pro?.total_price 
+        ? quote.final_price + quote.logiguard_pro.total_price 
+        : quote.final_price;
       
-      // PASSO 3: Mostrar modal com QR Code PIX
-      setPixData(pixPaymentData.pix_data);
-      setCurrentOrderId(orderData.order_id);
-      setPixModalOpen(true);
+      setPendingOrderId(orderData.order_id);
+      setPendingOrderAmount(finalPrice);
+      setPendingTrackingCode(orderData.tracking_code);
+      setPaymentMethodModalOpen(true);
       setContractingCarrierId(null);
     } catch (error) {
       console.error('Unexpected error:', error);
       toast.error("Erro inesperado ao contratar frete", { id: 'contract-freight' });
       setContractingCarrierId(null);
+    }
+  };
+
+  const handleSelectPix = async () => {
+    try {
+      toast.loading("Gerando dados do pagamento PIX...", { id: 'payment-redirect' });
+
+      const { data: pixPaymentData, error: pixError } = await supabase.functions.invoke(
+        'create-pix-payment',
+        { body: { order_id: pendingOrderId } }
+      );
+
+      if (pixError || !pixPaymentData?.pix_data) {
+        console.error('Error creating PIX payment:', pixError);
+        toast.error("Erro ao gerar pagamento PIX. Tente novamente.", { id: 'payment-redirect' });
+        setTimeout(() => navigate('/dashboard'), 2000);
+        return;
+      }
+
+      toast.dismiss('payment-redirect');
+      setPixData(pixPaymentData.pix_data);
+      setCurrentOrderId(pendingOrderId);
+      setPixModalOpen(true);
+    } catch (error) {
+      console.error('PIX error:', error);
+      toast.error("Erro ao gerar PIX", { id: 'payment-redirect' });
     }
   };
 
