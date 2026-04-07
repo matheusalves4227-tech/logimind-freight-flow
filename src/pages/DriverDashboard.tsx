@@ -12,6 +12,7 @@ import { DriverBankAccount } from "@/components/driver/DriverBankAccount";
 import { DriverFinancialKPIs } from "@/components/driver/DriverFinancialKPIs";
 import { DriverPaymentHistory } from "@/components/driver/DriverPaymentHistory";
 import { DriverProfile } from "@/components/driver/DriverProfile";
+import { DriverNotifications } from "@/components/driver/DriverNotifications";
 import { Home, Map, Truck, Wallet, UserCircle } from "lucide-react";
 
 const DriverDashboard = () => {
@@ -94,11 +95,14 @@ const DriverDashboard = () => {
         <Navbar />
       
       <main className="container mx-auto px-4 py-8 pt-24">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-foreground">Dashboard do Motorista</h1>
-          <p className="text-muted-foreground mt-2">
-            Olá, {driverProfile?.full_name}
-          </p>
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Dashboard do Motorista</h1>
+            <p className="text-muted-foreground mt-2">
+              Olá, {driverProfile?.full_name}
+            </p>
+          </div>
+          <DriverNotifications />
         </div>
 
         <Tabs defaultValue="status" className="w-full">
