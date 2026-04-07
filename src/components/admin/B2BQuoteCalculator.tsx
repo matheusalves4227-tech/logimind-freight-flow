@@ -11,7 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import { 
   Calculator, TrendingDown, DollarSign, Package, Truck, Clock, 
   Loader2, Flame, Wine, Snowflake, Gem, BoxIcon,
-  FileDown, FolderPlus, Lightbulb, Target, Zap
+  FileDown, FolderPlus, Lightbulb, Target, Zap, Mail
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
