@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { CpfCnpjInput } from "@/components/ui/cpf-cnpj-input";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { UserAvatarUpload } from "@/components/profile/UserAvatarUpload";
@@ -388,67 +387,61 @@ export default function Profile() {
           Voltar para Home
         </Button>
 
-        {/* Profile Header with Gradient */}
-        <div className="relative rounded-2xl bg-gradient-to-r from-primary/10 via-primary/5 to-accent/10 p-6 mb-8 overflow-hidden">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
-          
-          <div className="relative flex flex-col sm:flex-row items-center gap-6">
-            {/* Avatar with Double Border */}
-            <div className="relative">
-              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary to-accent opacity-50 blur-sm scale-110" />
-              <div className="relative ring-4 ring-background rounded-full shadow-xl">
-                <UserAvatarUpload
-                  userId={userId}
-                  currentAvatarUrl={profile.avatar_url}
-                  onUploadComplete={handleAvatarUploadComplete}
-                />
+        {/* Profile Header */}
+        <Card className="mb-8 shadow-sm border-border/50">
+          <CardContent className="p-6">
+            <div className="flex flex-col sm:flex-row items-center gap-5">
+              {/* Avatar */}
+              <UserAvatarUpload
+                userId={userId}
+                currentAvatarUrl={profile.avatar_url}
+                onUploadComplete={handleAvatarUploadComplete}
+              />
+
+              {/* User Info */}
+              <div className="flex-1 text-center sm:text-left">
+                <div className="flex flex-col sm:flex-row items-center gap-2 mb-1">
+                  <h1 className="text-xl font-semibold text-foreground">
+                    {profile.full_name || "Usuário"}
+                  </h1>
+                  <Badge 
+                    variant="secondary" 
+                    className="text-xs gap-1 font-medium"
+                  >
+                    <CheckCircle className="h-3 w-3 text-emerald-600" />
+                    Verificada
+                  </Badge>
+                </div>
+                <p className="text-sm text-muted-foreground">{userEmail}</p>
+                {profile.company_name && (
+                  <p className="text-sm text-muted-foreground flex items-center gap-1.5 justify-center sm:justify-start mt-1">
+                    <Building2 className="h-3.5 w-3.5" />
+                    {profile.company_name}
+                  </p>
+                )}
               </div>
             </div>
+          </CardContent>
+        </Card>
 
-            {/* User Info */}
-            <div className="flex-1 text-center sm:text-left">
-              <div className="flex flex-col sm:flex-row items-center gap-3 mb-2">
-                <h1 className="text-2xl font-bold text-foreground">
-                  {profile.full_name || "Usuário"}
-                </h1>
-                <Badge 
-                  variant="outline" 
-                  className="bg-emerald-50 text-emerald-700 border-emerald-200 gap-1.5 px-3"
-                >
-                  <CheckCircle className="h-3.5 w-3.5" />
-                  Conta Verificada
-                </Badge>
-              </div>
-              <p className="text-muted-foreground">{userEmail}</p>
-              {profile.company_name && (
-                <p className="text-sm text-muted-foreground flex items-center gap-1.5 justify-center sm:justify-start mt-1">
-                  <Building2 className="h-4 w-4" />
-                  {profile.company_name}
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Tabs with Icons */}
+        {/* Tabs */}
         <Tabs defaultValue="personal" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 h-12 p-1 gap-2">
+          <TabsList className="w-full bg-muted/50 p-1 h-10">
             <TabsTrigger 
               value="personal" 
-              className="flex items-center gap-2 text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200"
+              className="flex-1 flex items-center justify-center gap-2 text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200"
             >
               <User className="h-4 w-4" />
               Dados Pessoais
             </TabsTrigger>
             <TabsTrigger 
               value="security" 
-              className="flex items-center gap-2 text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200"
+              className="flex-1 flex items-center justify-center gap-2 text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200"
             >
               <Shield className="h-4 w-4" />
               Segurança
             </TabsTrigger>
           </TabsList>
-
           {/* Personal Data Tab */}
           <TabsContent value="personal" className="space-y-6 animate-fade-in">
             {/* Personal Info Card */}
@@ -465,7 +458,7 @@ export default function Profile() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="bg-slate-50 rounded-xl p-5 space-y-5">
+                <div className="bg-muted/30 rounded-xl p-5 space-y-5">
                   <div className="grid gap-5 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="full_name" className="text-sm font-medium">
@@ -476,7 +469,7 @@ export default function Profile() {
                         value={profile.full_name}
                         onChange={(e) => setProfile(prev => ({ ...prev, full_name: e.target.value }))}
                         placeholder="Seu nome completo"
-                        className="bg-white"
+                        className="bg-background"
                       />
                     </div>
 
@@ -509,7 +502,7 @@ export default function Profile() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="bg-slate-50 rounded-xl p-5">
+                <div className="bg-muted/30 rounded-xl p-5">
                   <div className="grid gap-5 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="company_name" className="text-sm font-medium">
@@ -520,7 +513,7 @@ export default function Profile() {
                         value={profile.company_name}
                         onChange={(e) => setProfile(prev => ({ ...prev, company_name: e.target.value }))}
                         placeholder="Razão Social"
-                        className="bg-white"
+                        className="bg-background"
                       />
                     </div>
 
@@ -582,12 +575,12 @@ export default function Profile() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="bg-slate-50 rounded-xl p-5 space-y-4">
+                <div className="bg-muted/30 rounded-xl p-5 space-y-4">
                   <div className="flex flex-col sm:flex-row gap-3">
                     <Button
                       variant="outline"
                       onClick={() => setShowPasswordDialog(true)}
-                      className="flex-1 justify-start gap-3 h-12 bg-white hover:bg-slate-100"
+                      className="flex-1 justify-start gap-3 h-12 bg-background hover:bg-slate-100"
                     >
                       <Lock className="h-4 w-4 text-muted-foreground" />
                       <div className="text-left">
@@ -598,7 +591,7 @@ export default function Profile() {
                     <Button
                       variant="outline"
                       onClick={() => setShowExportDialog(true)}
-                      className="flex-1 justify-start gap-3 h-12 bg-white hover:bg-slate-100"
+                      className="flex-1 justify-start gap-3 h-12 bg-background hover:bg-slate-100"
                     >
                       <Download className="h-4 w-4 text-muted-foreground" />
                       <div className="text-left">
@@ -626,7 +619,7 @@ export default function Profile() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="bg-white/80 rounded-xl p-5 border border-destructive/20">
+                  <div className="bg-background/80 rounded-xl p-5 border border-destructive/20">
                     <p className="text-sm text-muted-foreground mb-3">
                       Ao excluir sua conta, todos os seus dados serão permanentemente removidos:
                     </p>
@@ -838,7 +831,7 @@ export default function Profile() {
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
-            <div className="bg-slate-50 rounded-lg p-4">
+            <div className="bg-muted/30 rounded-lg p-4">
               <p className="text-sm text-muted-foreground mb-3">
                 O arquivo incluirá:
               </p>

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Camera, Loader2, X } from "lucide-react";
+import { Camera, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import imageCompression from "browser-image-compression";
 
@@ -19,7 +19,7 @@ export const UserAvatarUpload = ({ userId, currentAvatarUrl, onUploadComplete }:
 
   const validateFile = (file: File): boolean => {
     const validTypes = ["image/jpeg", "image/png", "image/webp"];
-    const maxSize = 5 * 1024 * 1024; // 5MB
+    const maxSize = 5 * 1024 * 1024;
 
     if (!validTypes.includes(file.type)) {
       toast.error("Formato inválido. Use JPG, PNG ou WEBP.");
@@ -49,19 +49,6 @@ export const UserAvatarUpload = ({ userId, currentAvatarUrl, onUploadComplete }:
     }
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    if (!validateFile(file)) return;
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setPreviewUrl(reader.result as string);
-    };
-    reader.readAsDataURL(file);
-  };
-
   const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -73,7 +60,6 @@ export const UserAvatarUpload = ({ userId, currentAvatarUrl, onUploadComplete }:
 
       const compressedFile = await compressImage(file);
 
-      // Delete old avatar if exists
       if (avatarUrl) {
         const oldPath = avatarUrl.split("/").pop();
         if (oldPath) {
@@ -84,7 +70,7 @@ export const UserAvatarUpload = ({ userId, currentAvatarUrl, onUploadComplete }:
       const fileExt = compressedFile.name.split(".").pop();
       const fileName = `${userId}/avatar-${Date.now()}.${fileExt}`;
 
-      const { error: uploadError, data } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from("user-avatars")
         .upload(fileName, compressedFile, {
           upsert: true,
@@ -149,32 +135,20 @@ export const UserAvatarUpload = ({ userId, currentAvatarUrl, onUploadComplete }:
   const displayUrl = previewUrl || avatarUrl;
 
   return (
-    <div className="flex flex-col items-center gap-4">
-      <div className="relative">
-        <Avatar className="h-32 w-32 border-4 border-background shadow-lg">
-          <AvatarImage src={displayUrl || ""} alt="Avatar" />
-          <AvatarFallback className="text-3xl bg-primary text-primary-foreground">
-            {userId.substring(0, 2).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
-        
-        {displayUrl && !uploading && (
-          <button
-            onClick={handleRemove}
-            className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1.5 hover:bg-destructive/90 transition-colors"
-            aria-label="Remover foto"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        )}
-      </div>
+    <div className="flex flex-col items-center gap-3">
+      <Avatar className="h-24 w-24 border-2 border-border shadow-md">
+        <AvatarImage src={displayUrl || ""} alt="Avatar" />
+        <AvatarFallback className="text-2xl bg-primary/10 text-primary font-semibold">
+          {userId.substring(0, 2).toUpperCase()}
+        </AvatarFallback>
+      </Avatar>
 
-      <div className="flex gap-2">
+      <div className="flex items-center gap-2">
         <Button
           variant="outline"
           size="sm"
           disabled={uploading}
-          className="relative"
+          className="relative h-8 text-xs"
         >
           <input
             type="file"
@@ -184,16 +158,28 @@ export const UserAvatarUpload = ({ userId, currentAvatarUrl, onUploadComplete }:
             className="absolute inset-0 opacity-0 cursor-pointer"
           />
           {uploading ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
           ) : (
-            <Camera className="mr-2 h-4 w-4" />
+            <Camera className="mr-1.5 h-3.5 w-3.5" />
           )}
           {uploading ? "Enviando..." : "Alterar Foto"}
         </Button>
+        
+        {displayUrl && !uploading && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleRemove}
+            className="h-8 text-xs text-muted-foreground hover:text-destructive"
+          >
+            <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+            Remover
+          </Button>
+        )}
       </div>
 
-      <p className="text-xs text-muted-foreground text-center">
-        JPG, PNG ou WEBP. Máx 5MB. Será comprimido automaticamente.
+      <p className="text-[11px] text-muted-foreground/70 text-center">
+        JPG, PNG ou WEBP · Máx 5MB
       </p>
     </div>
   );
