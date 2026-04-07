@@ -11,7 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import { 
   Calculator, TrendingDown, DollarSign, Package, Truck, Clock, 
   Loader2, Flame, Wine, Snowflake, Gem, BoxIcon,
-  FileDown, FolderPlus, Lightbulb, Target, Zap
+  FileDown, FolderPlus, Lightbulb, Target, Zap, Mail
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -483,7 +483,7 @@ const B2BQuoteCalculator = ({ quoteId }: B2BQuoteCalculatorProps) => {
                 <Separator />
 
                 {/* Botões de Ação */}
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3">
                   <Button 
                     variant="outline" 
                     className="h-11 border-2 border-blue-200 text-blue-700 hover:bg-blue-50"
@@ -498,6 +498,56 @@ const B2BQuoteCalculator = ({ quoteId }: B2BQuoteCalculatorProps) => {
                   >
                     <FolderPlus className="h-4 w-4 mr-2" />
                     Salvar no Funil
+                  </Button>
+                  <Button 
+                    className="h-11 bg-primary hover:bg-primary/90"
+                    onClick={async () => {
+                      if (!resultado) return;
+                      const emailDestino = prompt("Informe o e-mail do cliente B2B:");
+                      if (!emailDestino) return;
+                      const nomeContato = prompt("Nome do contato responsável:") || "Prezado(a)";
+                      const razaoSocial = prompt("Razão Social da empresa:") || "Empresa";
+                      
+                      toast({ title: "Enviando proposta...", description: "Aguarde enquanto processamos." });
+                      
+                      try {
+                        const { error } = await supabase.functions.invoke('send-transactional-email', {
+                          body: {
+                            templateName: 'b2b-proposal',
+                            recipientEmail: emailDestino,
+                            idempotencyKey: `b2b-proposal-${Date.now()}-${emailDestino}`,
+                            templateData: {
+                              razaoSocial,
+                              contatoResponsavel: nomeContato,
+                              volumeMensal: parseInt(formData.volume_mensal_estimado) || undefined,
+                              pesoMedioKg: parseFloat(formData.peso_medio_kg) || undefined,
+                              tipoCarga: formData.tipo_carga,
+                              slaDesejado: formData.sla_desejado,
+                              propostaValorMensal: resultado.valor_mensal_total,
+                              propostaDescontoPercentual: resultado.desconto_total_percentual,
+                              propostaObservacoes: `Economia mensal estimada: R$ ${resultado.economia_mensal.toFixed(2)}`,
+                            },
+                          },
+                        });
+                        
+                        if (error) throw error;
+                        
+                        toast({ 
+                          title: "✅ Proposta Enviada!", 
+                          description: `E-mail enviado para ${emailDestino} com sucesso.`,
+                        });
+                      } catch (err) {
+                        console.error('Erro ao enviar proposta:', err);
+                        toast({ 
+                          title: "Erro ao enviar", 
+                          description: "Não foi possível enviar o e-mail. Tente novamente.",
+                          variant: "destructive",
+                        });
+                      }
+                    }}
+                  >
+                    <Mail className="h-4 w-4 mr-2" />
+                    Enviar Proposta por E-mail
                   </Button>
                 </div>
               </>
