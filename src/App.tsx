@@ -27,6 +27,7 @@ import Ranking from "./pages/Ranking";
 import Profile from "./pages/Profile";
 import PitchDeck from "./pages/PitchDeck";
 import FAQ from "./pages/FAQ";
+import Unsubscribe from "./pages/Unsubscribe";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -62,6 +63,7 @@ const App = () => (
           <Route path="/perfil" element={<Profile />} />
           <Route path="/pitch-deck" element={<PitchDeck />} />
           <Route path="/faq" element={<FAQ />} />
+          <Route path="/unsubscribe" element={<Unsubscribe />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/auth/reset" element={<ResetPassword />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
