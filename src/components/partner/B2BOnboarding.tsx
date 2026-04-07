@@ -141,6 +141,20 @@ const B2BOnboarding = ({ cnpj, onBack }: B2BOnboardingProps) => {
         console.error("[ONBOARDING B2B] Erro ao notificar admins:", notifyError);
       }
 
+      // Enviar email de confirmação para a transportadora
+      try {
+        await supabase.functions.invoke('send-carrier-confirmation', {
+          body: {
+            email: formData.email,
+            razaoSocial: formData.razao_social,
+            nomeGestor: formData.nome_gestor
+          }
+        });
+        console.log("[ONBOARDING B2B] Email de confirmação enviado");
+      } catch (emailError) {
+        console.error("[ONBOARDING B2B] Erro ao enviar email:", emailError);
+      }
+
       toast.dismiss();
       setIsSubmitted(true);
       
