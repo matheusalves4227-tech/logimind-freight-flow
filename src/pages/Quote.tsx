@@ -751,7 +751,7 @@ const Quote = () => {
           </Card>
 
               {quotes.length > 0 && (
-            <div className="space-y-6">
+            <div id="quote-results" className="space-y-6">
               <div className="flex flex-col gap-4 mb-6">
                 <div className="flex justify-center">
                   {getRouteTypeBadge()}
