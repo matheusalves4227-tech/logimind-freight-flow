@@ -1,12 +1,28 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import LeadQualificationModal from "@/components/LeadQualificationModal";
+import { supabase } from "@/integrations/supabase/client";
 
 const CTA = () => {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsLoggedIn(!!session);
+    });
+  }, []);
+
+  const handlePrimaryCTA = () => {
+    if (isLoggedIn) {
+      navigate('/quote');
+    } else {
+      navigate('/auth');
+    }
+  };
 
   return (
     <>
@@ -29,9 +45,9 @@ const CTA = () => {
               variant="hero" 
               size="xl" 
               className="group"
-              onClick={() => navigate('/auth')}
+              onClick={handlePrimaryCTA}
             >
-              Começar Grátis
+              {isLoggedIn ? 'Nova Cotação' : 'Começar Grátis'}
               <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
             </Button>
             <Button 
