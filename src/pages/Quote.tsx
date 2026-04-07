@@ -336,10 +336,12 @@ const Quote = () => {
         origin: data.restricted_origin || false,
         destination: data.restricted_destination || false,
       });
-      toast.success("Cotação gerada com sucesso! Redirecionando...");
+      toast.success("Cotação gerada com sucesso!");
       
-      // Redirecionar para o dashboard com as cotações
-      navigate("/dashboard");
+      // Scroll para os resultados após renderizar
+      setTimeout(() => {
+        document.getElementById('quote-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 300);
     } catch (error: any) {
       console.error("Error generating quote:", error);
       toast.error(error.message || "Erro ao gerar cotação");
