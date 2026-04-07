@@ -388,67 +388,61 @@ export default function Profile() {
           Voltar para Home
         </Button>
 
-        {/* Profile Header with Gradient */}
-        <div className="relative rounded-2xl bg-gradient-to-r from-primary/10 via-primary/5 to-accent/10 p-6 mb-8 overflow-hidden">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
-          
-          <div className="relative flex flex-col sm:flex-row items-center gap-6">
-            {/* Avatar with Double Border */}
-            <div className="relative">
-              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary to-accent opacity-50 blur-sm scale-110" />
-              <div className="relative ring-4 ring-background rounded-full shadow-xl">
-                <UserAvatarUpload
-                  userId={userId}
-                  currentAvatarUrl={profile.avatar_url}
-                  onUploadComplete={handleAvatarUploadComplete}
-                />
+        {/* Profile Header */}
+        <Card className="mb-8 shadow-sm border-border/50">
+          <CardContent className="p-6">
+            <div className="flex flex-col sm:flex-row items-center gap-5">
+              {/* Avatar */}
+              <UserAvatarUpload
+                userId={userId}
+                currentAvatarUrl={profile.avatar_url}
+                onUploadComplete={handleAvatarUploadComplete}
+              />
+
+              {/* User Info */}
+              <div className="flex-1 text-center sm:text-left">
+                <div className="flex flex-col sm:flex-row items-center gap-2 mb-1">
+                  <h1 className="text-xl font-semibold text-foreground">
+                    {profile.full_name || "Usuário"}
+                  </h1>
+                  <Badge 
+                    variant="secondary" 
+                    className="text-xs gap-1 font-medium"
+                  >
+                    <CheckCircle className="h-3 w-3 text-emerald-600" />
+                    Verificada
+                  </Badge>
+                </div>
+                <p className="text-sm text-muted-foreground">{userEmail}</p>
+                {profile.company_name && (
+                  <p className="text-sm text-muted-foreground flex items-center gap-1.5 justify-center sm:justify-start mt-1">
+                    <Building2 className="h-3.5 w-3.5" />
+                    {profile.company_name}
+                  </p>
+                )}
               </div>
             </div>
+          </CardContent>
+        </Card>
 
-            {/* User Info */}
-            <div className="flex-1 text-center sm:text-left">
-              <div className="flex flex-col sm:flex-row items-center gap-3 mb-2">
-                <h1 className="text-2xl font-bold text-foreground">
-                  {profile.full_name || "Usuário"}
-                </h1>
-                <Badge 
-                  variant="outline" 
-                  className="bg-emerald-50 text-emerald-700 border-emerald-200 gap-1.5 px-3"
-                >
-                  <CheckCircle className="h-3.5 w-3.5" />
-                  Conta Verificada
-                </Badge>
-              </div>
-              <p className="text-muted-foreground">{userEmail}</p>
-              {profile.company_name && (
-                <p className="text-sm text-muted-foreground flex items-center gap-1.5 justify-center sm:justify-start mt-1">
-                  <Building2 className="h-4 w-4" />
-                  {profile.company_name}
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Tabs with Icons */}
+        {/* Tabs */}
         <Tabs defaultValue="personal" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 h-12 p-1 gap-2">
+          <TabsList className="w-full bg-muted/50 p-1 h-10">
             <TabsTrigger 
               value="personal" 
-              className="flex items-center gap-2 text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200"
+              className="flex-1 flex items-center justify-center gap-2 text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200"
             >
               <User className="h-4 w-4" />
               Dados Pessoais
             </TabsTrigger>
             <TabsTrigger 
               value="security" 
-              className="flex items-center gap-2 text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200"
+              className="flex-1 flex items-center justify-center gap-2 text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200"
             >
               <Shield className="h-4 w-4" />
               Segurança
             </TabsTrigger>
           </TabsList>
-
           {/* Personal Data Tab */}
           <TabsContent value="personal" className="space-y-6 animate-fade-in">
             {/* Personal Info Card */}
