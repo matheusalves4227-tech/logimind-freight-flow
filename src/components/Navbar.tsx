@@ -383,6 +383,15 @@ const Navbar = () => {
                           <Button
                             variant="ghost"
                             className="justify-start gap-3 text-base"
+                            onClick={() => handleNavigation("/admin/financeiro")}
+                          >
+                            <DollarSign className="h-5 w-5" />
+                            Financeiro
+                          </Button>
+
+                          <Button
+                            variant="ghost"
+                            className="justify-start gap-3 text-base"
                             onClick={() => handleNavigation("/admin/calculadora-b2b")}
                           >
                             <Settings className="h-5 w-5" />
