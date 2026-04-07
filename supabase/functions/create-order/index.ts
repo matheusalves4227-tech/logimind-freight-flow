@@ -222,7 +222,20 @@ Deno.serve(async (req) => {
 
     if (eventError) {
       console.error('[Create Order] Error creating initial event:', eventError);
-      // Não retornar erro, pois o pedido foi criado com sucesso
+    }
+
+    // Notificar admin por email sobre novo pedido (fire-and-forget)
+    try {
+      const supabaseServiceClient2 = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      );
+      await supabaseServiceClient2.functions.invoke('notify-admin-new-order', {
+        body: { orderId: order.id }
+      });
+      console.log('[Create Order] Admin notification sent');
+    } catch (notifyError) {
+      console.error('[Create Order] Failed to notify admin (non-blocking):', notifyError);
     }
 
     return new Response(
