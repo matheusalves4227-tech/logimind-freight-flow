@@ -98,10 +98,11 @@ const DriverDashboard = () => {
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Dashboard do Motorista</h1>
-          <h1 className="text-3xl font-bold text-foreground">Dashboard do Motorista</h1>
-          <p className="text-muted-foreground mt-2">
-            Olá, {driverProfile?.full_name}
-          </p>
+            <p className="text-muted-foreground mt-2">
+              Olá, {driverProfile?.full_name}
+            </p>
+          </div>
+          <DriverNotifications />
         </div>
 
         <Tabs defaultValue="status" className="w-full">
