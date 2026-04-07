@@ -7,7 +7,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const GATEWAY_URL = 'https://connector-gateway.lovable.dev/resend'
+const RESEND_URL = 'https://api.resend.com'
 const FROM_EMAIL = 'LogiMarket <matheus.alves@logimarket.com.br>'
 
 Deno.serve(async (req) => {
@@ -16,11 +16,10 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')
     const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
 
-    if (!LOVABLE_API_KEY || !RESEND_API_KEY) {
-      console.error('Missing LOVABLE_API_KEY or RESEND_API_KEY')
+    if (!RESEND_API_KEY) {
+      console.error('Missing RESEND_API_KEY')
       return new Response(
         JSON.stringify({ error: 'Server configuration error' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -47,13 +46,12 @@ Deno.serve(async (req) => {
       ? template.subject(templateData)
       : template.subject
 
-    // Send via Resend gateway
-    const response = await fetch(`${GATEWAY_URL}/emails`, {
+    // Send via Resend API directly
+    const response = await fetch(`${RESEND_URL}/emails`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'X-Connection-Api-Key': RESEND_API_KEY,
+        'Authorization': `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
         from: FROM_EMAIL,
