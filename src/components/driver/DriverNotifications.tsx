@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from "react";
-import { Bell, BellRing, Check, CheckCheck, Truck, MapPin, DollarSign, X } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Bell, BellRing, CheckCheck, Truck, MapPin, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -27,7 +27,7 @@ export const DriverNotifications = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [open, setOpen] = useState(false);
   const { isSupported, isSubscribed, loading, subscribe, unsubscribe, permission } = usePushNotifications();
-  const prevCountRef = useRef(0);
+  
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
