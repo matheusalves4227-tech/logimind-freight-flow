@@ -158,11 +158,27 @@ export const PendingPaymentsTable = () => {
     }
   };
 
-  // Extrai URL do comprovante
+  // Extrai referência do comprovante (URL legada ou caminho privado)
   const extractProofUrl = (notes: string): string | null => {
-    const match = notes?.match(/Comprovante PIX: (https?:\/\/[^\s]+)/);
+    const match = notes?.match(/Comprovante PIX: ([^\s]+)/);
     if (!match) return null;
     return match[1];
+  };
+
+  const isPublicProofUrl = (value: string) => /^https?:\/\//i.test(value);
+
+  const resolveProofUrl = async (proofReference: string) => {
+    if (isPublicProofUrl(proofReference)) return proofReference;
+
+    const { data, error } = await supabase.storage
+      .from("payment-proofs")
+      .createSignedUrl(proofReference, 60 * 60);
+
+    if (error || !data?.signedUrl) {
+      throw error || new Error("Não foi possível gerar acesso temporário ao comprovante");
+    }
+
+    return data.signedUrl;
   };
 
   // Detectar tipo de arquivo
@@ -173,9 +189,25 @@ export const PendingPaymentsTable = () => {
   };
 
   // Abrir visualizador inline
-  const handleViewProof = (url: string) => {
-    const type = getFileType(url);
-    setViewingProof({ url, type });
+  const handleViewProof = async (proofReference: string) => {
+    try {
+      const resolvedUrl = await resolveProofUrl(proofReference);
+      const type = getFileType(proofReference);
+      setViewingProof({ url: resolvedUrl, type });
+    } catch (error) {
+      console.error("Error opening payment proof:", error);
+      toast.error("Não foi possível abrir o comprovante");
+    }
+  };
+
+  const handleOpenProofInNewTab = async (proofReference: string) => {
+    try {
+      const resolvedUrl = await resolveProofUrl(proofReference);
+      window.open(resolvedUrl, "_blank", "noopener,noreferrer");
+    } catch (error) {
+      console.error("Error opening payment proof in new tab:", error);
+      toast.error("Não foi possível abrir o comprovante");
+    }
   };
 
   // Formatar rota de forma compacta
@@ -357,7 +389,7 @@ export const PendingPaymentsTable = () => {
                                 </Button>
                               </HoverCardTrigger>
                               <HoverCardContent side="left" className="w-64 p-2">
-                                {getFileType(proofUrl) === 'image' ? (
+                                 {isPublicProofUrl(proofUrl) && getFileType(proofUrl) === 'image' ? (
                                   <img 
                                     src={proofUrl} 
                                     alt="Preview" 
@@ -366,10 +398,12 @@ export const PendingPaymentsTable = () => {
                                       (e.target as HTMLImageElement).style.display = 'none';
                                     }}
                                   />
-                                ) : (
+                                 ) : (
                                   <div className="flex items-center justify-center h-32 bg-muted rounded">
                                     <FileText className="h-8 w-8 text-muted-foreground" />
-                                    <span className="ml-2 text-sm text-muted-foreground">Arquivo PDF</span>
+                                     <span className="ml-2 text-sm text-muted-foreground">
+                                       {isPublicProofUrl(proofUrl) ? "Arquivo PDF" : "Clique em ver para carregar"}
+                                     </span>
                                   </div>
                                 )}
                               </HoverCardContent>
@@ -377,7 +411,7 @@ export const PendingPaymentsTable = () => {
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => window.open(proofUrl, "_blank")}
+                               onClick={() => handleOpenProofInNewTab(proofUrl)}
                               className="h-7 w-7"
                               title="Abrir em nova aba"
                             >

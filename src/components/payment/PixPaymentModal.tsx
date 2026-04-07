@@ -51,7 +51,7 @@ export const PixPaymentModal = ({
     try {
       const fileExt = file.name.split(".").pop();
       const fileName = `${orderId}_${Date.now()}.${fileExt}`;
-      const filePath = fileName;
+      const filePath = `${orderId}/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from("payment-proofs")
@@ -59,17 +59,13 @@ export const PixPaymentModal = ({
 
       if (uploadError) throw uploadError;
 
-      const { data: urlData } = supabase.storage
-        .from("payment-proofs")
-        .getPublicUrl(filePath);
+      setProofUrl(filePath);
 
-      setProofUrl(urlData.publicUrl);
-
-      // Atualizar pedido com URL do comprovante
+      // Atualizar pedido com caminho privado do comprovante
       const { error: updateError } = await supabase
         .from("orders")
         .update({
-          operational_notes: `Comprovante PIX: ${urlData.publicUrl}`,
+          operational_notes: `Comprovante PIX: ${filePath}`,
           updated_at: new Date().toISOString(),
         })
         .eq("id", orderId);
