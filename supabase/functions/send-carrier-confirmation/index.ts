@@ -44,11 +44,10 @@ Deno.serve(async (req) => {
       );
     }
 
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
 
-    if (!LOVABLE_API_KEY || !RESEND_API_KEY) {
-      console.warn("[CARRIER-CONFIRMATION] Missing API keys");
+    if (!RESEND_API_KEY) {
+      console.warn("[CARRIER-CONFIRMATION] Missing RESEND_API_KEY");
       return new Response(
         JSON.stringify({ success: false, message: "Email service not configured" }),
         { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
@@ -130,12 +129,11 @@ matheus.alves@logimarket.com.br
 </table>
 </body></html>`;
 
-    const response = await fetch(`${GATEWAY_URL}/emails`, {
+    const response = await fetch(`${RESEND_URL}/emails`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'X-Connection-Api-Key': RESEND_API_KEY,
+        'Authorization': `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
         from: FROM_EMAIL,
