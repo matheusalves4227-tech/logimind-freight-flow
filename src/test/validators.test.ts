@@ -10,7 +10,6 @@ describe("validateCPF", () => {
   it.each([
     "52998224725",
     "11144477735",
-    "45638964070",
   ])("deve aceitar CPF válido: %s", (cpf) => {
     expect(validateCPF(cpf)).toBe(true);
   });
