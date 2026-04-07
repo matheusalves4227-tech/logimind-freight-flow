@@ -336,7 +336,20 @@ const Quote = () => {
         origin: data.restricted_origin || false,
         destination: data.restricted_destination || false,
       });
-      toast.success("Cotação gerada com sucesso!");
+      toast.success(
+        <div className="flex items-start gap-3">
+          <div className="flex-shrink-0 w-10 h-10 rounded-full bg-secondary/20 flex items-center justify-center">
+            <Truck className="h-5 w-5 text-secondary" />
+          </div>
+          <div>
+            <p className="font-semibold text-foreground">Cotação gerada com sucesso!</p>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              {data.quotes.length} transportadora{data.quotes.length !== 1 ? 's' : ''} encontrada{data.quotes.length !== 1 ? 's' : ''} para sua rota
+            </p>
+          </div>
+        </div>,
+        { duration: 4000 }
+      );
       
       // Scroll para os resultados após renderizar
       setTimeout(() => {
