@@ -511,11 +511,9 @@ const B2BQuoteCalculator = ({ quoteId }: B2BQuoteCalculatorProps) => {
                       toast({ title: "Enviando proposta...", description: "Aguarde enquanto processamos." });
                       
                       try {
-                        const { error } = await supabase.functions.invoke('send-transactional-email', {
+                        const { error } = await supabase.functions.invoke('send-b2b-proposal', {
                           body: {
-                            templateName: 'b2b-proposal',
                             recipientEmail: emailDestino,
-                            idempotencyKey: `b2b-proposal-${Date.now()}-${emailDestino}`,
                             templateData: {
                               razaoSocial,
                               contatoResponsavel: nomeContato,
