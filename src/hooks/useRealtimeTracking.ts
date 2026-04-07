@@ -1,6 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { RealtimeChannel } from '@supabase/supabase-js';
 
 interface TrackingEvent {
   id: string;
@@ -32,17 +31,17 @@ export const useRealtimeTracking = ({
   onLocationUpdate 
 }: UseRealtimeTrackingProps) => {
   const [isConnected, setIsConnected] = useState(false);
-  const channelRef = useRef<RealtimeChannel | null>(null);
-  
-  // Use refs para callbacks para evitar re-subscriptions
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const lastEventTimestampRef = useRef<string | null>(null);
+  const lastLocationUpdateRef = useRef<string | null>(null);
+
   const onEventUpdateRef = useRef(onEventUpdate);
   const onLocationUpdateRef = useRef(onLocationUpdate);
-  
-  // Atualizar refs quando callbacks mudarem
+
   useEffect(() => {
     onEventUpdateRef.current = onEventUpdate;
   }, [onEventUpdate]);
-  
+
   useEffect(() => {
     onLocationUpdateRef.current = onLocationUpdate;
   }, [onLocationUpdate]);
@@ -50,78 +49,66 @@ export const useRealtimeTracking = ({
   useEffect(() => {
     if (!orderId) return;
 
-    // Evitar re-subscription se já conectado ao mesmo orderId
-    if (channelRef.current) {
-      return;
-    }
+    const poll = async () => {
+      try {
+        // Poll for new tracking events
+        let query = supabase
+          .from('tracking_events')
+          .select('*')
+          .eq('order_id', orderId)
+          .order('event_timestamp', { ascending: false })
+          .limit(1);
 
-    console.log(`🔄 Iniciando Realtime tracking para pedido: ${orderId}`);
+        if (lastEventTimestampRef.current) {
+          query = query.gt('event_timestamp', lastEventTimestampRef.current);
+        }
 
-    // Criar canal único para este pedido
-    const realtimeChannel = supabase.channel(`tracking:${orderId}`, {
-      config: {
-        broadcast: { self: true }
+        const { data: events } = await query;
+        if (events && events.length > 0) {
+          lastEventTimestampRef.current = events[0].event_timestamp;
+          if (onEventUpdateRef.current) {
+            onEventUpdateRef.current(events[0] as TrackingEvent);
+          }
+        }
+
+        // Poll for order location updates
+        const { data: order } = await supabase
+          .from('orders')
+          .select('current_latitude, current_longitude, last_location_update, status')
+          .eq('id', orderId)
+          .single();
+
+        if (order && order.last_location_update !== lastLocationUpdateRef.current) {
+          lastLocationUpdateRef.current = order.last_location_update;
+          if (onLocationUpdateRef.current) {
+            onLocationUpdateRef.current(order as OrderLocation);
+          }
+        }
+      } catch (err) {
+        console.error('Tracking poll error:', err);
       }
-    });
-
-    // Inscrever-se em novos eventos de tracking
-    realtimeChannel
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'tracking_events',
-          filter: `order_id=eq.${orderId}`
-        },
-        (payload) => {
-          console.log('📍 Novo evento de tracking recebido:', payload.new);
-          if (onEventUpdateRef.current && payload.new) {
-            onEventUpdateRef.current(payload.new as TrackingEvent);
-          }
-        }
-      )
-      // Inscrever-se em atualizações de localização do pedido
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'orders',
-          filter: `id=eq.${orderId}`
-        },
-        (payload) => {
-          console.log('📍 Atualização de localização recebida:', payload.new);
-          if (onLocationUpdateRef.current && payload.new) {
-            const location: OrderLocation = {
-              current_latitude: (payload.new as any).current_latitude,
-              current_longitude: (payload.new as any).current_longitude,
-              last_location_update: (payload.new as any).last_location_update,
-              status: (payload.new as any).status
-            };
-            onLocationUpdateRef.current(location);
-          }
-        }
-      )
-      .subscribe((status) => {
-        console.log(`📡 Status da conexão Realtime: ${status}`);
-        setIsConnected(status === 'SUBSCRIBED');
-      });
-
-    channelRef.current = realtimeChannel;
-
-    // Cleanup ao desmontar
-    return () => {
-      console.log(`❌ Desconectando Realtime para pedido: ${orderId}`);
-      realtimeChannel.unsubscribe();
-      channelRef.current = null;
     };
-  }, [orderId]); // Apenas orderId como dependência
+
+    // Initial fetch
+    poll();
+    setIsConnected(true);
+
+    // Poll every 15 seconds
+    intervalRef.current = setInterval(poll, 15_000);
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      setIsConnected(false);
+    };
+  }, [orderId]);
 
   const disconnect = useCallback(() => {
-    if (channelRef.current) {
-      channelRef.current.unsubscribe();
-      channelRef.current = null;
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
       setIsConnected(false);
     }
   }, []);
