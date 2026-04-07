@@ -546,7 +546,7 @@ const B2BQuoteCalculator = ({ quoteId }: B2BQuoteCalculatorProps) => {
                       }
                     }}
                   >
-                    <MessageCircle className="h-4 w-4 mr-2" />
+                    <Mail className="h-4 w-4 mr-2" />
                     Enviar Proposta por E-mail
                   </Button>
                 </div>
