@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Package, Menu, User, LayoutDashboard, Truck, Users, FileText, Home, Shield, Settings, LogOut, UserCircle } from "lucide-react";
+import { Package, Menu, User, LayoutDashboard, Truck, Users, FileText, Home, Shield, Settings, LogOut, UserCircle, DollarSign } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
@@ -213,6 +213,13 @@ const Navbar = () => {
                       >
                         <FileText className="h-4 w-4 text-accent" />
                         <span>Pedidos & KPIs</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => navigate("/admin/financeiro")}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-primary/5 transition-colors"
+                      >
+                        <DollarSign className="h-4 w-4 text-secondary" />
+                        <span>Financeiro</span>
                       </DropdownMenuItem>
                       <DropdownMenuItem 
                         onClick={() => navigate("/admin/calculadora-b2b")}
