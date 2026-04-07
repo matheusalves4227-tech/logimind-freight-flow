@@ -469,7 +469,7 @@ export default function Profile() {
                         value={profile.full_name}
                         onChange={(e) => setProfile(prev => ({ ...prev, full_name: e.target.value }))}
                         placeholder="Seu nome completo"
-                        className="bg-white"
+                        className="bg-background"
                       />
                     </div>
 
@@ -513,7 +513,7 @@ export default function Profile() {
                         value={profile.company_name}
                         onChange={(e) => setProfile(prev => ({ ...prev, company_name: e.target.value }))}
                         placeholder="Razão Social"
-                        className="bg-white"
+                        className="bg-background"
                       />
                     </div>
 
@@ -580,7 +580,7 @@ export default function Profile() {
                     <Button
                       variant="outline"
                       onClick={() => setShowPasswordDialog(true)}
-                      className="flex-1 justify-start gap-3 h-12 bg-white hover:bg-slate-100"
+                      className="flex-1 justify-start gap-3 h-12 bg-background hover:bg-slate-100"
                     >
                       <Lock className="h-4 w-4 text-muted-foreground" />
                       <div className="text-left">
@@ -591,7 +591,7 @@ export default function Profile() {
                     <Button
                       variant="outline"
                       onClick={() => setShowExportDialog(true)}
-                      className="flex-1 justify-start gap-3 h-12 bg-white hover:bg-slate-100"
+                      className="flex-1 justify-start gap-3 h-12 bg-background hover:bg-slate-100"
                     >
                       <Download className="h-4 w-4 text-muted-foreground" />
                       <div className="text-left">
@@ -619,7 +619,7 @@ export default function Profile() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="bg-white/80 rounded-xl p-5 border border-destructive/20">
+                  <div className="bg-background/80 rounded-xl p-5 border border-destructive/20">
                     <p className="text-sm text-muted-foreground mb-3">
                       Ao excluir sua conta, todos os seus dados serão permanentemente removidos:
                     </p>
