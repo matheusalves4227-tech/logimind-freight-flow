@@ -458,7 +458,7 @@ export default function Profile() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="bg-slate-50 rounded-xl p-5 space-y-5">
+                <div className="bg-muted/30 rounded-xl p-5 space-y-5">
                   <div className="grid gap-5 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="full_name" className="text-sm font-medium">
@@ -502,7 +502,7 @@ export default function Profile() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="bg-slate-50 rounded-xl p-5">
+                <div className="bg-muted/30 rounded-xl p-5">
                   <div className="grid gap-5 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="company_name" className="text-sm font-medium">
@@ -575,7 +575,7 @@ export default function Profile() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="bg-slate-50 rounded-xl p-5 space-y-4">
+                <div className="bg-muted/30 rounded-xl p-5 space-y-4">
                   <div className="flex flex-col sm:flex-row gap-3">
                     <Button
                       variant="outline"
@@ -831,7 +831,7 @@ export default function Profile() {
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
-            <div className="bg-slate-50 rounded-lg p-4">
+            <div className="bg-muted/30 rounded-lg p-4">
               <p className="text-sm text-muted-foreground mb-3">
                 O arquivo incluirá:
               </p>
