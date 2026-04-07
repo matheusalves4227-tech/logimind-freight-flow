@@ -56,3 +56,6 @@ verify_jwt = true
 
 [functions.notify-shipper-delivery]
 verify_jwt = true
+
+[functions.process-email-queue]
+verify_jwt = true
