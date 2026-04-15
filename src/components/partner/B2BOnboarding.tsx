@@ -99,7 +99,7 @@ const B2BOnboarding = ({ cnpj: cnpjProp, onBack }: B2BOnboardingProps) => {
         .from("b2b_carriers")
         .insert({
           user_id: authData.user.id,
-          cnpj: cnpj.replace(/\D/g, ""),
+          cnpj: localCnpj.replace(/\D/g, ""),
           razao_social: formData.razao_social,
           nome_fantasia: formData.razao_social,
           email: formData.email,
@@ -220,7 +220,7 @@ const B2BOnboarding = ({ cnpj: cnpjProp, onBack }: B2BOnboardingProps) => {
               Cadastro de Transportadora
             </h1>
             <p className="text-muted-foreground">
-              CNPJ: {cnpj}
+              CNPJ: {localCnpj || "A informar"}
             </p>
           </div>
 
