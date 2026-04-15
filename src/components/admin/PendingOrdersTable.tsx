@@ -44,6 +44,19 @@ export const PendingOrdersTable = ({ onUpdate }: PendingOrdersTableProps) => {
   const [selectedOrder, setSelectedOrder] = useState<PendingOrder | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
 
+  useEffect(() => {
+    fetchOrders();
+
+    const channel = supabase
+      .channel('pending-orders')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
+        fetchOrders();
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, []);
+
   const fetchOrders = async () => {
     try {
       // Pedidos pendentes = pagamento confirmado MAS ainda SEM motorista atribuído
