@@ -161,6 +161,7 @@ export const AwaitingDriverTable = ({ onUpdate, refreshKey }: AwaitingDriverTabl
 
       setDetailOpen(false);
       loadOrders();
+      onUpdate?.();
     } catch (error) {
       console.error('Erro:', error);
       toast({ title: 'Erro', description: 'Erro ao confirmar pedido', variant: 'destructive' });
@@ -229,6 +230,7 @@ export const AwaitingDriverTable = ({ onUpdate, refreshKey }: AwaitingDriverTabl
 
       setDetailOpen(false);
       loadOrders();
+      onUpdate?.();
     } catch (error) {
       toast({ title: 'Erro', description: 'Erro ao revogar', variant: 'destructive' });
     } finally {
