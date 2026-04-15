@@ -1394,6 +1394,83 @@ export type Database = {
           },
         ]
       }
+      payouts_queue: {
+        Row: {
+          created_at: string
+          driver_id: string
+          error_message: string | null
+          gross_amount: number
+          id: string
+          order_id: string
+          payout_amount: number
+          platform_net_fee: number
+          processed_at: string | null
+          scheduled_for: string
+          status: Database["public"]["Enums"]["payout_status"]
+          stripe_fee: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          driver_id: string
+          error_message?: string | null
+          gross_amount: number
+          id?: string
+          order_id: string
+          payout_amount: number
+          platform_net_fee?: number
+          processed_at?: string | null
+          scheduled_for?: string
+          status?: Database["public"]["Enums"]["payout_status"]
+          stripe_fee?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          driver_id?: string
+          error_message?: string | null
+          gross_amount?: number
+          id?: string
+          order_id?: string
+          payout_amount?: number
+          platform_net_fee?: number
+          processed_at?: string | null
+          scheduled_for?: string
+          status?: Database["public"]["Enums"]["payout_status"]
+          stripe_fee?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payouts_queue_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "driver_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payouts_queue_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "vw_pedidos_para_repasse"
+            referencedColumns: ["driver_profile_id"]
+          },
+          {
+            foreignKeyName: "payouts_queue_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payouts_queue_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "vw_pedidos_para_repasse"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -1981,6 +2058,7 @@ export type Database = {
       app_role: "admin" | "driver" | "user"
       cnh_category: "A" | "B" | "C" | "D" | "E" | "AB" | "AC" | "AD" | "AE"
       driver_status: "pending" | "approved" | "rejected" | "suspended"
+      payout_status: "pending" | "ready_for_transfer" | "paid" | "failed"
       transaction_status: "PENDING" | "HELD" | "PAID" | "FAILED" | "REFUNDED"
       transaction_type: "PAYMENT_IN" | "PAYMENT_OUT"
       vehicle_type:
@@ -2123,6 +2201,7 @@ export const Constants = {
       app_role: ["admin", "driver", "user"],
       cnh_category: ["A", "B", "C", "D", "E", "AB", "AC", "AD", "AE"],
       driver_status: ["pending", "approved", "rejected", "suspended"],
+      payout_status: ["pending", "ready_for_transfer", "paid", "failed"],
       transaction_status: ["PENDING", "HELD", "PAID", "FAILED", "REFUNDED"],
       transaction_type: ["PAYMENT_IN", "PAYMENT_OUT"],
       vehicle_type: [
