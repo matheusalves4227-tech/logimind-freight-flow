@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Card } from "@/components/ui/card";
@@ -14,24 +14,20 @@ import { validateCPF, validateCNPJ } from "@/lib/validators";
 
 type PartnerType = "b2b" | "autonomous" | null;
 
+function getInitialType(searchParams: URLSearchParams): { type: PartnerType; fromUrl: boolean } {
+  const tipo = searchParams.get("tipo");
+  if (tipo === "transportadora") return { type: "b2b", fromUrl: true };
+  if (tipo === "motorista") return { type: "autonomous", fromUrl: true };
+  return { type: null, fromUrl: false };
+}
+
 const PartnerOnboarding = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [partnerType, setPartnerType] = useState<PartnerType>(null);
+  const initial = getInitialType(searchParams);
+  const [partnerType, setPartnerType] = useState<PartnerType>(initial.type);
   const [cnpjCpf, setCnpjCpf] = useState("");
-  const [cameFromUrl, setCameFromUrl] = useState(false);
-
-  // Detectar tipo de parceiro pela URL e pular direto para o fluxo correto
-  useEffect(() => {
-    const tipo = searchParams.get("tipo");
-    if (tipo === "transportadora") {
-      setPartnerType("b2b");
-      setCameFromUrl(true);
-    } else if (tipo === "motorista") {
-      setPartnerType("autonomous");
-      setCameFromUrl(true);
-    }
-  }, [searchParams]);
+  const [cameFromUrl] = useState(initial.fromUrl);
 
   const handleTriagem = () => {
     const cleanValue = cnpjCpf.replace(/\D/g, "");
