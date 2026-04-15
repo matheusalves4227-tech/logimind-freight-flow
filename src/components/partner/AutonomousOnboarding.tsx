@@ -451,7 +451,8 @@ const AutonomousOnboarding = ({ cpf: cpfProp, onBack }: AutonomousOnboardingProp
                         <CpfCnpjInput
                           value={localCpf}
                           onChange={setLocalCpf}
-                          label="CPF *"
+                          label="CPF"
+                          placeholder="000.000.000-00"
                           required
                         />
                         {errors.cpf && (
