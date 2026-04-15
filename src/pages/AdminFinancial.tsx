@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, Legend } from 'recharts';
 import { PendingPayoutsTable } from '@/components/admin/PendingPayoutsTable';
+import { PayoutsQueueTable } from '@/components/admin/PayoutsQueueTable';
 import { FinancialKPIs } from '@/components/admin/FinancialKPIs';
 
 interface PerformanceData {
