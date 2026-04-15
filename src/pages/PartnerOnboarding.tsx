@@ -19,14 +19,17 @@ const PartnerOnboarding = () => {
   const [searchParams] = useSearchParams();
   const [partnerType, setPartnerType] = useState<PartnerType>(null);
   const [cnpjCpf, setCnpjCpf] = useState("");
+  const [cameFromUrl, setCameFromUrl] = useState(false);
 
   // Detectar tipo de parceiro pela URL e pular direto para o fluxo correto
   useEffect(() => {
     const tipo = searchParams.get("tipo");
     if (tipo === "transportadora") {
       setPartnerType("b2b");
+      setCameFromUrl(true);
     } else if (tipo === "motorista") {
       setPartnerType("autonomous");
+      setCameFromUrl(true);
     }
   }, [searchParams]);
 
@@ -49,12 +52,20 @@ const PartnerOnboarding = () => {
     }
   };
 
+  const handleBack = () => {
+    if (cameFromUrl) {
+      navigate(-1);
+    } else {
+      setPartnerType(null);
+    }
+  };
+
   if (partnerType === "b2b") {
-    return <B2BOnboarding cnpj={cnpjCpf} onBack={() => setPartnerType(null)} />;
+    return <B2BOnboarding cnpj={cnpjCpf} onBack={handleBack} />;
   }
 
   if (partnerType === "autonomous") {
-    return <AutonomousOnboarding cpf={cnpjCpf} onBack={() => setPartnerType(null)} />;
+    return <AutonomousOnboarding cpf={cnpjCpf} onBack={handleBack} />;
   }
 
   return (
