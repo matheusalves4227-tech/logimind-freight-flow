@@ -52,12 +52,20 @@ const PartnerOnboarding = () => {
     }
   };
 
+  const handleBack = () => {
+    if (cameFromUrl) {
+      navigate(-1);
+    } else {
+      setPartnerType(null);
+    }
+  };
+
   if (partnerType === "b2b") {
-    return <B2BOnboarding cnpj={cnpjCpf} onBack={() => setPartnerType(null)} />;
+    return <B2BOnboarding cnpj={cnpjCpf} onBack={handleBack} />;
   }
 
   if (partnerType === "autonomous") {
-    return <AutonomousOnboarding cpf={cnpjCpf} onBack={() => setPartnerType(null)} />;
+    return <AutonomousOnboarding cpf={cnpjCpf} onBack={handleBack} />;
   }
 
   return (
