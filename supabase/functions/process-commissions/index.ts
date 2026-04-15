@@ -102,7 +102,32 @@ Deno.serve(async (req) => {
 
         if (txError) {
           console.error(`[PROCESS-COMMISSIONS] Erro ao criar transação para ${order.tracking_code}:`, txError);
-          // Non-blocking: order already updated, transaction can be retried
+        }
+
+        // 5. Enviar email de notificação ao motorista (non-blocking)
+        if (order.driver_id) {
+          try {
+            const { data: driverData } = await supabaseClient
+              .from('driver_profiles')
+              .select('email, full_name')
+              .eq('id', order.driver_id)
+              .maybeSingle();
+
+            if (driverData?.email) {
+              await supabaseClient.functions.invoke('notify-driver-payout', {
+                body: {
+                  driver_email: driverData.email,
+                  driver_name: driverData.full_name,
+                  payout_amount: valorRepasseLiquido,
+                  tracking_code: order.tracking_code,
+                  order_id: order.id,
+                },
+              });
+              console.log(`[PROCESS-COMMISSIONS] Email enviado para ${driverData.email}`);
+            }
+          } catch (emailErr) {
+            console.warn(`[PROCESS-COMMISSIONS] Falha ao enviar email (non-blocking):`, emailErr);
+          }
         }
 
         results.push({
