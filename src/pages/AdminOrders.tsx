@@ -36,6 +36,7 @@ const AdminOrders = () => {
   const { logAction } = useAuditLog();
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
   const [stats, setStats] = useState<StatsData>({
     pendingQuotes: 0,
     pendingOrders: 0,
@@ -43,6 +44,11 @@ const AdminOrders = () => {
     totalOrders: 0,
     avgResponseTime: 0,
   });
+
+  const triggerRefresh = () => {
+    setRefreshKey(prev => prev + 1);
+    fetchStats();
+  };
 
   useEffect(() => {
     checkAdminAccess();
