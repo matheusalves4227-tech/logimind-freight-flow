@@ -11,6 +11,7 @@ import { DriverActive } from "@/components/driver/DriverActive";
 import { DriverBankAccount } from "@/components/driver/DriverBankAccount";
 import { DriverFinancialKPIs } from "@/components/driver/DriverFinancialKPIs";
 import { DriverPaymentHistory } from "@/components/driver/DriverPaymentHistory";
+import { DriverEarningsStatement } from "@/components/driver/DriverEarningsStatement";
 import { DriverProfile } from "@/components/driver/DriverProfile";
 import { DriverNotifications } from "@/components/driver/DriverNotifications";
 import { Home, Map, Truck, Wallet, UserCircle } from "lucide-react";
@@ -148,11 +149,14 @@ const DriverDashboard = () => {
           <TabsContent value="financial" className="space-y-6">
             {/* KPIs Financeiros */}
             <DriverFinancialKPIs />
+
+            {/* Extrato de Ganhos (payouts_queue) */}
+            <DriverEarningsStatement />
             
             {/* Cadastro de Dados Bancários */}
             <DriverBankAccount />
             
-            {/* Histórico de Repasses */}
+            {/* Histórico de Repasses (legado) */}
             <DriverPaymentHistory />
           </TabsContent>
 
