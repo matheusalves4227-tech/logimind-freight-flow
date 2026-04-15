@@ -272,14 +272,18 @@ const AdminFinancial = () => {
 
         {/* Tabs */}
         <Tabs defaultValue="revenue" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 max-w-lg bg-muted/50 p-1 rounded-lg">
+          <TabsList className="grid w-full grid-cols-4 max-w-2xl bg-muted/50 p-1 rounded-lg">
             <TabsTrigger value="revenue" className="gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
               <BarChart3 className="h-4 w-4" />
               Receita
             </TabsTrigger>
+            <TabsTrigger value="queue" className="gap-2 relative data-[state=active]:bg-background data-[state=active]:shadow-sm">
+              <TrendingUp className="h-4 w-4" />
+              Gestão de Repasses
+            </TabsTrigger>
             <TabsTrigger value="payouts" className="gap-2 relative data-[state=active]:bg-background data-[state=active]:shadow-sm">
               <DollarSign className="h-4 w-4" />
-              Repasses
+              Repasses Legado
               {summary.pending_payout_count > 0 && (
                 <span className="absolute -top-1 -right-1 w-5 h-5 bg-destructive text-destructive-foreground text-xs font-bold rounded-full flex items-center justify-center animate-pulse">
                   {summary.pending_payout_count}
@@ -287,7 +291,7 @@ const AdminFinancial = () => {
               )}
             </TabsTrigger>
             <TabsTrigger value="breakdown" className="gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
-              <TrendingUp className="h-4 w-4" />
+              <Package className="h-4 w-4" />
               Detalhamento
             </TabsTrigger>
           </TabsList>
