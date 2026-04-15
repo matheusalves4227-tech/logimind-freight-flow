@@ -138,9 +138,23 @@ export const PendingQuotesTable = ({ onUpdate }: PendingQuotesTableProps) => {
     await fetchProfile(quote.user_id);
   };
 
+  const generateTrackingCode = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let code = 'LM';
+    for (let i = 0; i < 8; i++) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return code;
+  };
+
   const handleQuoteAction = async (quoteId: string, newStatus: 'confirmed' | 'cancelled') => {
     setActionLoading(true);
     try {
+      // Find the quote
+      const quote = quotes.find(q => q.id === quoteId);
+      if (!quote) throw new Error('Cotação não encontrada');
+
+      // Update quote status
       const { error } = await supabase
         .from('quotes')
         .update({ status: newStatus })
@@ -148,16 +162,58 @@ export const PendingQuotesTable = ({ onUpdate }: PendingQuotesTableProps) => {
 
       if (error) throw error;
 
+      // If confirmed, create an order from the quote
+      if (newStatus === 'confirmed' && quote.quote_items && quote.quote_items.length > 0) {
+        // Pick the best price item
+        const bestItem = quote.quote_items.reduce((best, item) => 
+          item.final_price < best.final_price ? item : best
+        , quote.quote_items[0]);
+
+        // Get carrier name
+        const { data: carrierData } = await supabase
+          .from('carriers')
+          .select('name')
+          .eq('id', bestItem.carrier_id)
+          .single();
+
+        const trackingCode = generateTrackingCode();
+
+        const { error: orderError } = await supabase
+          .from('orders')
+          .insert({
+            quote_id: quote.id,
+            user_id: quote.user_id,
+            origin_cep: quote.origin_cep,
+            origin_address: `CEP ${quote.origin_cep}`,
+            destination_cep: quote.destination_cep,
+            destination_address: `CEP ${quote.destination_cep}`,
+            weight_kg: quote.weight_kg,
+            height_cm: quote.height_cm || null,
+            width_cm: quote.width_cm || null,
+            length_cm: quote.length_cm || null,
+            carrier_id: bestItem.carrier_id,
+            carrier_name: carrierData?.name || 'Transportadora',
+            base_price: bestItem.base_price || bestItem.final_price,
+            commission_applied: bestItem.commission_applied || 0,
+            final_price: bestItem.final_price,
+            service_type: 'standard',
+            tracking_code: trackingCode,
+            status: 'pending',
+            status_pagamento: 'pending',
+          });
+
+        if (orderError) throw orderError;
+      }
+
       toast({
-        title: newStatus === 'confirmed' ? 'Pedido Confirmado!' : 'Cotação Cancelada',
+        title: newStatus === 'confirmed' ? 'Pedido Criado!' : 'Cotação Cancelada',
         description: newStatus === 'confirmed' 
-          ? 'O pedido foi confirmado e a transportadora será notificada.'
+          ? 'O pedido foi criado e está na aba Pendentes aguardando pagamento.'
           : 'A cotação foi cancelada com sucesso.',
       });
 
       setSheetOpen(false);
       setSelectedQuote(null);
-      // Remove da lista local para atualização imediata
       setQuotes(prev => prev.filter(q => q.id !== quoteId));
       onUpdate();
     } catch (error) {
