@@ -398,24 +398,27 @@ const B2BQuoteCalculator = ({ quoteId }: B2BQuoteCalculatorProps) => {
               </div>
             ) : (
               <>
-                {/* Preço por Viagem - Destaque Principal */}
+                {/* Valor Mensal Total - Destaque Principal */}
                 <div className="text-center p-6 bg-white rounded-xl border-2 border-blue-200 shadow-md">
-                  <p className="text-sm text-muted-foreground mb-1">Preço por Viagem</p>
+                  <p className="text-sm text-muted-foreground mb-1">Valor Mensal Total</p>
                   <p className="text-4xl font-bold text-blue-700 font-[Inter]" style={{ fontWeight: 700 }}>
-                    {formatCurrency(resultado.preco_final_unitario)}
+                    {formatCurrency(resultado.valor_mensal_total)}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {formData.volume_mensal_estimado} viagens × {formatCurrency(resultado.preco_final_unitario)} por viagem
                   </p>
                 </div>
 
                 {/* Grid de Métricas */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="p-4 bg-white rounded-lg border border-slate-200">
-                    <p className="text-xs text-muted-foreground">Valor Mensal</p>
+                    <p className="text-xs text-muted-foreground">Preço por Viagem</p>
                     <p className="text-xl font-bold text-slate-800 font-[Inter]" style={{ fontWeight: 600 }}>
-                      {formatCurrency(resultado.valor_mensal_total)}
+                      {formatCurrency(resultado.preco_final_unitario)}
                     </p>
                   </div>
                   <div className="p-4 bg-white rounded-lg border border-slate-200">
-                    <p className="text-xs text-muted-foreground">Economia</p>
+                    <p className="text-xs text-muted-foreground">Economia Mensal</p>
                     <p className="text-xl font-bold text-emerald-600 font-[Inter]" style={{ fontWeight: 600 }}>
                       {formatCurrency(resultado.economia_mensal)}
                     </p>
@@ -582,9 +585,13 @@ const B2BQuoteCalculator = ({ quoteId }: B2BQuoteCalculatorProps) => {
                   <span className="font-medium text-amber-600">+{formatCurrency(resultado.custos_adicionais)}</span>
                 </div>
               )}
-              <div className="flex justify-between py-3 bg-blue-50 -mx-4 px-4 rounded-lg mt-2">
-                <span className="font-semibold text-blue-700">Preço Final</span>
-                <span className="font-bold text-blue-700">{formatCurrency(resultado.preco_final_unitario)}</span>
+              <div className="flex justify-between py-3 bg-slate-50 -mx-4 px-4 rounded-lg mt-2">
+                <span className="font-semibold text-slate-700">Preço por Viagem</span>
+                <span className="font-bold text-slate-700">{formatCurrency(resultado.preco_final_unitario)}</span>
+              </div>
+              <div className="flex justify-between py-3 bg-blue-50 -mx-4 px-4 rounded-lg mt-1">
+                <span className="font-semibold text-blue-700">Total Mensal Estimado ({formData.volume_mensal_estimado}×)</span>
+                <span className="font-bold text-blue-700">{formatCurrency(resultado.valor_mensal_total)}</span>
               </div>
             </CardContent>
           </Card>
