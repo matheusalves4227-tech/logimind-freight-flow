@@ -11,6 +11,7 @@ import { DriverActive } from "@/components/driver/DriverActive";
 import { DriverBankAccount } from "@/components/driver/DriverBankAccount";
 import { DriverFinancialKPIs } from "@/components/driver/DriverFinancialKPIs";
 import { DriverPaymentHistory } from "@/components/driver/DriverPaymentHistory";
+import { DriverEarningsStatement } from "@/components/driver/DriverEarningsStatement";
 import { DriverProfile } from "@/components/driver/DriverProfile";
 import { DriverNotifications } from "@/components/driver/DriverNotifications";
 import { Home, Map, Truck, Wallet, UserCircle } from "lucide-react";
