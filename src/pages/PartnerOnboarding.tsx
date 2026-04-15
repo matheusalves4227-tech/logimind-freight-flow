@@ -54,7 +54,11 @@ const PartnerOnboarding = () => {
 
   const handleBack = () => {
     if (cameFromUrl) {
-      navigate(-1);
+      if (window.history.length > 1) {
+        navigate(-1);
+      } else {
+        navigate("/");
+      }
     } else {
       setPartnerType(null);
     }
