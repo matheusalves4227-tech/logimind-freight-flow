@@ -446,6 +446,18 @@ const AutonomousOnboarding = ({ cpf: cpfProp, onBack }: AutonomousOnboardingProp
 
                     {/* Grid 2 colunas para campos curtos */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {/* Campo CPF - sempre visível */}
+                      <div className="space-y-2 sm:col-span-2">
+                        <CpfCnpjInput
+                          value={localCpf}
+                          onChange={setLocalCpf}
+                          label="CPF *"
+                          required
+                        />
+                        {errors.cpf && (
+                          <p className="text-xs text-destructive">{errors.cpf}</p>
+                        )}
+                      </div>
                       <div className="space-y-2 sm:col-span-2">
                         <Label htmlFor="nome_completo">Nome Completo *</Label>
                         <Input
