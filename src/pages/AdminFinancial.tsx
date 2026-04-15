@@ -413,7 +413,12 @@ const AdminFinancial = () => {
             )}
           </TabsContent>
 
-          {/* Tab: Repasses */}
+          {/* Tab: Gestão de Repasses (Nova) */}
+          <TabsContent value="queue">
+            <PayoutsQueueTable />
+          </TabsContent>
+
+          {/* Tab: Repasses Legado */}
           <TabsContent value="payouts">
             <PendingPayoutsTable />
           </TabsContent>
