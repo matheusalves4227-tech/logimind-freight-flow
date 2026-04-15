@@ -149,11 +149,14 @@ const DriverDashboard = () => {
           <TabsContent value="financial" className="space-y-6">
             {/* KPIs Financeiros */}
             <DriverFinancialKPIs />
+
+            {/* Extrato de Ganhos (payouts_queue) */}
+            <DriverEarningsStatement />
             
             {/* Cadastro de Dados Bancários */}
             <DriverBankAccount />
             
-            {/* Histórico de Repasses */}
+            {/* Histórico de Repasses (legado) */}
             <DriverPaymentHistory />
           </TabsContent>
 
