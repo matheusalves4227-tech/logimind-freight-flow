@@ -14,13 +14,16 @@ import { PhoneInput } from "@/components/ui/phone-input";
 import { Dropzone } from "@/components/ui/dropzone";
 import { SectionDivider } from "@/components/ui/section-divider";
 import { ConfirmationAnimation } from "@/components/ui/confirmation-animation";
+import { CpfCnpjInput } from "@/components/ui/cpf-cnpj-input";
 
 interface B2BOnboardingProps {
   cnpj: string;
   onBack: () => void;
 }
 
-const B2BOnboarding = ({ cnpj, onBack }: B2BOnboardingProps) => {
+const B2BOnboarding = ({ cnpj: cnpjProp, onBack }: B2BOnboardingProps) => {
+  const navigate = useNavigate();
+  const [localCnpj, setLocalCnpj] = useState(cnpjProp || "");
   const navigate = useNavigate();
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [documentFile, setDocumentFile] = useState<File | null>(null);
@@ -37,7 +40,12 @@ const B2BOnboarding = ({ cnpj, onBack }: B2BOnboardingProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validateCNPJ(cnpj)) {
+    const cleanCnpj = localCnpj.replace(/\D/g, '');
+    if (!cleanCnpj || cleanCnpj.length !== 14) {
+      toast.error("CNPJ é obrigatório");
+      return;
+    }
+    if (!validateCNPJ(cleanCnpj)) {
       toast.error("CNPJ inválido");
       return;
     }
@@ -49,7 +57,7 @@ const B2BOnboarding = ({ cnpj, onBack }: B2BOnboardingProps) => {
         'check-cpf-cnpj-duplicity',
         {
           body: {
-            cpf_cnpj: cnpj,
+            cpf_cnpj: localCnpj,
             type: 'cnpj'
           }
         }
