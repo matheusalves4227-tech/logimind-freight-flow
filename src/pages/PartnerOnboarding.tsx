@@ -19,14 +19,17 @@ const PartnerOnboarding = () => {
   const [searchParams] = useSearchParams();
   const [partnerType, setPartnerType] = useState<PartnerType>(null);
   const [cnpjCpf, setCnpjCpf] = useState("");
+  const [cameFromUrl, setCameFromUrl] = useState(false);
 
   // Detectar tipo de parceiro pela URL e pular direto para o fluxo correto
   useEffect(() => {
     const tipo = searchParams.get("tipo");
     if (tipo === "transportadora") {
       setPartnerType("b2b");
+      setCameFromUrl(true);
     } else if (tipo === "motorista") {
       setPartnerType("autonomous");
+      setCameFromUrl(true);
     }
   }, [searchParams]);
 
