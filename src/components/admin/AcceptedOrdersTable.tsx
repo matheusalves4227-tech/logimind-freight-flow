@@ -37,9 +37,10 @@ interface AcceptedOrder {
 
 interface AcceptedOrdersTableProps {
   onUpdate: () => void;
+  refreshKey?: number;
 }
 
-export const AcceptedOrdersTable = ({ onUpdate }: AcceptedOrdersTableProps) => {
+export const AcceptedOrdersTable = ({ onUpdate, refreshKey }: AcceptedOrdersTableProps) => {
   const { toast } = useToast();
   const { logAction } = useAuditLog();
   const [orders, setOrders] = useState<AcceptedOrder[]>([]);
@@ -50,7 +51,7 @@ export const AcceptedOrdersTable = ({ onUpdate }: AcceptedOrdersTableProps) => {
 
   useEffect(() => {
     fetchOrders();
-  }, []);
+  }, [refreshKey]);
 
   const fetchOrders = async () => {
     try {

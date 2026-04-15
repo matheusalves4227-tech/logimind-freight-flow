@@ -56,7 +56,12 @@ interface AwaitingOrder {
   updated_at: string;
 }
 
-export const AwaitingDriverTable = () => {
+interface AwaitingDriverTableProps {
+  onUpdate?: () => void;
+  refreshKey?: number;
+}
+
+export const AwaitingDriverTable = ({ onUpdate, refreshKey }: AwaitingDriverTableProps) => {
   const { toast } = useToast();
   const { logAction } = useAuditLog();
   const [orders, setOrders] = useState<AwaitingOrder[]>([]);
@@ -88,7 +93,7 @@ export const AwaitingDriverTable = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [refreshKey]);
 
   const loadOrders = async () => {
     try {
