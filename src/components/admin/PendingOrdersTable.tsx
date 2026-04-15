@@ -46,6 +46,15 @@ export const PendingOrdersTable = ({ onUpdate }: PendingOrdersTableProps) => {
 
   useEffect(() => {
     fetchOrders();
+
+    const channel = supabase
+      .channel('pending-orders')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
+        fetchOrders();
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, []);
 
   const fetchOrders = async () => {

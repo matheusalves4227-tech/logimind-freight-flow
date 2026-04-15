@@ -56,7 +56,12 @@ interface AwaitingOrder {
   updated_at: string;
 }
 
-export const AwaitingDriverTable = () => {
+interface AwaitingDriverTableProps {
+  onUpdate?: () => void;
+  refreshKey?: number;
+}
+
+export const AwaitingDriverTable = ({ onUpdate, refreshKey }: AwaitingDriverTableProps) => {
   const { toast } = useToast();
   const { logAction } = useAuditLog();
   const [orders, setOrders] = useState<AwaitingOrder[]>([]);
@@ -88,7 +93,7 @@ export const AwaitingDriverTable = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [refreshKey]);
 
   const loadOrders = async () => {
     try {
@@ -156,6 +161,7 @@ export const AwaitingDriverTable = () => {
 
       setDetailOpen(false);
       loadOrders();
+      onUpdate?.();
     } catch (error) {
       console.error('Erro:', error);
       toast({ title: 'Erro', description: 'Erro ao confirmar pedido', variant: 'destructive' });
@@ -224,6 +230,7 @@ export const AwaitingDriverTable = () => {
 
       setDetailOpen(false);
       loadOrders();
+      onUpdate?.();
     } catch (error) {
       toast({ title: 'Erro', description: 'Erro ao revogar', variant: 'destructive' });
     } finally {

@@ -32,9 +32,10 @@ interface RejectedOrder {
 
 interface RejectedOrdersTableProps {
   onUpdate: () => void;
+  refreshKey?: number;
 }
 
-export const RejectedOrdersTable = ({ onUpdate }: RejectedOrdersTableProps) => {
+export const RejectedOrdersTable = ({ onUpdate, refreshKey }: RejectedOrdersTableProps) => {
   const { toast } = useToast();
   const [orders, setOrders] = useState<RejectedOrder[]>([]);
   const [loading, setLoading] = useState(true);
@@ -43,7 +44,7 @@ export const RejectedOrdersTable = ({ onUpdate }: RejectedOrdersTableProps) => {
 
   useEffect(() => {
     fetchOrders();
-  }, []);
+  }, [refreshKey]);
 
   const fetchOrders = async () => {
     try {

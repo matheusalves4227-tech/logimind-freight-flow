@@ -36,6 +36,7 @@ const AdminOrders = () => {
   const { logAction } = useAuditLog();
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
   const [stats, setStats] = useState<StatsData>({
     pendingQuotes: 0,
     pendingOrders: 0,
@@ -43,6 +44,11 @@ const AdminOrders = () => {
     totalOrders: 0,
     avgResponseTime: 0,
   });
+
+  const triggerRefresh = () => {
+    setRefreshKey(prev => prev + 1);
+    fetchStats();
+  };
 
   useEffect(() => {
     checkAdminAccess();
@@ -372,19 +378,19 @@ const AdminOrders = () => {
           </TabsContent>
 
           <TabsContent value="orders-pending">
-            <PendingOrdersTable onUpdate={fetchStats} />
+            <PendingOrdersTable onUpdate={triggerRefresh} />
           </TabsContent>
 
           <TabsContent value="orders-awaiting">
-            <AwaitingDriverTable />
+            <AwaitingDriverTable onUpdate={triggerRefresh} refreshKey={refreshKey} />
           </TabsContent>
 
           <TabsContent value="orders-accepted">
-            <AcceptedOrdersTable onUpdate={fetchStats} />
+            <AcceptedOrdersTable onUpdate={triggerRefresh} refreshKey={refreshKey} />
           </TabsContent>
 
           <TabsContent value="orders-rejected">
-            <RejectedOrdersTable onUpdate={fetchStats} />
+            <RejectedOrdersTable onUpdate={triggerRefresh} refreshKey={refreshKey} />
           </TabsContent>
         </Tabs>
       </main>
