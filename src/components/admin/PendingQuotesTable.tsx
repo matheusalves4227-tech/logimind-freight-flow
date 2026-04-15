@@ -41,9 +41,9 @@ interface Quote {
   user_id: string;
   quote_items?: Array<{
     carrier_id: string;
-    base_price: number;
+    base_price?: number;
     final_price: number;
-    commission_applied: number;
+    commission_applied?: number;
     delivery_days: number;
   }>;
 }
