@@ -92,7 +92,9 @@ export const PendingQuotesTable = ({ onUpdate }: PendingQuotesTableProps) => {
           user_id,
           quote_items(
             carrier_id,
+            base_price,
             final_price,
+            commission_applied,
             delivery_days
           )
         `)
