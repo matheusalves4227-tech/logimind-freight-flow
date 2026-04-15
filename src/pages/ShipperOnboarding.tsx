@@ -190,7 +190,7 @@ const ShipperOnboarding = () => {
 
       <Navbar />
 
-      <main className="min-h-screen bg-gradient-to-b from-background to-muted/30 py-8 px-4">
+      <main className="min-h-screen bg-gradient-to-b from-background to-muted/30 pt-24 pb-8 px-4">
         <div className="max-w-2xl mx-auto">
           <Button
             variant="ghost"
