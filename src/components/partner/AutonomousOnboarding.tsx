@@ -189,7 +189,7 @@ const AutonomousOnboarding = ({ cpf: cpfProp, onBack }: AutonomousOnboardingProp
         'check-cpf-cnpj-duplicity',
         {
           body: {
-            cpf_cnpj: cpf,
+            cpf_cnpj: localCpf,
             type: 'cpf'
           }
         }
@@ -297,7 +297,7 @@ const AutonomousOnboarding = ({ cpf: cpfProp, onBack }: AutonomousOnboardingProp
         .from("driver_profiles")
         .insert({
           user_id: authData.user.id,
-          cpf: cpf.replace(/\D/g, ""),
+          cpf: localCpf.replace(/\D/g, ""),
           full_name: formData.nome_completo,
           email: formData.email,
           phone: formData.telefone,
@@ -424,7 +424,7 @@ const AutonomousOnboarding = ({ cpf: cpfProp, onBack }: AutonomousOnboardingProp
               Cadastro de Motorista
             </h1>
             <p className="text-muted-foreground">
-              CPF: {cpf}
+              CPF: {localCpf || "A informar"}
             </p>
           </div>
 
