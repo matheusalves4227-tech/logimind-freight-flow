@@ -49,9 +49,10 @@ interface AutonomousOnboardingProps {
   onBack: () => void;
 }
 
-const AutonomousOnboarding = ({ cpf, onBack }: AutonomousOnboardingProps) => {
+const AutonomousOnboarding = ({ cpf: cpfProp, onBack }: AutonomousOnboardingProps) => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
+  const [localCpf, setLocalCpf] = useState(cpfProp || "");
   const [selectedRegions, setSelectedRegions] = useState<string[]>([]);
   const [profilePhotoUrl, setProfilePhotoUrl] = useState<string | null>(null);
   const [formData, setFormData] = useState({
@@ -109,6 +110,18 @@ const AutonomousOnboarding = ({ cpf, onBack }: AutonomousOnboardingProps) => {
     
     try {
       if (step === 1) {
+        // Validate CPF if entered in this form
+        const cleanCpf = localCpf.replace(/\D/g, '');
+        if (!cleanCpf || cleanCpf.length !== 11) {
+          setErrors({ cpf: "CPF é obrigatório" });
+          toast.error("Por favor, informe seu CPF");
+          return false;
+        }
+        if (!validateCPF(cleanCpf)) {
+          setErrors({ cpf: "CPF inválido" });
+          toast.error("CPF inválido. Verifique os dígitos.");
+          return false;
+        }
         step1Schema.parse({
           nome_completo: formData.nome_completo,
           email: formData.email,
