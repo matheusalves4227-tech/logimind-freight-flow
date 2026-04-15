@@ -24,7 +24,6 @@ interface B2BOnboardingProps {
 const B2BOnboarding = ({ cnpj: cnpjProp, onBack }: B2BOnboardingProps) => {
   const navigate = useNavigate();
   const [localCnpj, setLocalCnpj] = useState(cnpjProp || "");
-  const navigate = useNavigate();
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [documentFile, setDocumentFile] = useState<File | null>(null);
   const [formData, setFormData] = useState({
