@@ -49,9 +49,10 @@ interface AutonomousOnboardingProps {
   onBack: () => void;
 }
 
-const AutonomousOnboarding = ({ cpf, onBack }: AutonomousOnboardingProps) => {
+const AutonomousOnboarding = ({ cpf: cpfProp, onBack }: AutonomousOnboardingProps) => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
+  const [localCpf, setLocalCpf] = useState(cpfProp || "");
   const [selectedRegions, setSelectedRegions] = useState<string[]>([]);
   const [profilePhotoUrl, setProfilePhotoUrl] = useState<string | null>(null);
   const [formData, setFormData] = useState({
@@ -109,6 +110,18 @@ const AutonomousOnboarding = ({ cpf, onBack }: AutonomousOnboardingProps) => {
     
     try {
       if (step === 1) {
+        // Validate CPF if entered in this form
+        const cleanCpf = localCpf.replace(/\D/g, '');
+        if (!cleanCpf || cleanCpf.length !== 11) {
+          setErrors({ cpf: "CPF é obrigatório" });
+          toast.error("Por favor, informe seu CPF");
+          return false;
+        }
+        if (!validateCPF(cleanCpf)) {
+          setErrors({ cpf: "CPF inválido" });
+          toast.error("CPF inválido. Verifique os dígitos.");
+          return false;
+        }
         step1Schema.parse({
           nome_completo: formData.nome_completo,
           email: formData.email,
@@ -176,7 +189,7 @@ const AutonomousOnboarding = ({ cpf, onBack }: AutonomousOnboardingProps) => {
         'check-cpf-cnpj-duplicity',
         {
           body: {
-            cpf_cnpj: cpf,
+            cpf_cnpj: localCpf,
             type: 'cpf'
           }
         }
@@ -284,7 +297,7 @@ const AutonomousOnboarding = ({ cpf, onBack }: AutonomousOnboardingProps) => {
         .from("driver_profiles")
         .insert({
           user_id: authData.user.id,
-          cpf: cpf.replace(/\D/g, ""),
+          cpf: localCpf.replace(/\D/g, ""),
           full_name: formData.nome_completo,
           email: formData.email,
           phone: formData.telefone,
@@ -411,7 +424,7 @@ const AutonomousOnboarding = ({ cpf, onBack }: AutonomousOnboardingProps) => {
               Cadastro de Motorista
             </h1>
             <p className="text-muted-foreground">
-              CPF: {cpf}
+              CPF: {localCpf || "A informar"}
             </p>
           </div>
 
@@ -433,6 +446,18 @@ const AutonomousOnboarding = ({ cpf, onBack }: AutonomousOnboardingProps) => {
 
                     {/* Grid 2 colunas para campos curtos */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {/* Campo CPF - sempre visível */}
+                      <div className="space-y-2 sm:col-span-2">
+                        <CpfCnpjInput
+                          value={localCpf}
+                          onChange={setLocalCpf}
+                          label="CPF *"
+                          required
+                        />
+                        {errors.cpf && (
+                          <p className="text-xs text-destructive">{errors.cpf}</p>
+                        )}
+                      </div>
                       <div className="space-y-2 sm:col-span-2">
                         <Label htmlFor="nome_completo">Nome Completo *</Label>
                         <Input
