@@ -31,6 +31,9 @@ const CreateOrderSchema = z.object({
   driver_phone: z.string().max(20).nullish(),
   logiguard_pro_contratado: z.boolean().default(false),
   logiguard_pro_valor: z.number().nonnegative().max(100000).nullish(),
+  cargo_description: z.string().max(500).nullish(),
+  cargo_type: z.string().max(50).nullish(),
+  cargo_value: z.number().nonnegative().max(100000000).nullish(),
 });
 
 // Função para gerar tracking code único
