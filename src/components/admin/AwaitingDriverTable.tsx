@@ -87,6 +87,7 @@ export const AwaitingDriverTable = ({ onUpdate, refreshKey }: AwaitingDriverTabl
   const [detailOpen, setDetailOpen] = useState(false);
   const [contactNotes, setContactNotes] = useState('');
   const [carrierDetails, setCarrierDetails] = useState<any>(null);
+  const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null);
 
   useEffect(() => {
     loadOrders();
