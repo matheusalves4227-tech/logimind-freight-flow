@@ -72,7 +72,9 @@ const Quote = () => {
   const [formData, setFormData] = useState({
     service_type: "ltl", // "ltl" (Padrão/Econômico) ou "ftl" (Dedicado/Expresso)
     vehicle_type: "", // Para FTL: "moto", "carro", "picape", "caminhao"
-    cargo_value: "", // Valor declarado da carga (para LogiGuard Pro)
+    cargo_description: "", // Descrição da mercadoria (obrigatório)
+    cargo_type: "", // Tipo/categoria da carga (obrigatório)
+    cargo_value: "", // Valor declarado da carga (obrigatório)
     origin_cep: "",
     origin_number: "",
     origin_type: "commercial",
