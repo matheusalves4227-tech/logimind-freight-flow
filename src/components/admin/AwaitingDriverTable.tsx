@@ -54,6 +54,22 @@ interface AwaitingOrder {
   operational_notes: string | null;
   created_at: string;
   updated_at: string;
+  user_id: string;
+  cargo_description: string | null;
+  cargo_type: string | null;
+  cargo_value: number | null;
+  weight_kg: number;
+  length_cm: number | null;
+  width_cm: number | null;
+  height_cm: number | null;
+}
+
+interface CustomerInfo {
+  full_name: string;
+  email: string | null;
+  phone: string | null;
+  company_name: string | null;
+  cnpj: string | null;
 }
 
 interface AwaitingDriverTableProps {
@@ -71,6 +87,7 @@ export const AwaitingDriverTable = ({ onUpdate, refreshKey }: AwaitingDriverTabl
   const [detailOpen, setDetailOpen] = useState(false);
   const [contactNotes, setContactNotes] = useState('');
   const [carrierDetails, setCarrierDetails] = useState<any>(null);
+  const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null);
 
   useEffect(() => {
     loadOrders();
@@ -99,7 +116,7 @@ export const AwaitingDriverTable = ({ onUpdate, refreshKey }: AwaitingDriverTabl
     try {
       const { data, error } = await supabase
         .from('orders')
-        .select('id, tracking_code, origin_address, destination_address, origin_cep, destination_cep, carrier_name, driver_name, driver_phone, final_price, operational_notes, created_at, updated_at')
+        .select('id, tracking_code, origin_address, destination_address, origin_cep, destination_cep, carrier_name, driver_name, driver_phone, final_price, operational_notes, created_at, updated_at, user_id, cargo_description, cargo_type, cargo_value, weight_kg, length_cm, width_cm, height_cm')
         .in('status', ['confirmed', 'awaiting_driver_acceptance'])
         .order('updated_at', { ascending: false });
 
@@ -116,7 +133,19 @@ export const AwaitingDriverTable = ({ onUpdate, refreshKey }: AwaitingDriverTabl
     setSelectedOrder(order);
     setContactNotes(order.operational_notes || '');
     setCarrierDetails(null);
+    setCustomerInfo(null);
     setDetailOpen(true);
+
+    // Buscar dados do cliente (expedidor)
+    if (order.user_id) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name, email, phone, company_name, cnpj')
+        .eq('user_id', order.user_id)
+        .maybeSingle();
+
+      if (profile) setCustomerInfo(profile as CustomerInfo);
+    }
 
     // Buscar dados da transportadora
     if (order.carrier_name) {
@@ -401,6 +430,123 @@ export const AwaitingDriverTable = ({ onUpdate, refreshKey }: AwaitingDriverTabl
                   </div>
                 )}
               </div>
+
+              {/* Dados do Cliente (Expedidor) */}
+              <Card className="border-primary/20">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <User className="h-4 w-4 text-primary" />
+                    Dados do Cliente
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {customerInfo ? (
+                    <>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <p className="text-xs text-muted-foreground">Nome</p>
+                          <p className="font-medium text-sm">{customerInfo.full_name}</p>
+                        </div>
+                        {customerInfo.company_name && (
+                          <div>
+                            <p className="text-xs text-muted-foreground">Empresa</p>
+                            <p className="font-medium text-sm">{customerInfo.company_name}</p>
+                          </div>
+                        )}
+                        {customerInfo.cnpj && (
+                          <div>
+                            <p className="text-xs text-muted-foreground">CNPJ</p>
+                            <p className="font-medium text-sm">{customerInfo.cnpj}</p>
+                          </div>
+                        )}
+                        {customerInfo.email && (
+                          <div>
+                            <p className="text-xs text-muted-foreground">E-mail</p>
+                            <p className="font-medium text-sm break-all">{customerInfo.email}</p>
+                          </div>
+                        )}
+                        {customerInfo.phone && (
+                          <div>
+                            <p className="text-xs text-muted-foreground">Telefone</p>
+                            <p className="font-medium text-sm">{customerInfo.phone}</p>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {customerInfo.phone && (
+                          <Button variant="default" size="sm" className="gap-2" asChild>
+                            <a href={`tel:${customerInfo.phone}`}>
+                              <Phone className="h-4 w-4" />
+                              Ligar
+                            </a>
+                          </Button>
+                        )}
+                        {customerInfo.phone && (
+                          <Button variant="secondary" size="sm" className="gap-2" asChild>
+                            <a
+                              href={`https://wa.me/${customerInfo.phone.replace(/\D/g, '')}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              WhatsApp
+                            </a>
+                          </Button>
+                        )}
+                        {customerInfo.email && (
+                          <Button variant="outline" size="sm" className="gap-2" asChild>
+                            <a href={`mailto:${customerInfo.email}`}>
+                              <Mail className="h-4 w-4" />
+                              E-mail
+                            </a>
+                          </Button>
+                        )}
+                      </div>
+                    </>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">Carregando dados do cliente…</p>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Detalhes da Carga */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-primary" />
+                    Detalhes da Carga
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="col-span-2">
+                      <p className="text-xs text-muted-foreground">Descrição</p>
+                      <p className="text-sm">{selectedOrder.cargo_description || '—'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Tipo</p>
+                      <p className="text-sm">{selectedOrder.cargo_type || '—'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Valor declarado</p>
+                      <p className="text-sm font-medium">
+                        {selectedOrder.cargo_value != null ? formatarMoeda(selectedOrder.cargo_value) : '—'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Peso</p>
+                      <p className="text-sm">{selectedOrder.weight_kg} kg</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Dimensões (C×L×A)</p>
+                      <p className="text-sm">
+                        {selectedOrder.length_cm && selectedOrder.width_cm && selectedOrder.height_cm
+                          ? `${selectedOrder.length_cm}×${selectedOrder.width_cm}×${selectedOrder.height_cm} cm`
+                          : '—'}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
               {/* Contato da Transportadora */}
               {carrierDetails && (
