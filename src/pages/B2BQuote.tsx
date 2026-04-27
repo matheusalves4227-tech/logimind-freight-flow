@@ -62,6 +62,26 @@ const B2BQuote = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validações de mercadoria
+    if (!formData.descricao_mercadoria || formData.descricao_mercadoria.trim().length < 3) {
+      toast({
+        title: "Descrição da mercadoria obrigatória",
+        description: "Descreva o que será transportado (mínimo 3 caracteres).",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.valor_medio_carga || parseFloat(formData.valor_medio_carga) <= 0) {
+      toast({
+        title: "Valor da carga obrigatório",
+        description: "Informe o valor médio declarado da carga.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
     
     try {
@@ -92,8 +112,9 @@ const B2BQuote = () => {
           rotas_origem: formData.rotas_origem,
           rotas_destino: formData.rotas_destino,
           tipo_carga: formData.tipo_carga,
+          descricao_mercadoria: formData.descricao_mercadoria,
           peso_medio_kg: parseFloat(formData.peso_medio_kg),
-          valor_medio_carga: formData.valor_medio_carga ? parseFloat(formData.valor_medio_carga) : null,
+          valor_medio_carga: parseFloat(formData.valor_medio_carga),
           necessita_seguro: formData.necessita_seguro,
           carga_perigosa: formData.carga_perigosa,
           carga_fragil: formData.carga_fragil,
