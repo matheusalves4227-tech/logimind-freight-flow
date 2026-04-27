@@ -676,14 +676,66 @@ const Quote = () => {
                     </div>
                    )}
 
-                  {/* Valor da Carga (Opcional para LogiGuard Pro) */}
-                  <div className="space-y-2 p-4 bg-accent/5 border border-accent/30 rounded-lg">
-                  <MoneyInput
-                    value={formData.cargo_value}
-                    onChange={(value) => setFormData({ ...formData, cargo_value: value })}
-                    label="Valor da Carga"
-                    placeholder="10.000,00"
-                  />
+                  {/* Informações da Mercadoria - Obrigatórias */}
+                  <div className="space-y-4 p-4 bg-accent/5 border border-accent/30 rounded-lg">
+                    <h4 className="font-semibold text-sm flex items-center gap-2">
+                      <Package className="h-4 w-4 text-primary" />
+                      Informações da Mercadoria
+                    </h4>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="cargo_description">
+                        Descrição da Mercadoria <span className="text-destructive">*</span>
+                      </Label>
+                      <Textarea
+                        id="cargo_description"
+                        value={formData.cargo_description}
+                        onChange={(e) => setFormData({ ...formData, cargo_description: e.target.value })}
+                        placeholder="Ex: 20 caixas de eletrônicos, peças de reposição, móveis desmontados..."
+                        rows={2}
+                        maxLength={200}
+                        required
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        {formData.cargo_description.length}/200 caracteres
+                      </p>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="cargo_type">
+                          Tipo da Carga <span className="text-destructive">*</span>
+                        </Label>
+                        <Select
+                          value={formData.cargo_type}
+                          onValueChange={(value) => setFormData({ ...formData, cargo_type: value })}
+                        >
+                          <SelectTrigger id="cargo_type">
+                            <SelectValue placeholder="Selecione o tipo" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="geral">Carga Geral</SelectItem>
+                            <SelectItem value="fragil">Frágil</SelectItem>
+                            <SelectItem value="refrigerada">Refrigerada</SelectItem>
+                            <SelectItem value="perigosa">Perigosa</SelectItem>
+                            <SelectItem value="alto_valor">Alto Valor</SelectItem>
+                            <SelectItem value="eletronicos">Eletrônicos</SelectItem>
+                            <SelectItem value="moveis">Móveis</SelectItem>
+                            <SelectItem value="alimentos">Alimentos</SelectItem>
+                            <SelectItem value="documentos">Documentos</SelectItem>
+                            <SelectItem value="outros">Outros</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <MoneyInput
+                        value={formData.cargo_value}
+                        onChange={(value) => setFormData({ ...formData, cargo_value: value })}
+                        label="Valor Declarado da Carga"
+                        placeholder="10.000,00"
+                        required
+                      />
+                    </div>
                   </div>
 
                   <div className="flex justify-between pt-4">
