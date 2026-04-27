@@ -54,6 +54,22 @@ interface AwaitingOrder {
   operational_notes: string | null;
   created_at: string;
   updated_at: string;
+  user_id: string;
+  cargo_description: string | null;
+  cargo_type: string | null;
+  cargo_value: number | null;
+  weight_kg: number;
+  length_cm: number | null;
+  width_cm: number | null;
+  height_cm: number | null;
+}
+
+interface CustomerInfo {
+  full_name: string;
+  email: string | null;
+  phone: string | null;
+  company_name: string | null;
+  cnpj: string | null;
 }
 
 interface AwaitingDriverTableProps {
