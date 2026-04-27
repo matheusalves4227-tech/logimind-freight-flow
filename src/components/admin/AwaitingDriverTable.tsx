@@ -116,7 +116,7 @@ export const AwaitingDriverTable = ({ onUpdate, refreshKey }: AwaitingDriverTabl
     try {
       const { data, error } = await supabase
         .from('orders')
-        .select('id, tracking_code, origin_address, destination_address, origin_cep, destination_cep, carrier_name, driver_name, driver_phone, final_price, operational_notes, created_at, updated_at')
+        .select('id, tracking_code, origin_address, destination_address, origin_cep, destination_cep, carrier_name, driver_name, driver_phone, final_price, operational_notes, created_at, updated_at, user_id, cargo_description, cargo_type, cargo_value, weight_kg, length_cm, width_cm, height_cm')
         .in('status', ['confirmed', 'awaiting_driver_acceptance'])
         .order('updated_at', { ascending: false });
 
