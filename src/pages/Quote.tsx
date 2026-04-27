@@ -272,13 +272,35 @@ const Quote = () => {
         }
       }
 
-      // Validar valor da carga se preenchido
-      if (formData.cargo_value) {
-        const cargoValue = parseFloat(formData.cargo_value.replace(/\./g, '').replace(',', '.'));
-        if (!isNaN(cargoValue) && cargoValue > 100000000) {
-          toast.error("Valor da carga excede o limite máximo de R$ 100.000.000");
-          return;
-        }
+      // Descrição/Tipo/Valor da mercadoria - obrigatórios
+      if (!formData.cargo_description || formData.cargo_description.trim().length < 3) {
+        toast.error("Descreva a mercadoria (mínimo 3 caracteres)");
+        return;
+      }
+
+      if (formData.cargo_description.trim().length > 200) {
+        toast.error("Descrição da mercadoria deve ter no máximo 200 caracteres");
+        return;
+      }
+
+      if (!formData.cargo_type) {
+        toast.error("Selecione o tipo da carga");
+        return;
+      }
+
+      if (!formData.cargo_value) {
+        toast.error("Informe o valor declarado da carga");
+        return;
+      }
+
+      const cargoValue = parseFloat(formData.cargo_value.replace(/\./g, '').replace(',', '.'));
+      if (isNaN(cargoValue) || cargoValue <= 0) {
+        toast.error("Valor da carga deve ser maior que zero");
+        return;
+      }
+      if (cargoValue > 100000000) {
+        toast.error("Valor da carga excede o limite máximo de R$ 100.000.000");
+        return;
       }
 
       if (formData.service_type === "ftl" && !formData.vehicle_type) {
