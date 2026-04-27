@@ -380,6 +380,23 @@ const B2BQuote = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="descricao_mercadoria">Descrição da Mercadoria *</Label>
+                <Textarea
+                  id="descricao_mercadoria"
+                  required
+                  value={formData.descricao_mercadoria}
+                  onChange={(e) => handleInputChange("descricao_mercadoria", e.target.value)}
+                  placeholder="Ex: Eletrônicos diversos, peças automotivas, produtos têxteis embalados..."
+                  rows={2}
+                  maxLength={500}
+                  className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
+                />
+                <p className="text-xs text-muted-foreground">
+                  {formData.descricao_mercadoria.length}/500 caracteres
+                </p>
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="tipo_carga">Tipo de Carga *</Label>
@@ -412,10 +429,13 @@ const B2BQuote = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="valor_medio_carga">Valor Médio da Carga (R$)</Label>
+                  <Label htmlFor="valor_medio_carga">Valor Médio da Carga (R$) *</Label>
                   <Input
                     id="valor_medio_carga"
                     type="number"
+                    required
+                    min="0.01"
+                    step="0.01"
                     value={formData.valor_medio_carga}
                     onChange={(e) => handleInputChange("valor_medio_carga", e.target.value)}
                     placeholder="Ex: 10000"
