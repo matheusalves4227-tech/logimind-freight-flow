@@ -133,7 +133,19 @@ export const AwaitingDriverTable = ({ onUpdate, refreshKey }: AwaitingDriverTabl
     setSelectedOrder(order);
     setContactNotes(order.operational_notes || '');
     setCarrierDetails(null);
+    setCustomerInfo(null);
     setDetailOpen(true);
+
+    // Buscar dados do cliente (expedidor)
+    if (order.user_id) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name, email, phone, company_name, cnpj')
+        .eq('user_id', order.user_id)
+        .maybeSingle();
+
+      if (profile) setCustomerInfo(profile as CustomerInfo);
+    }
 
     // Buscar dados da transportadora
     if (order.carrier_name) {
