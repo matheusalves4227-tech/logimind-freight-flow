@@ -198,7 +198,10 @@ Deno.serve(async (req) => {
         driver_name,
         driver_phone,
         logiguard_pro_contratado: logiguard_pro_contratado || false,
-        logiguard_pro_valor: logiguard_pro_contratado ? logiguard_pro_valor : null
+        logiguard_pro_valor: logiguard_pro_contratado ? logiguard_pro_valor : null,
+        cargo_description: cargo_description || null,
+        cargo_type: cargo_type || null,
+        cargo_value: cargo_value ?? null
       })
       .select()
       .single();
