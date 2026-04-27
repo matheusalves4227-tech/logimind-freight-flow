@@ -485,7 +485,10 @@ const Quote = () => {
           driver_name: null,
           driver_phone: null,
           logiguard_pro_contratado: logiGuardSelected,
-          logiguard_pro_valor: logiGuardValue
+          logiguard_pro_valor: logiGuardValue,
+          cargo_description: formData.cargo_description,
+          cargo_type: formData.cargo_type,
+          cargo_value: formData.cargo_value ? parseFloat(formData.cargo_value.replace(/\./g, '').replace(',', '.')) : null
         }
       });
 
