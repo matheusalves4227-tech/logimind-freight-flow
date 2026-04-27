@@ -36,6 +36,7 @@ const B2BQuote = () => {
     
     // Características da Carga
     tipo_carga: "geral",
+    descricao_mercadoria: "",
     peso_medio_kg: "",
     valor_medio_carga: "",
     necessita_seguro: false,
@@ -61,6 +62,26 @@ const B2BQuote = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validações de mercadoria
+    if (!formData.descricao_mercadoria || formData.descricao_mercadoria.trim().length < 3) {
+      toast({
+        title: "Descrição da mercadoria obrigatória",
+        description: "Descreva o que será transportado (mínimo 3 caracteres).",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.valor_medio_carga || parseFloat(formData.valor_medio_carga) <= 0) {
+      toast({
+        title: "Valor da carga obrigatório",
+        description: "Informe o valor médio declarado da carga.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
     
     try {
@@ -91,8 +112,9 @@ const B2BQuote = () => {
           rotas_origem: formData.rotas_origem,
           rotas_destino: formData.rotas_destino,
           tipo_carga: formData.tipo_carga,
+          descricao_mercadoria: formData.descricao_mercadoria,
           peso_medio_kg: parseFloat(formData.peso_medio_kg),
-          valor_medio_carga: formData.valor_medio_carga ? parseFloat(formData.valor_medio_carga) : null,
+          valor_medio_carga: parseFloat(formData.valor_medio_carga),
           necessita_seguro: formData.necessita_seguro,
           carga_perigosa: formData.carga_perigosa,
           carga_fragil: formData.carga_fragil,
@@ -358,6 +380,23 @@ const B2BQuote = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="descricao_mercadoria">Descrição da Mercadoria *</Label>
+                <Textarea
+                  id="descricao_mercadoria"
+                  required
+                  value={formData.descricao_mercadoria}
+                  onChange={(e) => handleInputChange("descricao_mercadoria", e.target.value)}
+                  placeholder="Ex: Eletrônicos diversos, peças automotivas, produtos têxteis embalados..."
+                  rows={2}
+                  maxLength={500}
+                  className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
+                />
+                <p className="text-xs text-muted-foreground">
+                  {formData.descricao_mercadoria.length}/500 caracteres
+                </p>
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="tipo_carga">Tipo de Carga *</Label>
@@ -390,10 +429,13 @@ const B2BQuote = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="valor_medio_carga">Valor Médio da Carga (R$)</Label>
+                  <Label htmlFor="valor_medio_carga">Valor Médio da Carga (R$) *</Label>
                   <Input
                     id="valor_medio_carga"
                     type="number"
+                    required
+                    min="0.01"
+                    step="0.01"
                     value={formData.valor_medio_carga}
                     onChange={(e) => handleInputChange("valor_medio_carga", e.target.value)}
                     placeholder="Ex: 10000"

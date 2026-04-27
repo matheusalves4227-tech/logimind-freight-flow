@@ -31,6 +31,9 @@ const CreateOrderSchema = z.object({
   driver_phone: z.string().max(20).nullish(),
   logiguard_pro_contratado: z.boolean().default(false),
   logiguard_pro_valor: z.number().nonnegative().max(100000).nullish(),
+  cargo_description: z.string().max(500).nullish(),
+  cargo_type: z.string().max(50).nullish(),
+  cargo_value: z.number().nonnegative().max(100000000).nullish(),
 });
 
 // Função para gerar tracking code único
@@ -149,7 +152,10 @@ Deno.serve(async (req) => {
       driver_name,
       driver_phone,
       logiguard_pro_contratado,
-      logiguard_pro_valor
+      logiguard_pro_valor,
+      cargo_description,
+      cargo_type,
+      cargo_value
     } = requestData;
 
     // Normalizar CEPs (remover hífen para compatibilidade com constraint do banco)
@@ -192,7 +198,10 @@ Deno.serve(async (req) => {
         driver_name,
         driver_phone,
         logiguard_pro_contratado: logiguard_pro_contratado || false,
-        logiguard_pro_valor: logiguard_pro_contratado ? logiguard_pro_valor : null
+        logiguard_pro_valor: logiguard_pro_contratado ? logiguard_pro_valor : null,
+        cargo_description: cargo_description || null,
+        cargo_type: cargo_type || null,
+        cargo_value: cargo_value ?? null
       })
       .select()
       .single();

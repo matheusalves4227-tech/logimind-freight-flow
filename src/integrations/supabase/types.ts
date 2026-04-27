@@ -148,6 +148,7 @@ export type Database = {
           contrato_data_inicio: string | null
           contrato_valor_mensal: number | null
           created_at: string
+          descricao_mercadoria: string | null
           email: string
           flexibilidade_horario: boolean | null
           frequencia_envios: string
@@ -188,6 +189,7 @@ export type Database = {
           contrato_data_inicio?: string | null
           contrato_valor_mensal?: number | null
           created_at?: string
+          descricao_mercadoria?: string | null
           email: string
           flexibilidade_horario?: boolean | null
           frequencia_envios: string
@@ -228,6 +230,7 @@ export type Database = {
           contrato_data_inicio?: string | null
           contrato_valor_mensal?: number | null
           created_at?: string
+          descricao_mercadoria?: string | null
           email?: string
           flexibilidade_horario?: boolean | null
           frequencia_envios?: string
@@ -1201,6 +1204,9 @@ export type Database = {
         Row: {
           actual_delivery: string | null
           base_price: number
+          cargo_description: string | null
+          cargo_type: string | null
+          cargo_value: number | null
           carrier_id: string | null
           carrier_name: string
           codigo_coleta: string | null
@@ -1256,6 +1262,9 @@ export type Database = {
         Insert: {
           actual_delivery?: string | null
           base_price: number
+          cargo_description?: string | null
+          cargo_type?: string | null
+          cargo_value?: number | null
           carrier_id?: string | null
           carrier_name: string
           codigo_coleta?: string | null
@@ -1311,6 +1320,9 @@ export type Database = {
         Update: {
           actual_delivery?: string | null
           base_price?: number
+          cargo_description?: string | null
+          cargo_type?: string | null
+          cargo_value?: number | null
           carrier_id?: string | null
           carrier_name?: string
           codigo_coleta?: string | null

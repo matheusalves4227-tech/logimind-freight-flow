@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Package, MapPin, Loader2, TrendingUp, Info, Truck, Clock, DollarSign, Zap, Building2, CreditCard, QrCode } from "lucide-react";
@@ -72,7 +74,9 @@ const Quote = () => {
   const [formData, setFormData] = useState({
     service_type: "ltl", // "ltl" (Padrão/Econômico) ou "ftl" (Dedicado/Expresso)
     vehicle_type: "", // Para FTL: "moto", "carro", "picape", "caminhao"
-    cargo_value: "", // Valor declarado da carga (para LogiGuard Pro)
+    cargo_description: "", // Descrição da mercadoria (obrigatório)
+    cargo_type: "", // Tipo/categoria da carga (obrigatório)
+    cargo_value: "", // Valor declarado da carga (obrigatório)
     origin_cep: "",
     origin_number: "",
     origin_type: "commercial",
@@ -270,13 +274,35 @@ const Quote = () => {
         }
       }
 
-      // Validar valor da carga se preenchido
-      if (formData.cargo_value) {
-        const cargoValue = parseFloat(formData.cargo_value.replace(/\./g, '').replace(',', '.'));
-        if (!isNaN(cargoValue) && cargoValue > 100000000) {
-          toast.error("Valor da carga excede o limite máximo de R$ 100.000.000");
-          return;
-        }
+      // Descrição/Tipo/Valor da mercadoria - obrigatórios
+      if (!formData.cargo_description || formData.cargo_description.trim().length < 3) {
+        toast.error("Descreva a mercadoria (mínimo 3 caracteres)");
+        return;
+      }
+
+      if (formData.cargo_description.trim().length > 200) {
+        toast.error("Descrição da mercadoria deve ter no máximo 200 caracteres");
+        return;
+      }
+
+      if (!formData.cargo_type) {
+        toast.error("Selecione o tipo da carga");
+        return;
+      }
+
+      if (!formData.cargo_value) {
+        toast.error("Informe o valor declarado da carga");
+        return;
+      }
+
+      const cargoValue = parseFloat(formData.cargo_value.replace(/\./g, '').replace(',', '.'));
+      if (isNaN(cargoValue) || cargoValue <= 0) {
+        toast.error("Valor da carga deve ser maior que zero");
+        return;
+      }
+      if (cargoValue > 100000000) {
+        toast.error("Valor da carga excede o limite máximo de R$ 100.000.000");
+        return;
       }
 
       if (formData.service_type === "ftl" && !formData.vehicle_type) {
@@ -459,7 +485,10 @@ const Quote = () => {
           driver_name: null,
           driver_phone: null,
           logiguard_pro_contratado: logiGuardSelected,
-          logiguard_pro_valor: logiGuardValue
+          logiguard_pro_valor: logiGuardValue,
+          cargo_description: formData.cargo_description,
+          cargo_type: formData.cargo_type,
+          cargo_value: formData.cargo_value ? parseFloat(formData.cargo_value.replace(/\./g, '').replace(',', '.')) : null
         }
       });
 
@@ -650,14 +679,66 @@ const Quote = () => {
                     </div>
                    )}
 
-                  {/* Valor da Carga (Opcional para LogiGuard Pro) */}
-                  <div className="space-y-2 p-4 bg-accent/5 border border-accent/30 rounded-lg">
-                  <MoneyInput
-                    value={formData.cargo_value}
-                    onChange={(value) => setFormData({ ...formData, cargo_value: value })}
-                    label="Valor da Carga"
-                    placeholder="10.000,00"
-                  />
+                  {/* Informações da Mercadoria - Obrigatórias */}
+                  <div className="space-y-4 p-4 bg-accent/5 border border-accent/30 rounded-lg">
+                    <h4 className="font-semibold text-sm flex items-center gap-2">
+                      <Package className="h-4 w-4 text-primary" />
+                      Informações da Mercadoria
+                    </h4>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="cargo_description">
+                        Descrição da Mercadoria <span className="text-destructive">*</span>
+                      </Label>
+                      <Textarea
+                        id="cargo_description"
+                        value={formData.cargo_description}
+                        onChange={(e) => setFormData({ ...formData, cargo_description: e.target.value })}
+                        placeholder="Ex: 20 caixas de eletrônicos, peças de reposição, móveis desmontados..."
+                        rows={2}
+                        maxLength={200}
+                        required
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        {formData.cargo_description.length}/200 caracteres
+                      </p>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="cargo_type">
+                          Tipo da Carga <span className="text-destructive">*</span>
+                        </Label>
+                        <Select
+                          value={formData.cargo_type}
+                          onValueChange={(value) => setFormData({ ...formData, cargo_type: value })}
+                        >
+                          <SelectTrigger id="cargo_type">
+                            <SelectValue placeholder="Selecione o tipo" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="geral">Carga Geral</SelectItem>
+                            <SelectItem value="fragil">Frágil</SelectItem>
+                            <SelectItem value="refrigerada">Refrigerada</SelectItem>
+                            <SelectItem value="perigosa">Perigosa</SelectItem>
+                            <SelectItem value="alto_valor">Alto Valor</SelectItem>
+                            <SelectItem value="eletronicos">Eletrônicos</SelectItem>
+                            <SelectItem value="moveis">Móveis</SelectItem>
+                            <SelectItem value="alimentos">Alimentos</SelectItem>
+                            <SelectItem value="documentos">Documentos</SelectItem>
+                            <SelectItem value="outros">Outros</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <MoneyInput
+                        value={formData.cargo_value}
+                        onChange={(value) => setFormData({ ...formData, cargo_value: value })}
+                        label="Valor Declarado da Carga"
+                        placeholder="10.000,00"
+                        required
+                      />
+                    </div>
                   </div>
 
                   <div className="flex justify-between pt-4">
