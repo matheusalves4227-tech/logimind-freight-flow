@@ -152,7 +152,10 @@ Deno.serve(async (req) => {
       driver_name,
       driver_phone,
       logiguard_pro_contratado,
-      logiguard_pro_valor
+      logiguard_pro_valor,
+      cargo_description,
+      cargo_type,
+      cargo_value
     } = requestData;
 
     // Normalizar CEPs (remover hífen para compatibilidade com constraint do banco)
