@@ -36,6 +36,7 @@ const B2BQuote = () => {
     
     // Características da Carga
     tipo_carga: "geral",
+    descricao_mercadoria: "",
     peso_medio_kg: "",
     valor_medio_carga: "",
     necessita_seguro: false,
