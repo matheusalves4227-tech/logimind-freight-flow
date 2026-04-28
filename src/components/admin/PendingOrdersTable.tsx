@@ -31,6 +31,7 @@ interface PendingOrder {
   created_at: string;
   estimated_delivery: string | null;
   user_id: string;
+  operational_notes?: string | null;
 }
 
 interface PendingOrdersTableProps {
