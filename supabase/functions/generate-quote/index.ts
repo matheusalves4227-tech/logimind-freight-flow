@@ -666,6 +666,7 @@ function aplicarSubsidioRotaRetorno(
       quality_index: cota.quality_index,
       route_adjustment_factor: routeAdjustmentFactor,
       adjustment_reason: routeAdjustmentFactor > 0 ? 'SUBSIDIZED_ROUTE' : 'STANDARD',
+      pricing_source: cota.pricing_source,
     };
   });
 }
