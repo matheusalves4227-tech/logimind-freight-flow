@@ -345,7 +345,19 @@ export const AwaitingDriverTable = ({ onUpdate, refreshKey }: AwaitingDriverTabl
                       {order.tracking_code}
                     </TableCell>
                     <TableCell>
-                      <div className="font-medium">{order.carrier_name || 'N/A'}</div>
+                      <div className="font-medium flex items-center gap-2 flex-wrap">
+                        {order.carrier_name || 'N/A'}
+                        {order.operational_notes?.startsWith('⚠️ ATENÇÃO') && (
+                          <Badge
+                            variant="outline"
+                            className="bg-destructive/10 text-destructive border-destructive/30 text-[10px] px-1.5 py-0"
+                            title="Cotação gerada sem transportadora real cadastrada para esta rota. Revise o valor antes de confirmar."
+                          >
+                            <AlertCircle className="h-3 w-3 mr-1" />
+                            Preço Fallback
+                          </Badge>
+                        )}
+                      </div>
                       {order.driver_name && (
                         <div className="text-xs text-muted-foreground flex items-center gap-1">
                           <User className="h-3 w-3" />
