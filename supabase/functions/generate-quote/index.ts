@@ -1032,13 +1032,18 @@ serve(async (req) => {
     
     console.log(`Route data - Adjustment Factor: ${routeAdjustmentFactor}, Demand Level: ${demandLevel}, Risk Factor: ${riskFactor}`);
 
+    // 2.5. Calcular distância real ANTES da cotação (necessária para rate_per_km)
+    const distanciaEstimada = await calcularDistanciaReal(quoteRequest.origin_cep, quoteRequest.destination_cep);
+    console.log(`[Distance] ${quoteRequest.origin_cep} → ${quoteRequest.destination_cep}: ${distanciaEstimada}km`);
+
     // 3. Buscar cotações reais da tabela carrier_price_table (com fallback para cálculo)
     const cotacoesBrutas = await buscarCotacoesReais(
       supabaseClient,
       carriers, 
       quoteRequest.origin_cep,
       quoteRequest.destination_cep,
-      quoteRequest.weight_kg
+      quoteRequest.weight_kg,
+      distanciaEstimada
     );
 
     // 4. Apply LogiMind strategy based on route characteristics
