@@ -31,6 +31,7 @@ interface PendingOrder {
   created_at: string;
   estimated_delivery: string | null;
   user_id: string;
+  operational_notes?: string | null;
 }
 
 interface PendingOrdersTableProps {
@@ -63,7 +64,7 @@ export const PendingOrdersTable = ({ onUpdate }: PendingOrdersTableProps) => {
       // Quando motorista é atribuído, vai para aba "Aceitos"
       const { data, error } = await supabase
         .from('orders')
-        .select('id, tracking_code, origin_address, destination_address, origin_cep, destination_cep, weight_kg, height_cm, width_cm, length_cm, service_type, final_price, base_price, commission_applied, comissao_logimarket_perc, status, carrier_name, driver_id, driver_name, created_at, estimated_delivery, user_id, status_pagamento')
+        .select('id, tracking_code, origin_address, destination_address, origin_cep, destination_cep, weight_kg, height_cm, width_cm, length_cm, service_type, final_price, base_price, commission_applied, comissao_logimarket_perc, status, carrier_name, driver_id, driver_name, created_at, estimated_delivery, user_id, status_pagamento, operational_notes')
         .in('status', ['pending', 'awaiting_contact'])
         .in('status_pagamento', ['PAGO', 'confirmed'])
         .is('driver_id', null)
@@ -190,9 +191,21 @@ export const PendingOrdersTable = ({ onUpdate }: PendingOrdersTableProps) => {
                       </TableCell>
                       
                       <TableCell>
-                        <span className="text-sm">
-                          {order.carrier_name || 'Aguardando'}
-                        </span>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-sm">
+                            {order.carrier_name || 'Aguardando'}
+                          </span>
+                          {order.operational_notes?.startsWith('⚠️ ATENÇÃO') && (
+                            <Badge
+                              variant="outline"
+                              className="bg-destructive/10 text-destructive border-destructive/30 text-[10px] px-1.5 py-0"
+                              title="Cotação gerada sem transportadora real cadastrada para esta rota. Revise o valor antes de confirmar."
+                            >
+                              <AlertCircle className="h-3 w-3 mr-1" />
+                              Preço Fallback
+                            </Badge>
+                          )}
+                        </div>
                       </TableCell>
                       
                       <TableCell>

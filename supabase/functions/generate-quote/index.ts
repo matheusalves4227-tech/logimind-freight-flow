@@ -127,6 +127,7 @@ interface CarrierQuote {
   base_price: number;
   delivery_days: number;
   quality_index: number;
+  pricing_source?: 'real' | 'fallback';
 }
 
 interface ProcessedQuote {
@@ -141,6 +142,7 @@ interface ProcessedQuote {
   quality_index: number;
   route_adjustment_factor: number;
   adjustment_reason?: string;
+  pricing_source?: 'real' | 'fallback';
   logiguard_pro?: {
     available: boolean;
     recommended: boolean;
@@ -594,6 +596,7 @@ function aplicarRegraAltaDemanda(
       quality_index: cota.quality_index,
       route_adjustment_factor: fatorAjusteDemanda,
       adjustment_reason: 'HIGH_DEMAND_ROUTE',
+      pricing_source: cota.pricing_source,
     };
   });
 }
@@ -663,6 +666,7 @@ function aplicarSubsidioRotaRetorno(
       quality_index: cota.quality_index,
       route_adjustment_factor: routeAdjustmentFactor,
       adjustment_reason: routeAdjustmentFactor > 0 ? 'SUBSIDIZED_ROUTE' : 'STANDARD',
+      pricing_source: cota.pricing_source,
     };
   });
 }
@@ -835,6 +839,7 @@ async function buscarCotacoesReais(
       base_price: parseFloat(total.toFixed(2)),
       delivery_days: price.delivery_days,
       quality_index: carrier.avg_quality_rating,
+      pricing_source: 'real',
     });
 
     console.log(
@@ -896,6 +901,7 @@ function gerarCotacoesMockadas(carriers: any[], weight_kg: number): CarrierQuote
       base_price: parseFloat(basePrice.toFixed(2)),
       delivery_days: Math.max(3, Math.min(deliveryDays, 7)), // 3-7 dias (realista)
       quality_index: carrier.avg_quality_rating,
+      pricing_source: 'fallback' as const,
     };
   });
 }
