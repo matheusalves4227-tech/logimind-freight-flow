@@ -901,6 +901,7 @@ function gerarCotacoesMockadas(carriers: any[], weight_kg: number): CarrierQuote
       base_price: parseFloat(basePrice.toFixed(2)),
       delivery_days: Math.max(3, Math.min(deliveryDays, 7)), // 3-7 dias (realista)
       quality_index: carrier.avg_quality_rating,
+      pricing_source: 'fallback' as const,
     };
   });
 }
