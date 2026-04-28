@@ -34,6 +34,7 @@ const CreateOrderSchema = z.object({
   cargo_description: z.string().max(500).nullish(),
   cargo_type: z.string().max(50).nullish(),
   cargo_value: z.number().nonnegative().max(100000000).nullish(),
+  pricing_source: z.enum(['real', 'fallback']).nullish(),
 });
 
 // Função para gerar tracking code único
