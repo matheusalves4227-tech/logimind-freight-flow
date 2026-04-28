@@ -142,6 +142,7 @@ interface ProcessedQuote {
   quality_index: number;
   route_adjustment_factor: number;
   adjustment_reason?: string;
+  pricing_source?: 'real' | 'fallback';
   logiguard_pro?: {
     available: boolean;
     recommended: boolean;
