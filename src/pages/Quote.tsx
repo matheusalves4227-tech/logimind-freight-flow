@@ -488,7 +488,8 @@ const Quote = () => {
           logiguard_pro_valor: logiGuardValue,
           cargo_description: formData.cargo_description,
           cargo_type: formData.cargo_type,
-          cargo_value: formData.cargo_value ? parseFloat(formData.cargo_value.replace(/\./g, '').replace(',', '.')) : null
+          cargo_value: formData.cargo_value ? parseFloat(formData.cargo_value.replace(/\./g, '').replace(',', '.')) : null,
+          pricing_source: (quote as any).pricing_source ?? null,
         }
       });
 
