@@ -191,9 +191,21 @@ export const PendingOrdersTable = ({ onUpdate }: PendingOrdersTableProps) => {
                       </TableCell>
                       
                       <TableCell>
-                        <span className="text-sm">
-                          {order.carrier_name || 'Aguardando'}
-                        </span>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-sm">
+                            {order.carrier_name || 'Aguardando'}
+                          </span>
+                          {order.operational_notes?.startsWith('⚠️ ATENÇÃO') && (
+                            <Badge
+                              variant="outline"
+                              className="bg-destructive/10 text-destructive border-destructive/30 text-[10px] px-1.5 py-0"
+                              title="Cotação gerada sem transportadora real cadastrada para esta rota. Revise o valor antes de confirmar."
+                            >
+                              <AlertCircle className="h-3 w-3 mr-1" />
+                              Preço Fallback
+                            </Badge>
+                          )}
+                        </div>
                       </TableCell>
                       
                       <TableCell>
