@@ -1075,8 +1075,7 @@ serve(async (req) => {
     // 6.5. Calculate LogiGuard Pro para cada cotação
     const logiGuardPro = calcularLogiGuardPro(quoteRequest.cargo_value, riskFactor);
     
-    // 6.6. Calculate ANTT Piso Mínimo (Referência Legal)
-    const distanciaEstimada = await calcularDistanciaReal(quoteRequest.origin_cep, quoteRequest.destination_cep);
+    // 6.6. Calculate ANTT Piso Mínimo (Referência Legal) — reusa distância já calculada
     const eixosEstimados = estimarEixos(quoteRequest.weight_kg, quoteRequest.vehicle_type);
     const isRetornoVazio = routeAdjustmentFactor > 0.5; // Rotas de retorno têm fator > 0.5
     const anttPisoMinimo = calcularPisoMinimoANTT(distanciaEstimada, 'carga_geral', eixosEstimados, isRetornoVazio);
