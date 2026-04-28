@@ -596,6 +596,7 @@ function aplicarRegraAltaDemanda(
       quality_index: cota.quality_index,
       route_adjustment_factor: fatorAjusteDemanda,
       adjustment_reason: 'HIGH_DEMAND_ROUTE',
+      pricing_source: cota.pricing_source,
     };
   });
 }
