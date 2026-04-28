@@ -156,8 +156,15 @@ Deno.serve(async (req) => {
       logiguard_pro_valor,
       cargo_description,
       cargo_type,
-      cargo_value
+      cargo_value,
+      pricing_source
     } = requestData;
+
+    // Aviso operacional quando a cotação foi gerada com preço de fallback
+    // (não havia transportadora real cadastrada para a rota/peso)
+    const fallbackWarning = pricing_source === 'fallback'
+      ? '⚠️ ATENÇÃO: Cotação gerada com preço de FALLBACK (sem transportadora cadastrada para esta rota). Validar valor e atribuir transportadora manualmente antes de confirmar.'
+      : null;
 
     // Normalizar CEPs (remover hífen para compatibilidade com constraint do banco)
     const normalizedOriginCep = origin_cep.replace(/[^0-9]/g, '');
