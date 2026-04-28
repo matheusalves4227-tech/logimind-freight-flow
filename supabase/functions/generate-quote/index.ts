@@ -839,6 +839,7 @@ async function buscarCotacoesReais(
       base_price: parseFloat(total.toFixed(2)),
       delivery_days: price.delivery_days,
       quality_index: carrier.avg_quality_rating,
+      pricing_source: 'real',
     });
 
     console.log(
