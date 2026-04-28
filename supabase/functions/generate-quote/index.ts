@@ -745,68 +745,107 @@ async function buscarCotacoesReais(
   carriers: any[], 
   originCep: string,
   destinationCep: string,
-  weight_kg: number
+  weight_kg: number,
+  distance_km: number
 ): Promise<CarrierQuote[]> {
-  // Mapear CEP para região (primeiros 5 dígitos)
-  const originRegion = originCep.replace(/\D/g, "").substring(0, 5);
-  const destinationRegion = destinationCep.replace(/\D/g, "").substring(0, 5);
-  
-  console.log(`[Pricing] Searching prices: Origin=${originRegion}, Dest=${destinationRegion}, Weight=${weight_kg}kg`);
-  
-  // Buscar preços cadastrados para essa rota
+  // Resolver UF (estado) e prefixo de CEP para matching flexível
+  const originPrefix = originCep.replace(/\D/g, "").substring(0, 5);
+  const destinationPrefix = destinationCep.replace(/\D/g, "").substring(0, 5);
+
+  const [originAddr, destAddr] = await Promise.all([
+    buscarViaCep(originCep),
+    buscarViaCep(destinationCep),
+  ]);
+  const originUf = originAddr?.estado ?? null;
+  const destinationUf = destAddr?.estado ?? null;
+
+  console.log(
+    `[Pricing] Searching prices: Origin UF=${originUf}/prefix=${originPrefix}, ` +
+    `Dest UF=${destinationUf}/prefix=${destinationPrefix}, Weight=${weight_kg}kg, Distance=${distance_km}km`
+  );
+
+  // Construir lista de regiões aceitas (UF + prefixo CEP) para casar com qualquer formato cadastrado
+  const originRegions = [originUf, originPrefix].filter(Boolean) as string[];
+  const destinationRegions = [destinationUf, destinationPrefix].filter(Boolean) as string[];
+
+  // Buscar TODOS os preços ativos das transportadoras dessas rotas (filtro de peso feito em memória)
   const { data: priceData, error: priceError } = await supabaseClient
     .from('carrier_price_table')
     .select('*')
-    .eq('origin_region', originRegion)
-    .eq('destination_region', destinationRegion)
-    .lte('min_weight_kg', weight_kg)
-    .gte('max_weight_kg', weight_kg)
+    .in('origin_region', originRegions)
+    .in('destination_region', destinationRegions)
     .eq('is_active', true);
-  
+
   if (priceError) {
     console.error('[Pricing Error]', priceError);
-    // Fallback para preço mockado se houver erro
     return gerarCotacoesMockadas(carriers, weight_kg);
   }
-  
-  if (!priceData || priceData.length === 0) {
+
+  // Filtrar por peso tratando 0 como "sem limite"
+  const validPrices = (priceData ?? []).filter((p: any) => {
+    const minW = parseFloat(p.min_weight_kg ?? 0);
+    const maxW = parseFloat(p.max_weight_kg ?? 0);
+    const minOk = minW <= 0 || weight_kg >= minW;
+    const maxOk = maxW <= 0 || weight_kg <= maxW;
+    return minOk && maxOk;
+  });
+
+  if (validPrices.length === 0) {
     console.log('[Pricing] No prices found for this route/weight. Using fallback calculation.');
-    // Fallback: usa cálculo simples se não houver preços cadastrados
     return gerarCotacoesMockadas(carriers, weight_kg);
   }
-  
-  console.log(`[Pricing] Found ${priceData.length} price entries for this route`);
-  
-  // Construir cotações baseadas nos preços reais cadastrados
-  const quotes: CarrierQuote[] = [];
-  
-  for (const price of priceData) {
-    // Encontrar dados da transportadora correspondente
+
+  console.log(`[Pricing] Found ${validPrices.length} valid price entries for this route`);
+
+  // Para cada transportadora pegar a MELHOR (menor) tarifa cadastrada
+  const bestPerCarrier = new Map<string, { price: any; total: number }>();
+
+  for (const price of validPrices) {
     const carrier = carriers.find(c => c.id === price.carrier_id);
     if (!carrier) continue;
-    
-    // Calcular preço: base_price + (peso × price_per_kg)
-    const basePrice = parseFloat(price.base_price);
-    const pricePerKg = parseFloat(price.price_per_kg);
-    const totalPrice = basePrice + (weight_kg * pricePerKg);
-    
+
+    const basePrice = parseFloat(price.base_price ?? 0);
+    const pricePerKg = parseFloat(price.price_per_kg ?? 0);
+    const ratePerKm = parseFloat(price.rate_per_km ?? 0);
+    const fixedCost = parseFloat(price.fixed_cost ?? 0);
+
+    // Cálculo completo: custo fixo + base + (peso × R$/kg) + (km × R$/km)
+    const totalPrice =
+      fixedCost +
+      basePrice +
+      (weight_kg * pricePerKg) +
+      (distance_km * ratePerKm);
+
+    const existing = bestPerCarrier.get(carrier.id);
+    if (!existing || totalPrice < existing.total) {
+      bestPerCarrier.set(carrier.id, { price, total: totalPrice });
+    }
+  }
+
+  const quotes: CarrierQuote[] = [];
+  for (const [carrierId, { price, total }] of bestPerCarrier) {
+    const carrier = carriers.find(c => c.id === carrierId);
+    if (!carrier) continue;
+
     quotes.push({
       carrier_id: carrier.id,
       carrier_name: carrier.name,
       carrier_size: carrier.carrier_size,
       specialties: carrier.specialties,
-      base_price: parseFloat(totalPrice.toFixed(2)),
+      base_price: parseFloat(total.toFixed(2)),
       delivery_days: price.delivery_days,
       quality_index: carrier.avg_quality_rating,
     });
-    
+
     console.log(
       `[Price] ${carrier.name}: ` +
-      `Base=${basePrice} + (${weight_kg}kg × ${pricePerKg}) = R$ ${totalPrice.toFixed(2)} | ` +
-      `Delivery: ${price.delivery_days} days`
+      `fixed=${parseFloat(price.fixed_cost ?? 0)} + base=${parseFloat(price.base_price ?? 0)} ` +
+      `+ (${weight_kg}kg × R$ ${parseFloat(price.price_per_kg ?? 0)}) ` +
+      `+ (${distance_km}km × R$ ${parseFloat(price.rate_per_km ?? 0)}) ` +
+      `= R$ ${total.toFixed(2)} | Delivery: ${price.delivery_days} days`
     );
   }
-  
+
   return quotes;
 }
 
@@ -993,13 +1032,18 @@ serve(async (req) => {
     
     console.log(`Route data - Adjustment Factor: ${routeAdjustmentFactor}, Demand Level: ${demandLevel}, Risk Factor: ${riskFactor}`);
 
+    // 2.5. Calcular distância real ANTES da cotação (necessária para rate_per_km)
+    const distanciaEstimada = await calcularDistanciaReal(quoteRequest.origin_cep, quoteRequest.destination_cep);
+    console.log(`[Distance] ${quoteRequest.origin_cep} → ${quoteRequest.destination_cep}: ${distanciaEstimada}km`);
+
     // 3. Buscar cotações reais da tabela carrier_price_table (com fallback para cálculo)
     const cotacoesBrutas = await buscarCotacoesReais(
       supabaseClient,
       carriers, 
       quoteRequest.origin_cep,
       quoteRequest.destination_cep,
-      quoteRequest.weight_kg
+      quoteRequest.weight_kg,
+      distanciaEstimada
     );
 
     // 4. Apply LogiMind strategy based on route characteristics
@@ -1031,8 +1075,7 @@ serve(async (req) => {
     // 6.5. Calculate LogiGuard Pro para cada cotação
     const logiGuardPro = calcularLogiGuardPro(quoteRequest.cargo_value, riskFactor);
     
-    // 6.6. Calculate ANTT Piso Mínimo (Referência Legal)
-    const distanciaEstimada = await calcularDistanciaReal(quoteRequest.origin_cep, quoteRequest.destination_cep);
+    // 6.6. Calculate ANTT Piso Mínimo (Referência Legal) — reusa distância já calculada
     const eixosEstimados = estimarEixos(quoteRequest.weight_kg, quoteRequest.vehicle_type);
     const isRetornoVazio = routeAdjustmentFactor > 0.5; // Rotas de retorno têm fator > 0.5
     const anttPisoMinimo = calcularPisoMinimoANTT(distanciaEstimada, 'carga_geral', eixosEstimados, isRetornoVazio);
