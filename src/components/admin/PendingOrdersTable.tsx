@@ -64,7 +64,7 @@ export const PendingOrdersTable = ({ onUpdate }: PendingOrdersTableProps) => {
       // Quando motorista é atribuído, vai para aba "Aceitos"
       const { data, error } = await supabase
         .from('orders')
-        .select('id, tracking_code, origin_address, destination_address, origin_cep, destination_cep, weight_kg, height_cm, width_cm, length_cm, service_type, final_price, base_price, commission_applied, comissao_logimarket_perc, status, carrier_name, driver_id, driver_name, created_at, estimated_delivery, user_id, status_pagamento')
+        .select('id, tracking_code, origin_address, destination_address, origin_cep, destination_cep, weight_kg, height_cm, width_cm, length_cm, service_type, final_price, base_price, commission_applied, comissao_logimarket_perc, status, carrier_name, driver_id, driver_name, created_at, estimated_delivery, user_id, status_pagamento, operational_notes')
         .in('status', ['pending', 'awaiting_contact'])
         .in('status_pagamento', ['PAGO', 'confirmed'])
         .is('driver_id', null)
