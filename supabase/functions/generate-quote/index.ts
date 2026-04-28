@@ -127,6 +127,7 @@ interface CarrierQuote {
   base_price: number;
   delivery_days: number;
   quality_index: number;
+  pricing_source?: 'real' | 'fallback';
 }
 
 interface ProcessedQuote {
